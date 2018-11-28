@@ -1,0 +1,645 @@
+{
+    "General": {
+        "width": 1400,
+        "height": 1400
+        
+    },
+    "Category": {
+        "ideogram": {
+            "ideogram": {
+                "file": {
+                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/chr_size.txt",
+                    "header": "True",
+                    "sep": "\t"
+                },
+                "show": "True",
+                "degreerange": [
+                    12,
+                    348
+                ],
+                "showfillcolor": "False",
+                "chrannotation": {
+                    "show": "True",
+                    "radius": {
+                        "R": 1.25
+                    },
+                    "fonttype": "bold",
+                    "textangle": {
+                        "angleoffset": -90,
+                        "anglelimit": 360
+                    },
+                    "layout": {
+                        "xref": "x",
+                        "yref": "y",
+                        "showarrow": "False",
+                        "font": {
+                            "size": 15,
+                            "color": "black"
+                        }
+                    }
+                },
+                "customoptions": {
+                    "customlabel": "True",
+                    "customspacing": "False",
+                    "customcolor": "False"
+                },
+                "npoints": 1000,
+                "radius": {
+                    "R0": 1.0,
+                    "R1": 1.1
+                },
+                "layout": {
+                    "type": "path",
+                    "opacity": 0.9,
+                    "layer": "above",
+                    "line": {
+                        "color": "black",
+                        "width": 2
+                    }
+                }
+            },
+            "majortick": {
+                "show": "True",
+                "spacing": 30000000,
+                "radius": {
+                    "R0": 1.1,
+                    "R1": 1.125
+                },
+                "layout": {
+                    "type": "path",
+                    "opacity": 0.9,
+                    "layer": "above",
+                    "line": {
+                        "color": "black",
+                        "width": 1
+                    }
+                }
+            },
+            "minortick": {
+                "show": "True",
+                "spacing": 5000000,
+                "radius": {
+                    "R0": 1.1,
+                    "R1": 1.118
+                },
+                "layout": {
+                    "type": "path",
+                    "opacity": 0.9,
+                    "line": {
+                        "color": "black",
+                        "width": 0.5
+                    }
+                }
+            },
+            "ticklabel": {
+                "show": "True",
+                "spacing": 30000000,
+                "radius": {
+                    "R": 1.16
+                },
+                "textformat": "Mb",
+                "textangle": {
+                    "angleoffset": -90,
+                    "anglelimit": 360
+                },
+                "layout": {
+                    "xref": "x",
+                    "yref": "y",
+                    "showarrow": "False",
+                    "font": {
+                        "family": "Times New Roman",
+                        "size": 10,
+                        "color": "black"
+                    }
+                }
+            }
+        },
+        "cytoband": {
+            "id": "cytoband_1",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/cytoband.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "sortbycolor": "True",
+            "colorcolumn": 3,
+            "layout": {
+                "type": "path",
+                "layer": "below",
+                "opacity": 1.0,
+                "line": {
+                    "color": "black",
+                    "width": 0
+                }
+            }
+        },
+        "histogram": [
+            {
+                "id": "hist_1",
+                "show": "True",
+                "customfillcolor": "False",
+                "file": {
+                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/histogram_pos.txt",
+                    "header": "True",
+                    "sep": "\t"
+                },
+                "sortbycolor": "False",
+                "colorcolumn": "None",
+                "radius": {
+                    "R0": 0.945,
+                    "R1": 0.99
+                },
+                "hovertextformat": " \"Chromosome: {}<br>Start: {}<br>End: {}<br>LogFC: {:.4f}\".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ",
+                "trace": {
+                    "hoverinfo": "text",
+                    "mode": "markers",
+                    "marker": {
+                        "size": 0,
+                        "opacity": 0
+                    }
+                },
+                "layout": {
+                    "type": "path",
+                    "opacity": 1,
+                    "fillcolor": "red",
+                    "line": {
+                        "color": "black",
+                        "width": 0
+                    }
+                }
+            },
+            {
+                "id": "hist_2",
+                "show": "True",
+                "customfillcolor": "False",
+                "file": {
+                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/histogram_neg.txt",
+                    "header": "True",
+                    "sep": "\t"
+                },
+                "sortbycolor": "False",
+                "colorcolumn": "None",
+                "radius": {
+                    "R0": 0.945,
+                    "R1": 0.99
+                },
+                "hovertextformat": " \"Chromosome: {}<br>Start: {}<br>End: {}<br>LogFC: {:.4f}\".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ",
+                "trace": {
+                    "hoverinfo": "text",
+                    "mode": "markers",
+                    "marker": {
+                        "size": 0,
+                        "opacity": 0
+                    }
+                },
+                "layout": {
+                    "type": "path",
+                    "opacity": 1,
+                    "fillcolor": "blue",
+                    "line": {
+                        "color": "blue",
+                        "width": 0
+                    }
+                }
+            }
+        ],
+        "line": {
+            "id": "line_1",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/scatter.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "radius": {
+                "R0": 0.85,
+                "R1": 0.88
+            },
+            "sortbycolor": "False",
+            "colorcolumn": "None",
+            "hovertextformat": " \"Chromosome: {}<br>Position: {}<br>Value: {:.2f}\".format(a[i,0], a[i,1], float(a[i,2]))",
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "lines+markers",
+                "opacity": 0.9,
+                "marker": {
+                    "symbol": 0,
+                    "size": 3,
+                    "color": "black"
+                },
+                "line": {
+                    "color": "black",
+                    "width": 2,
+                    "shape": "linear",
+                    "smoothing": 0
+                }
+            }
+        },
+        "area": {
+            "id": "area_1",
+            "show": "False",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/scatter.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "radius": {
+                "R0": 0.79,
+                "R1": 0.84
+            },
+            "sortbycolor": "False",
+            "colorcolumn": "None",
+            "hovertextformat": " \"Chromosome: {}<br>Position: {}<br>Value: {:.2f}\".format(a[i,0], a[i,1], float(a[i,2]))",
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 0,
+                    "opacity": 0
+                }
+            },
+            "layout": {
+                "type": "path",
+                "layer": "above",
+                "opacity": 0.4,
+                "fillcolor": "grey",
+                "line": {
+                    "color": "grey",
+                    "width": 1
+                }
+            }
+        },
+        "scatter": {
+            "id": "scatter_1",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/scatter.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "radius": {
+                "R0": 0.69,
+                "R1": 0.78
+            },
+            "sortbycolor": "False",
+            "colorcolumn": "None",
+            "hovertextformat": " \"Chromosome: {}<br>Position: {}<br>Value: {:.2f}\".format(a[i,0], a[i,1], float(a[i,2]))",
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "opacity": 1,
+                "marker": {
+                    "size": 5,
+                    "symbol": 0,
+                    "opacity": 1
+                }
+            }
+        },
+        "tile": {
+            "id": "tile_1",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/tile.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "sortbycolor": "False",
+            "colorcolumn": "None",
+            "radius": {
+                "R0": 0.6,
+                "R1": 0.68
+            },
+            "hovertextformat": " \"Chromosome: {}<br>Start: {}<br>End: {}<br>CNV: {:.4f}\".format(a[i,0], a[i,1], a[i,2], float(a[i,3]))",
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 0,
+                    "opacity": 0
+                }
+            },
+            "layout": {
+                "type": "path",
+                "layer": "above",
+                "opacity": 0.9,
+                "line": {
+                    "color": "magenta",
+                    "width": 3
+                }
+            }
+        },
+        "heatmap": {
+            "id": "heatmap_1",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/heatmap.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "radius": {
+                "R0": 0.46,
+                "R1": 0.53
+            },
+            "sortbycolor": "True",
+            "colorcolumn": 3,
+            "hovertextformat": " \"Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}\".format(a[i,0], a[i,1], a[i,2], float(a[i,3]))",
+            "palatte": {
+                "palatte": "RdBu",
+                "scale": "div",
+                "reverse": "False",
+                "ncolor": 11
+            },
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 0,
+                    "opacity": 0
+                }
+            },
+            "layout": {
+                "type": "path",
+                "layer": "above",
+                "opacity": 0.8,
+                "line": {
+                    "color": "black",
+                    "width": 0
+                }
+            }
+        },
+        "link": {
+            "id": "link",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/link_test.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "radius": {
+                "R0": 0,
+                "R1": 0.45
+            },
+            "sortbycolor": "False",
+            "colorcolumn": "None",
+            "hovertextformat": [
+                " \"Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}\".format(a[i,0], a[i,3], a[i,1], a[i,4], a[i,2], a[i,5]) ",
+                " \"Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}\".format(a[i,3], a[i,0], a[i,4], a[i,1], a[i,5], a[i,2]) "
+            ],
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 0,
+                    "opacity": 0
+                }
+            },
+            "layout": {
+                "type": "path",
+                "layer": "above",
+                "opacity": 0.8,
+                "line": {
+                    "color": "lightskyblue",
+                    "width": 1
+                }
+            }
+        },
+        "ribbon": {
+            "id": "ribbon",
+            "show": "False",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/ribbon_test.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "sortbycolor": "False",
+            "colorcolumn": "None",
+            "radius": {
+                "R0": 0,
+                "R1": 0.45
+            },
+            "hovertextformat": [
+                " \"Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}\".format(a[i,0], a[i,3], a[i,1], a[i,5], a[i,2], a[i,4]) ",
+                " \"Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}\".format(a[i,3], a[i,0], a[i,5], a[i,1], a[i,4], a[i,2]) "
+            ],
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 0,
+                    "opacity": 0
+                }
+            },
+            "layout": {
+                "type": "path",
+                "layer": "above",
+                "opacity": 0.6,
+                "fillcolor": "purple",
+                "line": {
+                    "color": "black",
+                    "width": 0
+                }
+            }
+        },
+        "twistedribbon": {
+            "id": "twistedribbon",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/twisted_ribbon_test.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "sortbycolor": "False",
+            "colorcolumn": "None",
+            "radius": {
+                "R0": 0,
+                "R1": 0.45
+            },
+            "hovertextformat": [
+                " \"Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}\".format(a[i,0], a[i,3], a[i,1], a[i,4], a[i,2], a[i,5]) ",
+                " \"Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}\".format(a[i,3], a[i,0], a[i,4], a[i,1], a[i,5], a[i,2]) "
+            ],
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 0,
+                    "opacity": 0
+                }
+            },
+            "layout": {
+                "type": "path",
+                "layer": "above",
+                "opacity": 0.6,
+                "fillcolor": "orange",
+                "line": {
+                    "color": "black",
+                    "width": 0
+                }
+            }
+        },
+        "connector": {
+            "id":"connector_1",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/connector.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "radius": {
+                "R0": 0.54,
+                "R1": 0.59,
+                "ratio": [
+                    0.2,
+                    0.6,
+                    0.2
+                ]
+            },
+            "colorcolumn": "None",
+            "sortbycolor": "False",
+            "layout": {
+                "type": "path",
+                "layer": "above",
+                "opacity": 1,
+                "line": {
+                    "color": "black",
+                    "width": 1
+                }
+            }
+        },
+        "annotation": {
+            "id": "annotation",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/annotation.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "colorcolumn": 5,
+            "customcolor": "True",
+            "customoffsetdegree": "True",
+            "fonttype": "bold",
+            "customradius": "True",
+            "radiuscolumn": 4,
+            "radius": {
+                "R": 1.36
+            },
+            "textangle": {
+                "angleoffset": 0,
+                "anglelimit": 360
+            },
+            "sortbycolor": "False",
+            "layout": {
+                "xref": "x",
+                "yref": "y",
+                "showarrow": "False",
+                "font": {
+                    "size": 12
+                }
+            }
+        },
+        "highlight": {
+            "id": "highlight",
+            "show": "True",
+            "file": {
+                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/highlight.txt",
+                "header": "True",
+                "sep": "\t"
+            },
+            "R0column": 3,
+            "R1column": 4,
+            "sortbycolor": "True",
+            "colorcolumn": 5,
+            "opacitycolumn": 6,
+            "layout": {
+                "layer": "above",
+                "line": {
+                    "color": "black",
+                    "width": 0
+                }
+            }
+        },
+        "ring": [
+            {
+                "id": "ring_1",
+                "radius": {
+                    "R0": 0.69,
+                    "R1": 0.78
+                },
+                "layout": {
+                    "opacity": 0.1,
+                    "fillcolor": "grey",
+                    "layer": "below",
+                    "line": {
+                        "color": "grey",
+                        "width": 0
+                    }
+                }
+            },
+            {
+                "id": "ring_2",
+                "radius": {
+                    "R0": 0.85,
+                    "R1": 0.88
+                },
+                "layout": {
+                    "opacity": 0.1,
+                    "fillcolor": "grey",
+                    "layer": "below",
+                    "line": {
+                        "color": "grey",
+                        "width": 0
+                    }
+                }
+            },
+            {
+                "id": "ring_3",
+                "radius": {
+                    "R0": 0.79,
+                    "R1": 0.84
+                },
+                "layout": {
+                    "opacity": 0.1,
+                    "fillcolor": "grey",
+                    "layer": "below",
+                    "line": {
+                        "color": "grey",
+                        "width": 0
+                    }
+                }
+            },
+            {
+                "id": "ring_4",
+                "radius": {
+                    "R0": 0.9,
+                    "R1": 0.99
+                },
+                "layout": {
+                    "opacity": 0.1,
+                    "fillcolor": "grey",
+                    "layer": "below",
+                    "line": {
+                        "color": "grey",
+                        "width": 0
+                    }
+                }
+            },
+            {
+                "id": "ring_5",
+                "radius": {
+                    "R0": 0.6,
+                    "R1": 0.68
+                },
+                "layout": {
+                    "opacity": 0.1,
+                    "fillcolor": "grey",
+                    "layer": "below",
+                    "line": {
+                        "color": "grey",
+                        "width": 0
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,3 @@
+chr1_name	chr1_start	chr1_end	chr_name	chr2_start	chr2_end
+hs1	82251	247199719	hs5	267343	180824846
+hs2	25401	200165009	hs4	100	20000000
