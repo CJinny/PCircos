@@ -750,8 +750,14 @@ class Figure(Complex):
 
 
     def layout(self):
+        ## new version of plotly says layout['shapes'], ['annotations'] is a tuple, can't be used with list append
+        ## I'm trying to add a temporary layout_shapes list variable collecting everything before assigning to layout['shapes']
+
         layout = go.Layout(self.layout_general)
 
+        ## ONGOING
+        layout_shapes = []
+        layout_annotations = []
 
         if self.ideogram_ideogram['show']:
             
@@ -764,13 +770,13 @@ class Figure(Complex):
 
                 layout_dict = self.ideogram_ideogram['layout']
                 layout_dict.update(dict(path=ideogram_pathstring))
-                layout['shapes'].append(layout_dict)
+                layout_shapes.append(layout_dict)
             else:
                 ideogram_path_list = self.ideogram_path(self.get_ideogram_complex())
 
                 for i in range(len(ideogram_path_list)):
-                    layout['shapes'].append(dict(path=ideogram_path_list[i], fillcolor=self.get_chr_info()['chr_fillcolor'][i]))
-                    layout['shapes'][i].update(self.ideogram_ideogram['layout'])
+                    layout_shapes.append(dict(path=ideogram_path_list[i], fillcolor=self.get_chr_info()['chr_fillcolor'][i]))
+                    layout_shapes[i].update(self.ideogram_ideogram['layout'])
                     
 
         
@@ -803,24 +809,24 @@ class Figure(Complex):
 
             for i in range(len(chrannot_complex)):
                 
-                layout['annotations'].append(dict(x=chrannot_complex[i].real,
+                layout_annotations.append(dict(x=chrannot_complex[i].real,
                                                   y=chrannot_complex[i].imag,
                                                   text=chrannot_text[i],
                                                   textangle=textangle[i]
                                                   )
                                             )
-                layout['annotations'][i].update(self.ideogram_ideogram['chrannotation']['layout'])
+                layout_annotations[i].update(self.ideogram_ideogram['chrannotation']['layout'])
 
 
         if self.ideogram_majortick['show']:
             
-            layout['shapes'].append(dict(path=self.get_major_tick_path()))
-            layout['shapes'][-1].update(self.ideogram_majortick['layout'])
+            layout_shapes.append(dict(path=self.get_major_tick_path()))
+            layout_shapes[-1].update(self.ideogram_majortick['layout'])
 
         if self.ideogram_minortick['show']:
             
-            layout['shapes'].append(dict(path=self.get_minor_tick_path()))
-            layout['shapes'][-1].update(self.ideogram_minortick['layout'])
+            layout_shapes.append(dict(path=self.get_minor_tick_path()))
+            layout_shapes[-1].update(self.ideogram_minortick['layout'])
 
         if self.ideogram_ticklabel['show']:
 
@@ -849,13 +855,13 @@ class Figure(Complex):
 
 
             for i in range(len(ticklabel_complex)):
-                layout['annotations'].append(dict(x=ticklabel_complex[i].real,
+                layout_annotations.append(dict(x=ticklabel_complex[i].real,
                                                   y=ticklabel_complex[i].imag,
                                                   text=ticklabel_text[i],
                                                   textangle=ticklabel_angle[i]
                                                   )
                                             )
-                layout['annotations'][-1].update(self.ideogram_ticklabel['layout'])
+                layout_annotations[-1].update(self.ideogram_ticklabel['layout'])
             
 
    
@@ -864,7 +870,7 @@ class Figure(Complex):
             # the idea is to always to draw the ring background first, whereas highlight and custom annotation will be drawn last!
                # ONGOING, maybe to deprecate show=True for ring?
 
-            layout['shapes'].extend(self.get_ring_paths_dict())
+            layout_shapes.extend(self.get_ring_paths_dict())
 
 
 
@@ -875,13 +881,13 @@ class Figure(Complex):
                 
                 if isinstance(self.get_paths_dict(key)[0], dict):
                     try:
-                        layout['shapes'].extend(self.get_paths_dict(key))
+                        layout_shapes.extend(self.get_paths_dict(key))
                     except Exception:
                         print ('Error trying to plot {}'.format(key))
                         break
                 elif isinstance(self.get_paths_dict(key)[0], list):
                     try:
-                        layout['shapes'].extend(sum(self.get_paths_dict(key),[]))
+                        layout_shapes.extend(sum(self.get_paths_dict(key),[]))
                     except Exception:
                         print ('Error trying to plot {}'.format(key))
                         break
@@ -889,11 +895,15 @@ class Figure(Complex):
 
         if 'highlight' in self.categories.keys():
             if self.categories['highlight']['show']:
-                layout['shapes'].extend(self.get_paths_dict('highlight'))
+                layout_shapes.extend(self.get_paths_dict('highlight'))
 
         if 'annotation' in self.categories.keys():
             if self.categories['annotation']['show']:
-                layout['annotations'].extend(self.get_annotations_dict())
+                layout_annotations.extend(self.get_annotations_dict())
+        
+
+        layout['shapes'] = layout_shapes
+        layout['annotations'] = layout_annotations
         
         return layout
 

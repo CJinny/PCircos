@@ -8,7 +8,7 @@
         "ideogram": {
             "ideogram": {
                 "file": {
-                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/chr_size.txt",
+                    "path": "demo_data/chr_size.txt",
                     "header": "True",
                     "sep": "\t"
                 },
@@ -118,7 +118,7 @@
             "id": "cytoband_1",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/cytoband.txt",
+                "path": "demo_data/cytoband.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -140,7 +140,7 @@
                 "show": "True",
                 "customfillcolor": "False",
                 "file": {
-                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/histogram_pos.txt",
+                    "path": "demo_data/histogram_pos.txt",
                     "header": "True",
                     "sep": "\t"
                 },
@@ -174,7 +174,7 @@
                 "show": "True",
                 "customfillcolor": "False",
                 "file": {
-                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/histogram_neg.txt",
+                    "path": "demo_data/histogram_neg.txt",
                     "header": "True",
                     "sep": "\t"
                 },
@@ -208,7 +208,7 @@
             "id": "line_1",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/scatter.txt",
+                "path": "demo_data/scatter.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -240,7 +240,7 @@
             "id": "area_1",
             "show": "False",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/scatter.txt",
+                "path": "demo_data/scatter.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -274,7 +274,7 @@
             "id": "scatter_1",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/scatter.txt",
+                "path": "demo_data/scatter.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -300,7 +300,7 @@
             "id": "tile_1",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/tile.txt",
+                "path": "demo_data/tile.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -333,7 +333,7 @@
             "id": "heatmap_1",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/heatmap.txt",
+                "path": "demo_data/heatmap.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -372,7 +372,7 @@
             "id": "link",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/link_test.txt",
+                "path": "demo_data/link_test.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -408,7 +408,7 @@
             "id": "ribbon",
             "show": "False",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/ribbon_test.txt",
+                "path": "demo_data/ribbon_test.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -445,7 +445,7 @@
             "id": "twistedribbon",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/twisted_ribbon_test.txt",
+                "path": "demo_data/twisted_ribbon_test.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -482,7 +482,7 @@
             "id":"connector_1",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/connector.txt",
+                "path": "demo_data/connector.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -511,7 +511,7 @@
             "id": "annotation",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/annotation.txt",
+                "path": "demo_data/annotation.txt",
                 "header": "True",
                 "sep": "\t"
             },
@@ -542,7 +542,7 @@
             "id": "highlight",
             "show": "True",
             "file": {
-                "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/highlight.txt",
+                "path": "demo_data/highlight.txt",
                 "header": "True",
                 "sep": "\t"
             },
