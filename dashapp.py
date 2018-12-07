@@ -1,7 +1,21 @@
 '''
 TO DO:
 
-  add margin in demo
+
+  KEEP degreerange & chromosome checklist
+  REMOVE color, radius and opacity, 
+  REMOVE tick spacing,
+  REMOVE label format
+
+  ADD:
+  LOG2 transformation
+  DROPLIST multiple select display table draggable & resizable
+
+
+
+
+
+
 
   dash:
     chr checklist, 
@@ -12,6 +26,12 @@ TO DO:
     data log2 transform
 
 '''
+
+## dependencies: 
+    # dash
+    # dash_core_components
+    # dash_html_components
+
 import sys
 import dash
 import dash_core_components as dcc
@@ -83,8 +103,10 @@ rlimit = (x_range[1] + y_range[1])/2.0
 
 degreerange = fig_instance.config_dict['Category']['ideogram']['ideogram']['degreerange'].copy()
 
+'''
 majortick_spacing = fig_instance.config_dict['Category']['ideogram']['majortick']['spacing']
 minortick_spacing = fig_instance.config_dict['Category']['ideogram']['minortick']['spacing']
+'''
 
 checkbox_options = [*map(lambda x: {'label': str(x), 'value': str(x)}, fig_instance.get_chr_info()['chr_label'])].copy()
 
@@ -107,7 +129,7 @@ e.g. {'histogram': {'hist_id_1': config_dict['Category']['histogram'][0]},
       }
 
 '''
-
+'''
 for key in fig_instance.config_dict['Category'].keys():
 
     # ideogram and annotation is not customized
@@ -140,11 +162,11 @@ for key in id_dict.keys():
         id_list.append(subkey)
 if not len(set(id_list)) == len(id_list):
     raise ValueError('Please make sure to input unique id value for each plot')
+'''
 
 
 
-
-
+'''
 def plot_radius():
     # html.Div([])
     res = []
@@ -212,6 +234,7 @@ def plot_opacity():
                     html.Summary('Select plot opacity'),
                     html.Div(res)
                     ])
+'''
 
 app.layout = html.Div([
                 html.Div([
@@ -233,22 +256,6 @@ app.layout = html.Div([
                             values=checkbox_values,
                             labelStyle={'display': 'inline-block'}
                         ),
-                        html.P('Select majortick spacing'),
-                        dcc.Slider(
-                            id='majortick_spacing',
-                            min=min(1000*(SUM//2000000), majortick_spacing),
-                            max=max(1000*(SUM//1000000), majortick_spacing),
-                            step=0.1*(max(1000*(SUM//1000000), majortick_spacing) - min(1000*(SUM//2001000), majortick_spacing)),
-                            value=majortick_spacing
-                        ),
-                        html.P('Select minortick spacing'),
-                        dcc.Slider(
-                            id='minortick_spacing',
-                            min=min(1000*(SUM//8000000), minortick_spacing),
-                            max=max(1000*(SUM//4000000), minortick_spacing),
-                            step=0.1*(max(1000*(SUM//1000000), minortick_spacing) - min(1000*(SUM//2001000), minortick_spacing)),
-                            value=minortick_spacing
-                        ),
                         html.P('Select tick label format'),
                         dcc.RadioItems(
                             id='tick_format',
@@ -258,9 +265,6 @@ app.layout = html.Div([
                         ),
                     ])
                 ]),
-                plot_radius(),
-                plot_color(),
-                plot_opacity(),
                 ], className='sidebar'),
                 #style={'width': '20%', 'display': 'inline-block', 'float': 'left', 'paddingRight': '10px', 'fontFamily': 'Times New Roman Times Serif'}),
                 
@@ -276,11 +280,11 @@ def dash_input():
 
     dash_inputs = [Input('degreerange', 'value'),
                    Input('chromosome_checklist', 'values'),
-                   Input('majortick_spacing', 'value'),
-                   Input('minortick_spacing', 'value'),
+                   # Input('majortick_spacing', 'value'),
+                   # Input('minortick_spacing', 'value'),
                    Input('tick_format', 'value'),
                    ]
-
+    '''
     for key in id_dict.keys():
         if key != 'cytoband':
             for subkey in id_dict[key].keys():
@@ -294,10 +298,10 @@ def dash_input():
     for key in id_dict.keys():
         for subkey in id_dict[key].keys():
             dash_inputs.append(Input('opacity of {}'.format(subkey), 'value'))
-
+    '''
     return dash_inputs
 
-
+'''
 def dash_state():
     dash_states = []
     for key in id_dict.keys():
@@ -305,20 +309,23 @@ def dash_state():
             for subkey in id_dict[key].keys():
                 dash_states.append(State('color of {}'.format(subkey), 'value'))
     return dash_states
-
+'''
 
 @app.callback(
     Output('PCircos_update', 'figure'),
     dash_input(),
-    dash_state()
+    # dash_state()
     )
 
 def update_output(degreerange_value,
                   chromosome_checklist_value,
-                  majortick_spacing_value,
-                  minortick_spacing_value, 
+                  #majortick_spacing_value,
+                  #minortick_spacing_value, 
                   tick_format_value, 
-                  *args):
+                  #*args
+                  ):
+
+    '''
     n = 0
     for key in id_dict.keys():
         if key == 'cytoband':
@@ -329,17 +336,15 @@ def update_output(degreerange_value,
     radius_args = args[0:n]
     color_args = args[n:2*n]
     opacity_args = args[2*n:]
-
+    '''
 
 
     dash_dict = dict(degreerange=degreerange_value,
                      chromosome_checklist=chromosome_checklist_value,
-                     majortick_spacing=majortick_spacing_value,
-                     minortick_spacing=minortick_spacing_value,
+                     #majortick_spacing=majortick_spacing_value,
+                     #minortick_spacing=minortick_spacing_value,
                      tick_format=tick_format_value,
-                     radius_args=list(radius_args),
-                     color_args=list(color_args),
-                     opacity_args=list(opacity_args))
+                     )
     ### SELECT CHROMOSOME
     #print ('figure instance is:')
     #print (Figure(input_json_path=sys.argv[1], dash_dict=dash_dict).fig())

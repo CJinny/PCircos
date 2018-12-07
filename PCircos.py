@@ -115,6 +115,8 @@ def run_PCircos():
     #print ('fig_instance categories is ')
     #print (fig_instance.categories['annotation'])
 
+    
+
     fig = fig_instance.fig()
     try:
         filename = sys.argv[3]

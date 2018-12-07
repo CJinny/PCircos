@@ -78,8 +78,12 @@ class Complex(object):
                      radius_dict,
                      SUM,
                      custom_offset_degree=False,
-                     degreerange=[0,360]
+                     degreerange=[0,360],
+                     return_path=True
                      ):
+
+        # return_path=False: Traces for area plot, we don't add the return arc which would have ruined the hovertext arrangement
+        # return_path=True: Layout for area plot, we need the return arc to close the area so that fill color can be applied
 
         if category == 'annotation':
             constant = np.pi/180
@@ -130,7 +134,7 @@ class Complex(object):
             # splitting complex_array to a list by chromosome:
             Data_complex = np.split(data_complex_array, indices[1:])
 
-            if category == 'area':
+            if category == 'area' and return_path is True:
                 data_theta_list = np.split(data_theta, indices[1:])
                 # theta interval should be the first and last theta value of each chromosome
                 data_theta_interval = np.column_stack((np.array([*map(lambda x: x[0], data_theta_list)]), np.array([*map(lambda x: x[-1], data_theta_list)])))

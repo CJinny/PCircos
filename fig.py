@@ -306,7 +306,7 @@ class Figure(Complex):
             return [*map(lambda x: x['sortindex'], self.get_data_array_dict(key))]
 
 
-    def get_data_complexes(self, key):
+    def get_data_complexes(self, key, return_path=True):
         assert key in self.categories
         data_array = self.get_data_array(key)
         items = self.categories[key]
@@ -356,6 +356,7 @@ class Figure(Complex):
                 data_complex = self.data_complex(self.ideogram_coord_config, 
                                                  data_array, key, radius_dict, self.SUM, 
                                                  degreerange=self.degreerange,
+                                                 return_path=return_path
                                                  )
             return data_complex
         if isinstance(items, dict):
@@ -379,7 +380,7 @@ class Figure(Complex):
                 assert a.shape[1] >= 3
 
                 if key in ['histogram', 'tile', 'heatmap']:
-                    # ONGOING
+                    
                     list_count = [*map(lambda x: len(x), self.get_data_complexes(key))]
 
                     for i in range(len(a)):
@@ -439,14 +440,14 @@ class Figure(Complex):
         # for line plot, there shouldn't be sortbycolor
 
         items = self.categories[key]
-        complexes = self.get_data_complexes(key)
+        complexes = self.get_data_complexes(key, return_path=False)
         data_arrays = self.get_data_array(key)
         hovertexts = self.get_hovertext(key)
 
 
         def single_trace(key, Complex, item, data_array, hovertext):
             assert key not in ['cytoband', 'ideogram', 'ring', 'annotation', 'highlight', 'connector']
-            # For scatter plot the complex is an ndarray, for lines it would be a list of adarray separated by chromosomes
+            # For scatter plot the complex is an ndarray, for lines it would be a list of ndarray separated by chromosomes
             # for other nonvisible plots, they can be concatenated into one ndarray
             assert isinstance(item, dict)
 
@@ -500,14 +501,7 @@ class Figure(Complex):
                         chr_label = data_array[:,0]
 
                         if item['colorcolumn'] is None:
-                            # this is the default (color as chr_color)
-                            '''
-                            print('chr_color_dict:')
-                            print(self.chr_color_dict)
-                            print('chr_label for scatter')
-                            print(chr_label)
-                            '''
-
+                            
 
                             color = [*map(lambda x: self.chr_color_dict[x], chr_label)]
                         else:

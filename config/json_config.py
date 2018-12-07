@@ -104,11 +104,11 @@ def json2dict(input_json_path, dash_dict=None):
     if dash_dict:
 
         input_json_dict['Category']['ideogram']['ideogram'].update(dict(degreerange=dash_dict['degreerange']))
-        input_json_dict['Category']['ideogram']['majortick'].update(dict(spacing=dash_dict['majortick_spacing']))
-        input_json_dict['Category']['ideogram']['minortick'].update(dict(spacing=dash_dict['minortick_spacing']))
+        #input_json_dict['Category']['ideogram']['majortick'].update(dict(spacing=dash_dict['majortick_spacing']))
+        #input_json_dict['Category']['ideogram']['minortick'].update(dict(spacing=dash_dict['minortick_spacing']))
         input_json_dict['Category']['ideogram']['ticklabel'].update(dict(textformat=dash_dict['tick_format']))
 
-
+        '''
         for key in input_json_dict['Category'].keys():
             if key in ['ideogram', 'annotation', 'highlight']:
                 continue
@@ -171,8 +171,8 @@ def json2dict(input_json_path, dash_dict=None):
                 assert key != 'cytoband'
 
                 for i in range(len(input_json_dict['Category'][key])):
-                    radius_tmp = dash_dict['radius_args'].pop(0)
-                    input_json_dict['Category'][key][i]['radius'].update(dict(R0=radius_tmp[0], R1=radius_tmp[1]))
+                    #radius_tmp = dash_dict['radius_args'].pop(0)
+                    #input_json_dict['Category'][key][i]['radius'].update(dict(R0=radius_tmp[0], R1=radius_tmp[1]))
 
                     
                     if key not in ['tile', 'connector', 'link', 'heatmap', 'scatter', 'line']:
@@ -219,7 +219,7 @@ def json2dict(input_json_path, dash_dict=None):
                             input_json_dict['Category'][key][i]['palatte'].update(dict(ncolor=9, scale='seq', palatte=dash_dict['color_args'].pop(0)))
                         else:
                             dash_dict['color_args'].pop(0)
-
+            '''
 
     return input_json_dict
 

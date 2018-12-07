@@ -213,7 +213,6 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
  
     chr_ideogram_bin = chr_info['ideogram_bin']
 
-    # ONGOING, DATA TRIMMING for dashapp
     # convert chr_name to chr_label, e.g. hs1 => chr1
 
     input_pd = input_pd[input_pd.iloc[:,0].isin(chr_info['chr_name'])]
@@ -227,19 +226,12 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
 
 
     input_array = np.array(input_pd.iloc[:])
-    assert len(input_array) > 0
+    # can't make this assertion in dash app since if all data is on the chromosome which we uncheck input_array will be non-existent
+    # assert len(input_array) > 0
 
     data_chr = input_array[:,0]
     
     
-    '''
-    for i in range(len(data_chr)):
-        try:
-            data_chr[i] = chr_label_dict[data_chr[i]]
-        except KeyError:
-            # if a row of data_chr is not found in chr_label_dict, remove that row!
-            np.delete(input_array, i, 0)
-    '''
 
 
     if category in ['link', 'ribbon', 'twistedribbon']:
