@@ -6,9 +6,17 @@ body {
 
 details {
     margin: 0em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em
+}
+
+details[open] > summary {
+    background: #429ef4;
+    font-weight: bold
 }
 
 summary {
+    outline: none;
     background: #f9f9f9;
     font-size: 1.5em;
     border: 0.05em solid grey;
@@ -21,7 +29,7 @@ summary:hover {
 }
 
 summary.toggle {
-    background: #429ef4;
+    background: #cdd2d6;
     color: white;
 }
 /*
@@ -87,3 +95,90 @@ div.sidebar.scroll::-webkit-scrollbar-thum:hover {
     background: rgba(0,0,0,.3);
 }
 */
+
+button {
+    display: block;
+    height: 40px;
+    font-size: 1.2em;
+    margin: 0.1em;
+    margin-top: 0.8em;
+    margin-bottom: 0.8em;
+}
+
+
+button.hidden {
+    display: none
+}
+
+P {
+    margin-top: 0.4em;
+    margin-bottom: 0.4em
+}
+
+P.booleanswitch {
+    margin-top: 0.4em;
+    margin-bottom: 0em
+}
+
+
+label {
+    display: inline
+}
+
+
+summary.summary-secondary {
+    outline: none;
+    font-size: 1.3em
+}
+
+summary.summary-secondary::-webkit-details-marker {
+    display: none
+}
+
+
+
+summary.summary-secondary::after {
+    
+    border-radius: 20px;
+    content: "+";
+    color: black;
+    float: left;
+    font-size: 1em;
+    
+    font-weight: bold;
+    margin: -2px 5px 0px 0px;
+    padding: 1px 0 3px 0;
+    text-align: center;
+    width: 30px;
+    
+}
+
+details[open] > summary.summary-secondary {
+    background: #F0F8FF;
+    font-weight: normal;
+    font-style: italic;
+    color: black
+}
+details[open] > summary.summary-secondary:after {
+    content: "-"
+}
+
+div.feaHTK {
+    border: white
+}
+
+hr {
+    margin-top: 0.6em;
+    margin-bottom: 0.6em
+}
+
+div.indent {
+    padding-left: 0.2em
+}
+
+div.colorscale-block {
+    display: inline-block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: -8px
+}

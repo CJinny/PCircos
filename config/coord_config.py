@@ -21,7 +21,8 @@ def chr_info(input_file_path,
              custom_label=False,
              custom_spacing=False,
              custom_color=False,
-             dash_dict=None):
+             dash_dict=None
+             ):
    
     #################ONGOING
     # If using dash app, when we are selecting chromosomes, we only retain data that is in the chromosome_checklist
@@ -111,6 +112,7 @@ def chr_info(input_file_path,
     config_dict['chr_size'] = chr_size
     config_dict['chr_label'] = chr_label
     config_dict['chr_label_dict'] = dict(zip(chr_name, chr_label))
+    
     config_dict['chr_spacing'] = chr_spacing
     config_dict['ideogram_bin'] =ideogram_bin
 
@@ -278,16 +280,17 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
             input_array[:,colorcolumn] = colors.to_rgb(input_array[:,colorcolumn])
 
     if sortbycolor == True:
-        assert isinstance(colorcolumn, int)
-        indices = input_array[:,colorcolumn].argsort()
-        input_array = input_array[indices]
+        if not isinstance(colorcolumn, int):
+            data_dict['sortindex'] = list(range(len(input_array)))
+        else:
+            indices = input_array[:,colorcolumn].argsort()
+            input_array = input_array[indices]
 
-        # DEBUGGING:
-        #print ('the real sortindex for {} is: \t'.format(category))
-        #print (indices)
+            # DEBUGGING:
+            #print ('the real sortindex for {} is: \t'.format(category))
+            #print (indices)
 
-
-        data_dict['sortindex'] = indices
+            data_dict['sortindex'] = indices
     else:
         data_dict['sortindex'] = list(range(len(input_array)))
     data_dict['data_array'] = input_array

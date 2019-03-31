@@ -51,7 +51,6 @@ def nested_fill_dict(input_dict, default_dict):
     for key in default_dict.keys():
         
         
-
         if key not in input_dict:
             if isinstance(default_dict[key], (str, int, float)):
                 input_dict[key] = default_dict[key]

@@ -1,7 +1,7 @@
 {
     "General": {
-        "width": 1400,
-        "height": 1400
+        "width": 1200,
+        "height": 1200
         
     },
     "Category": {
@@ -9,7 +9,7 @@
             "ideogram": {
                 "file": {
                     "path": "demo_data/chr_size.txt",
-                    "header": "True",
+                    "header": "infer",
                     "sep": "\t"
                 },
                 "show": "True",
@@ -119,7 +119,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/cytoband.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "sortbycolor": "True",
@@ -141,11 +141,11 @@
                 "customfillcolor": "False",
                 "file": {
                     "path": "demo_data/histogram_pos.txt",
-                    "header": "True",
+                    "header": "infer",
                     "sep": "\t"
                 },
-                "sortbycolor": "False",
-                "colorcolumn": "None",
+                "sortbycolor": "True",
+                "colorcolumn": 4,
                 "radius": {
                     "R0": 0.945,
                     "R1": 0.99
@@ -175,7 +175,7 @@
                 "customfillcolor": "False",
                 "file": {
                     "path": "demo_data/histogram_neg.txt",
-                    "header": "True",
+                    "header": "infer",
                     "sep": "\t"
                 },
                 "sortbycolor": "False",
@@ -209,7 +209,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/scatter.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -217,7 +217,7 @@
                 "R1": 0.88
             },
             "sortbycolor": "False",
-            "colorcolumn": "None",
+            "colorcolumn": "ideogram",
             "hovertextformat": " \"Chromosome: {}<br>Position: {}<br>Value: {:.2f}\".format(a[i,0], a[i,1], float(a[i,2]))",
             "trace": {
                 "hoverinfo": "text",
@@ -241,15 +241,15 @@
             "show": "False",
             "file": {
                 "path": "demo_data/scatter.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
                 "R0": 0.79,
                 "R1": 0.84
             },
-            "sortbycolor": "False",
-            "colorcolumn": "None",
+            "sortbycolor": "True",
+            "colorcolumn": "ideogram",
             "hovertextformat": " \"Chromosome: {}<br>Position: {}<br>Value: {:.2f}\".format(a[i,0], a[i,1], float(a[i,2]))",
             "trace": {
                 "hoverinfo": "text",
@@ -266,7 +266,7 @@
                 "fillcolor": "grey",
                 "line": {
                     "color": "grey",
-                    "width": 1
+                    "width": 0
                 }
             }
         },
@@ -275,7 +275,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/scatter.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -283,7 +283,7 @@
                 "R1": 0.78
             },
             "sortbycolor": "False",
-            "colorcolumn": "None",
+            "colorcolumn": "ideogram",
             "hovertextformat": " \"Chromosome: {}<br>Position: {}<br>Value: {:.2f}\".format(a[i,0], a[i,1], float(a[i,2]))",
             "trace": {
                 "hoverinfo": "text",
@@ -301,11 +301,10 @@
             "show": "True",
             "file": {
                 "path": "demo_data/tile.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
-            "sortbycolor": "False",
-            "colorcolumn": "None",
+            "colorcolumn": "ideogram",
             "radius": {
                 "R0": 0.6,
                 "R1": 0.68
@@ -334,7 +333,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/heatmap.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -373,7 +372,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/link_test.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -409,7 +408,7 @@
             "show": "False",
             "file": {
                 "path": "demo_data/ribbon_test.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "sortbycolor": "False",
@@ -446,7 +445,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/twisted_ribbon_test.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "sortbycolor": "False",
@@ -483,7 +482,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/connector.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -512,7 +511,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/annotation.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "colorcolumn": 5,
@@ -543,7 +542,7 @@
             "show": "True",
             "file": {
                 "path": "demo_data/highlight.txt",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "R0column": 3,

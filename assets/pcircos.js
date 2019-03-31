@@ -1,6 +1,7 @@
 alert('If you see this alert, then your custom JavaScript script has run!')
 $(document).ready(function() {
-    alert("you will only see this after the file is loaded and jquery is imported")
+    alert("document is ready!")
+    
     $( ".sidebar" ).resizable({
         handles: "e, w"
     });

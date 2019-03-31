@@ -163,6 +163,7 @@ class Figure(Complex):
                                                   custom_color=custom_options['customcolor'],
                                                   dash_dict=self.dash_dict
                                                   )
+        
         return chr_info_dict                                          
 
         
@@ -241,7 +242,8 @@ class Figure(Complex):
     def get_ideogram_chrannot_complex(self):
         return self.ideogram_chrannot_complex(self.SUM,
                                               degreerange=self.degreerange,
-                                              chr_annotation_radius_dict=self.ideogram_ideogram['chrannotation']['radius'])
+                                              chr_annotation_radius_dict=self.ideogram_ideogram['chrannotation']['radius']
+                                              )
     
     def get_tick_label_complex(self):
         tick_label_theta = self.ideogram_tick_label_theta_list(self.ideogram_coord_config, self.SUM, degreerange=self.degreerange)
@@ -451,6 +453,9 @@ class Figure(Complex):
             # for other nonvisible plots, they can be concatenated into one ndarray
             assert isinstance(item, dict)
 
+            # DEBUGGING
+            
+            
             if key != 'line':
                 if isinstance(Complex, list):
                     Complex = np.concatenate(Complex)
@@ -462,22 +467,45 @@ class Figure(Complex):
                 index = np.cumsum([0]+[*map(lambda x: len(x), Complex)])
 
                 def divide(l, index):
-                    '''this function creates a generator object for hovertext so I know how many hovertext element to take for each chromosome'''
+                    #this function creates a generator object for hovertext so I know how many hovertext element to take for each chromosome
                     for n in range(len(index)-1):
                         yield l[index[n]:index[n+1]]
 
                 hovertext_generator = divide(hovertext, index)
 
-                for i in range(len(Complex)):
-                    trace.append(go.Scatter(x=Complex[i].real,
-                                            y=Complex[i].imag,
-                                            text=next(hovertext_generator)
-                                            )
-                                )
-                    trace[i].update(item['trace'])
+                if item['colorcolumn'] is None:
+                    for i in range(len(Complex)):
+                        trace.append(go.Scatter(x=Complex[i].real,
+                                                y=Complex[i].imag,
+                                                text=next(hovertext_generator),
+                                                )
+                                    )
+                        trace[-1].update(item['trace'])
 
+                elif item['colorcolumn'] == 'ideogram':
+
+                    chr_label = data_array[:,0]
+
+                    color = self.get_chr_info()['chr_fillcolor']
+                    
+                    
+                    tmp_trace = item['trace'].copy()
+                    for i in range(len(Complex)):
+
+                        trace.append(go.Scatter(x=Complex[i].real,
+                                                y=Complex[i].imag,
+                                                text=next(hovertext_generator),
+                                                )
+                                    )
+                        
+                        tmp_trace['line']['color'] = color[i]
+                        tmp_trace['marker']['color'] = color[i]
+
+                        trace[-1].update(tmp_trace)
+                        
 
             else:
+            
                 if Complex.ndim != 1:
                     Complex = Complex.ravel()
                     
@@ -488,11 +516,11 @@ class Figure(Complex):
                             index.append(i)
                     Complex = Complex[index]
 
-                # all cases except when key == 'line'
+                
                 trace = go.Scatter(x=Complex.real,
-                                   y=Complex.imag,
-                                   text=hovertext
-                                   )
+                                    y=Complex.imag,
+                                    text=hovertext
+                                    )
                 trace.update(item['trace'])
 
                 if key == 'scatter':
@@ -500,16 +528,18 @@ class Figure(Complex):
 
                         chr_label = data_array[:,0]
 
-                        if item['colorcolumn'] is None:
-                            
-
+                        if item['colorcolumn'] == 'ideogram':
+                            # follows ideogram color
                             color = [*map(lambda x: self.chr_color_dict[x], chr_label)]
-                        else:
+                        
+                        elif isinstance(item['colorcolumn'], int):
                             n = item['colorcolumn']
                             assert isinstance(n, int)
-                            color = colors.to_rgb(data_array[:,n])   
-                    else:
-                        color = item['trace']['marker']['color']
+                            color = colors.to_rgb(data_array[:,n])
+                        else:
+                            assert item['colorcolumn'] is None
+                            
+                            color = item['trace']['marker']['color']
 
                     trace['marker'].update(color=color)
 
@@ -542,9 +572,7 @@ class Figure(Complex):
             # histogram, ribbon, twistedribbon, if fillcolor is true, then linecolor==fillcolor!
             # cytoband, heatmap (sortbycolor=True)
             # tile, link (no fillcolor), color indicates to linecolor
-            # area must have the same background area color! sortbycolor is disabled
-
-        ## 
+        
         assert key not in ['scatter', 'annotation', 'line']
         items = self.categories[key]
         data_arrays = self.get_data_array(key)
@@ -574,22 +602,35 @@ class Figure(Complex):
                                            interval_theta_array_1=interval_theta_array_1)
 
 
-            if not (item['sortbycolor'] and item['colorcolumn']):
+            if item['colorcolumn'] is None:
+
                 path = " ".join(path_list)
                 paths_dict = dict(path=path)
                 paths_dict.update(item['layout'])
+                
+            #elif isinstance(item['colorcolumn'], int):
             else:
                 # custom line color only, and no fill color: link, tile
                 # custom fill color only: all others
-
+                
                 paths_dict = []
-                n = item['colorcolumn']
-                color = data_array[:,n]
+                if item['colorcolumn'] == 'ideogram':
+
+                    if not key == 'area':
+                        color = [*map(lambda x: self.chr_color_dict[x], data_array[:,0])]
+                    
+                    # ONGOING, histogram only
+
+                    else:
+                        color = self.get_chr_info()['chr_fillcolor']
+                        
+
+                elif isinstance(item['colorcolumn'], int):
+                    n = item['colorcolumn']
+                    color = data_array[:,n]
 
                 if key == 'heatmap':
-
                     color = maths.val2heatmap(color, palatte_dict=item['palatte'])
-
 
                 if key == 'highlight':
                     o = item['opacitycolumn']
@@ -604,26 +645,30 @@ class Figure(Complex):
                                         )
                         
                         paths_dict[i].update(item['layout'])
-                    
 
-                elif key in ['heatmap', 'cytoband', 'ribbon', 'twistedribbon', 'tile', 'link', 'area']:
+                #ONGOING, histogram colorcolumn
+                
+
+
+                elif key in ['heatmap', 'cytoband', 'ribbon', 'twistedribbon', 'tile', 'link', 'area', 'histogram']:
+
 
                     for i in range(len(path_list)):
                         paths_dict.append(dict(path=path_list[i]))
-                        ## ONGOING, copy.deepcopy(item['layout'])
+                        
                         paths_dict[i].update(copy.deepcopy(item['layout']))
-                        ##########################
-                        #  ONGOING, testing heatmap
-                        ## problem with importing from json
+                        
                         if key in ['tile', 'link']:
                             paths_dict[i]['line']['color'] = color[i]
                         else:
                             paths_dict[i]['line']['color'] = color[i]
                             paths_dict[i]['fillcolor'] = color[i]
-
+                    
+                    
             return paths_dict
 
         if isinstance(items, dict):
+      
             if isinstance(single_path(key, data_arrays, data_complexes, items), dict):
                 return [single_path(key, data_arrays, data_complexes, items)]
             else:
@@ -631,12 +676,14 @@ class Figure(Complex):
             
         elif isinstance(items, list):
             ## ONGOING
-            return [*map(lambda x, y, z: single_path(key, x, y, z), data_arrays, data_complexes, items)]
+            rtrn = [*map(lambda x, y, z: single_path(key, x, y, z), data_arrays, data_complexes, items)]
+            return [*map(lambda a: a if isinstance(a,list) else [a], rtrn)]
+
+            #return [*map(lambda x, y, z: single_path(key, x, y, z), data_arrays, data_complexes, items)]
    
         else:
             raise KeyError('{} file does not exist!'.format(key))
-    
-   
+       
 
     def get_annotations_dict(self):
         '''layout['annotations'] can only append one text annotation at a time!! be careful'''
@@ -683,7 +730,6 @@ class Figure(Complex):
                 text = [*map(lambda x: '{}'.format(x), text_array)] 
 
 
-
         if len(text_array) == 1:
             
             annotation_dict = dict(x=text_complex.real, y=text_complex.imag,
@@ -707,7 +753,6 @@ class Figure(Complex):
                                                            text_complex, text, textangle, colors)]
             return annotation_dict_list
  
-
 
     def angleconvert(self, theta, angleoffset=-90, anglelimit=360, custom_offset_degree=0):
         # theta could be an ndarray or a list of ndarray
@@ -869,21 +914,25 @@ class Figure(Complex):
 
 
         for key in self.categories.keys():
-            if key in ['histogram', 'cytoband', 'area', 'tile', 'heatmap', 'link','ribbon', 'twistedribbon', 'connector']:
+            if key in ['histogram', 'cytoband', 'area', 'tile', 'heatmap', 'link', 'ribbon', 'twistedribbon', 'connector']:
                 # ONGOING, maybe to deprecate self.categories[key]['show']
                 #if self.categories[key]['show']:
                 
+
                 if isinstance(self.get_paths_dict(key)[0], dict):
                     try:
                         layout_shapes.extend(self.get_paths_dict(key))
                     except Exception:
-                        print ('Error trying to plot {}'.format(key))
+                        print ('Error trying to plot single {}'.format(key))
                         break
                 elif isinstance(self.get_paths_dict(key)[0], list):
                     try:
                         layout_shapes.extend(sum(self.get_paths_dict(key),[]))
                     except Exception:
-                        print ('Error trying to plot {}'.format(key))
+
+
+                        print ('Error trying to plot multiple {}'.format(key))
+                        print(self.get_paths_dict(key))
                         break
 
 

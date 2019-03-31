@@ -36,7 +36,7 @@
             "ideogram": {
                 "file": {
                     "path": "/path/to/chr_size_info/data",
-                    "header": "True",
+                    "header": "infer",
                     "sep": "\t"
                 },
                 "show": "True",
@@ -145,7 +145,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/cytoband/interval/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "sortbycolor": "True",
@@ -165,7 +165,7 @@
             "customfillcolor": "False",
             "file": {
                 "path": "/path/to/your/histogram/interval/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "sortbycolor": "False",
@@ -197,7 +197,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/line/point/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -228,7 +228,7 @@
             "show": "False",
             "file": {
                 "path": "/path/to/your/line/point/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -261,7 +261,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/scatter/point/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -285,7 +285,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/tile/interval/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "sortbycolor": "False",
@@ -318,7 +318,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/heatmap/interval/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -357,7 +357,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/link/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -392,7 +392,7 @@
             "show": "False",
             "file": {
                 "path": "/path/to/your/link/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "sortbycolor": "False",
@@ -428,7 +428,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/link/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "sortbycolor": "False",
@@ -464,7 +464,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/connector/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "radius": {
@@ -492,7 +492,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/annotation/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "customoffsetdegree": "False",            
@@ -525,7 +525,7 @@
             "show": "True",
             "file": {
                 "path": "/path/to/your/highlight/data",
-                "header": "True",
+                "header": "infer",
                 "sep": "\t"
             },
             "R0column": 3,
