@@ -7,6 +7,8 @@ import io
 import base64
 import colors
 import numpy as np
+import dash
+from dash.dependencies import Input, Output, State
 
 UPLOADBOX_STYLES = {'display': 'block', 'position': 'relative', 'width': '95%', 'height': '40px',
                     'line-height': '40px', 'border-width': '1px', 'border-style': 'dashed',
@@ -19,6 +21,7 @@ RdBu = ['#67001f', '#b2182b', '#d6604d', '#f4a582',  '#fddbc7', '#f7f7f7', '#d1e
 def interp_contents(contents):
     if contents == None:
         return None
+   
     else:
         _, content_string = contents.split(',')
         #decoded = base64.b64decode(content_string)
@@ -142,40 +145,363 @@ def expand_ring(n_clicks):
         return html.Div([single_element(i) for i in range(n_clicks)])
 
 
-'''
-def generate_histogram_upload_id(i):
-    return 'histogram-upload_{}'.format(i)
+# for createing inputs under callbacks in store_histogram
+def histogram_input_list():
+    input_list = [Input('histogram-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('histogram-upload_{}'.format(i), 'contents'),
+            Input('histogram-fs_{}'.format(i), 'value'),
+            Input('histogram-hovertext_{}'.format(i), 'value'),
+            Input('histogram-range-min_{}'.format(i), 'value'),
+            Input('histogram-range-max_{}'.format(i), 'value'),
+            Input('histogram-opacity_{}'.format(i), 'value'),
+            Input('histogram-colormode_{}'.format(i), 'value'),
+            Input('histogram-colorpickerbox_{}'.format(i), 'value'),
+            Input('histogram-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
 
-def generate_histogram_fs_id(i):
-    return 'histogram-fs_{}'.format(i)
-
-def generate_histogram_hovertext_id(i):
-    return 'histogram-hovertext_{}'.format(i)
-
-def generate_histogram_range_min_id(i):
-    return 'histogram-range-min_{}'.format(i)
-
-def generate_histogram_range_max_id(i):
-    return 'histogram-range-max_{}'.format(i)
-
-def generate_histogram_opacity_id(i):
-    return 'histogram-opacity_{}'.format(i)
-
-def generate_histogram_colormode_id(i):
-    return 'histogram-colormode_{}'.format(i)
-'''
-
+def scatter_input_list():
+    input_list = [Input('scatter-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('scatter-upload_{}'.format(i), 'contents'),
+            Input('scatter-fs_{}'.format(i), 'value'),
+            Input('scatter-hovertext_{}'.format(i), 'value'),
+            Input('scatter-range-min_{}'.format(i), 'value'),
+            Input('scatter-range-max_{}'.format(i), 'value'),
+            Input('scatter-opacity_{}'.format(i), 'value'),
+            Input('scatter-markersize_{}'.format(i), 'value'),
+            Input('scatter-markersymbol_{}'.format(i), 'value'),
+            Input('scatter-colormode_{}'.format(i), 'value'),
+            Input('scatter-colorpickerbox_{}'.format(i), 'value'),
+            Input('scatter-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
 
 
-def expand_histogram(n_clicks):
+def line_input_list():
+    input_list = [Input('line-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('line-upload_{}'.format(i), 'contents'),
+            Input('line-fs_{}'.format(i), 'value'),
+            Input('line-hovertext_{}'.format(i), 'value'),
+            Input('line-range-min_{}'.format(i), 'value'),
+            Input('line-range-max_{}'.format(i), 'value'),
+            Input('line-opacity_{}'.format(i), 'value'),
+            Input('line-markersize_{}'.format(i), 'value'),
+            Input('line-linewidth_{}'.format(i), 'value'),
+            Input('line-smoothing_{}'.format(i), 'value'),
+            Input('line-colormode_{}'.format(i), 'value'),
+            Input('line-colorpickerbox_{}'.format(i), 'value'),
+            Input('line-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
+
+
+def area_input_list():
+    input_list = [Input('area-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('area-upload_{}'.format(i), 'contents'),
+            Input('area-fs_{}'.format(i), 'value'),
+            Input('area-hovertext_{}'.format(i), 'value'),
+            Input('area-range-min_{}'.format(i), 'value'),
+            Input('area-range-max_{}'.format(i), 'value'),
+            Input('area-opacity_{}'.format(i), 'value'),
+            Input('area-colormode_{}'.format(i), 'value'),
+            Input('area-colorpickerbox_{}'.format(i), 'value'),
+            Input('area-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
+
+def tile_input_list():
+    input_list = [Input('tile-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('tile-upload_{}'.format(i), 'contents'),
+            Input('tile-fs_{}'.format(i), 'value'),
+            Input('tile-hovertext_{}'.format(i), 'value'),
+            Input('tile-range-min_{}'.format(i), 'value'),
+            Input('tile-range-max_{}'.format(i), 'value'),
+            Input('tile-opacity_{}'.format(i), 'value'),
+            Input('tile-linewidth_{}'.format(i), 'value'),
+            Input('tile-colormode_{}'.format(i), 'value'),
+            Input('tile-colorpickerbox_{}'.format(i), 'value'),
+            Input('tile-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
+
+def heatmap_input_list():
+    input_list = [Input('heatmap-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('heatmap-upload_{}'.format(i), 'contents'),
+            Input('heatmap-fs_{}'.format(i), 'value'),
+            Input('heatmap-hovertext_{}'.format(i), 'value'),
+            Input('heatmap-range-min_{}'.format(i), 'value'),
+            Input('heatmap-range-max_{}'.format(i), 'value'),
+            Input('heatmap-opacity_{}'.format(i), 'value'),
+            Input('heatmap-palette_{}'.format(i), 'colorscale'),
+            Input('heatmap-palatte-reverse_{}'.format(i), 'value'),
+            Input('heatmap-palatte-scale_{}'.format(i), 'value'),
+        ])
+    return input_list
+
+def connector_input_list():
+    input_list = [Input('connector-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('connector-upload_{}'.format(i), 'contents'),
+            Input('connector-fs_{}'.format(i), 'value'),
+            Input('connector-range-min_{}'.format(i), 'value'),
+            Input('connector-range-max_{}'.format(i), 'value'),
+            Input('connector-opacity_{}'.format(i), 'value'),
+            Input('connector-linewidth_{}'.format(i), 'value'),
+            Input('connector-colormode_{}'.format(i), 'value'),
+            Input('connector-colorpickerbox_{}'.format(i), 'value'),
+            Input('connector-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
+
+def link_input_list():
+    input_list = [Input('link-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('link-upload_{}'.format(i), 'contents'),
+            Input('link-fs_{}'.format(i), 'value'),
+            Input('link-hovertext_0_{}'.format(i), 'value'),
+            Input('link-hovertext_1_{}'.format(i), 'value'),
+            Input('link-range-min_{}'.format(i), 'value'),
+            Input('link-range-max_{}'.format(i), 'value'),
+            Input('link-opacity_{}'.format(i), 'value'),
+            Input('link-linewidth_{}'.format(i), 'value'),
+            Input('link-colormode_{}'.format(i), 'value'),
+            Input('link-colorpickerbox_{}'.format(i), 'value'),
+            Input('link-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
+
+def ribbon_input_list():
+    input_list = [Input('ribbon-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('ribbon-upload_{}'.format(i), 'contents'),
+            Input('ribbon-fs_{}'.format(i), 'value'),
+            Input('ribbon-hovertext_0_{}'.format(i), 'value'),
+            Input('ribbon-hovertext_1_{}'.format(i), 'value'),
+            Input('ribbon-range-min_{}'.format(i), 'value'),
+            Input('ribbon-range-max_{}'.format(i), 'value'),
+            Input('ribbon-opacity_{}'.format(i), 'value'),
+            Input('ribbon-colormode_{}'.format(i), 'value'),
+            Input('ribbon-colorpickerbox_{}'.format(i), 'value'),
+            Input('ribbon-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
+
+def twistedribbon_input_list():
+    input_list = [Input('twistedribbon-number', 'value')]
+    for i in range(5):
+        input_list.extend([
+            Input('twistedribbon-upload_{}'.format(i), 'contents'),
+            Input('twistedribbon-fs_{}'.format(i), 'value'),
+            Input('twistedribbon-hovertext_0_{}'.format(i), 'value'),
+            Input('twistedribbon-hovertext_1_{}'.format(i), 'value'),
+            Input('twistedribbon-range-min_{}'.format(i), 'value'),
+            Input('twistedribbon-range-max_{}'.format(i), 'value'),
+            Input('twistedribbon-opacity_{}'.format(i), 'value'),
+            Input('twistedribbon-colormode_{}'.format(i), 'value'),
+            Input('twistedribbon-colorpickerbox_{}'.format(i), 'value'),
+            Input('twistedribbon-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return input_list
+
+
+#### State list
+def histogram_State_list():
+    State_list = [State('histogram-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('histogram-upload_{}'.format(i), 'contents'),
+            State('histogram-fs_{}'.format(i), 'value'),
+            State('histogram-hovertext_{}'.format(i), 'value'),
+            State('histogram-range-min_{}'.format(i), 'value'),
+            State('histogram-range-max_{}'.format(i), 'value'),
+            State('histogram-opacity_{}'.format(i), 'value'),
+            State('histogram-colormode_{}'.format(i), 'value'),
+            State('histogram-colorpickerbox_{}'.format(i), 'value'),
+            State('histogram-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def scatter_State_list():
+    State_list = [State('scatter-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('scatter-upload_{}'.format(i), 'contents'),
+            State('scatter-fs_{}'.format(i), 'value'),
+            State('scatter-hovertext_{}'.format(i), 'value'),
+            State('scatter-range-min_{}'.format(i), 'value'),
+            State('scatter-range-max_{}'.format(i), 'value'),
+            State('scatter-opacity_{}'.format(i), 'value'),
+            State('scatter-markersize_{}'.format(i), 'value'),
+            State('scatter-markersymbol_{}'.format(i), 'value'),
+            State('scatter-colormode_{}'.format(i), 'value'),
+            State('scatter-colorpickerbox_{}'.format(i), 'value'),
+            State('scatter-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def line_State_list():
+    State_list = [State('line-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('line-upload_{}'.format(i), 'contents'),
+            State('line-fs_{}'.format(i), 'value'),
+            State('line-hovertext_{}'.format(i), 'value'),
+            State('line-range-min_{}'.format(i), 'value'),
+            State('line-range-max_{}'.format(i), 'value'),
+            State('line-opacity_{}'.format(i), 'value'),
+            State('line-markersize_{}'.format(i), 'value'),
+            State('line-linewidth_{}'.format(i), 'value'),
+            State('line-smoothing_{}'.format(i), 'value'),
+            State('line-colormode_{}'.format(i), 'value'),
+            State('line-colorpickerbox_{}'.format(i), 'value'),
+            State('line-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def area_State_list():
+    State_list = [State('area-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('area-upload_{}'.format(i), 'contents'),
+            State('area-fs_{}'.format(i), 'value'),
+            State('area-hovertext_{}'.format(i), 'value'),
+            State('area-range-min_{}'.format(i), 'value'),
+            State('area-range-max_{}'.format(i), 'value'),
+            State('area-opacity_{}'.format(i), 'value'),
+            State('area-colormode_{}'.format(i), 'value'),
+            State('area-colorpickerbox_{}'.format(i), 'value'),
+            State('area-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def tile_State_list():
+    State_list = [State('tile-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('tile-upload_{}'.format(i), 'contents'),
+            State('tile-fs_{}'.format(i), 'value'),
+            State('tile-hovertext_{}'.format(i), 'value'),
+            State('tile-range-min_{}'.format(i), 'value'),
+            State('tile-range-max_{}'.format(i), 'value'),
+            State('tile-opacity_{}'.format(i), 'value'),
+            State('tile-linewidth_{}'.format(i), 'value'),
+            State('tile-colormode_{}'.format(i), 'value'),
+            State('tile-colorpickerbox_{}'.format(i), 'value'),
+            State('tile-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def heatmap_State_list():
+    State_list = [State('heatmap-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('heatmap-upload_{}'.format(i), 'contents'),
+            State('heatmap-fs_{}'.format(i), 'value'),
+            State('heatmap-hovertext_{}'.format(i), 'value'),
+            State('heatmap-range-min_{}'.format(i), 'value'),
+            State('heatmap-range-max_{}'.format(i), 'value'),
+            State('heatmap-opacity_{}'.format(i), 'value'),
+            State('heatmap-palette_{}'.format(i), 'colorscale'),
+            State('heatmap-palatte-reverse_{}'.format(i), 'value'),
+            State('heatmap-palatte-scale_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def connector_State_list():
+    State_list = [State('connector-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('connector-upload_{}'.format(i), 'contents'),
+            State('connector-fs_{}'.format(i), 'value'),
+            State('connector-range-min_{}'.format(i), 'value'),
+            State('connector-range-max_{}'.format(i), 'value'),
+            State('connector-opacity_{}'.format(i), 'value'),
+            State('connector-linewidth_{}'.format(i), 'value'),
+            State('connector-colormode_{}'.format(i), 'value'),
+            State('connector-colorpickerbox_{}'.format(i), 'value'),
+            State('connector-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def link_State_list():
+    State_list = [State('link-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('link-upload_{}'.format(i), 'contents'),
+            State('link-fs_{}'.format(i), 'value'),
+            State('link-hovertext_0_{}'.format(i), 'value'),
+            State('link-hovertext_1_{}'.format(i), 'value'),
+            State('link-range-min_{}'.format(i), 'value'),
+            State('link-range-max_{}'.format(i), 'value'),
+            State('link-opacity_{}'.format(i), 'value'),
+            State('link-linewidth_{}'.format(i), 'value'),
+            State('link-colormode_{}'.format(i), 'value'),
+            State('link-colorpickerbox_{}'.format(i), 'value'),
+            State('link-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def ribbon_State_list():
+    State_list = [State('ribbon-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('ribbon-upload_{}'.format(i), 'contents'),
+            State('ribbon-fs_{}'.format(i), 'value'),
+            State('ribbon-hovertext_0_{}'.format(i), 'value'),
+            State('ribbon-hovertext_1_{}'.format(i), 'value'),
+            State('ribbon-range-min_{}'.format(i), 'value'),
+            State('ribbon-range-max_{}'.format(i), 'value'),
+            State('ribbon-opacity_{}'.format(i), 'value'),
+            State('ribbon-colormode_{}'.format(i), 'value'),
+            State('ribbon-colorpickerbox_{}'.format(i), 'value'),
+            State('ribbon-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+def twistedribbon_State_list():
+    State_list = [State('twistedribbon-number', 'value')]
+    for i in range(5):
+        State_list.extend([
+            State('twistedribbon-upload_{}'.format(i), 'contents'),
+            State('twistedribbon-fs_{}'.format(i), 'value'),
+            State('twistedribbon-hovertext_0_{}'.format(i), 'value'),
+            State('twistedribbon-hovertext_1_{}'.format(i), 'value'),
+            State('twistedribbon-range-min_{}'.format(i), 'value'),
+            State('twistedribbon-range-max_{}'.format(i), 'value'),
+            State('twistedribbon-opacity_{}'.format(i), 'value'),
+            State('twistedribbon-colormode_{}'.format(i), 'value'),
+            State('twistedribbon-colorpickerbox_{}'.format(i), 'value'),
+            State('twistedribbon-colorcolumn_{}'.format(i), 'value'),
+        ])
+    return State_list
+
+
+
+def expand_histogram():
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='histogram-upload_{}'.format(i),
                         children=html.Div(['Upload histogram {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for histogram {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for histogram {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='histogram-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -224,29 +550,47 @@ def expand_histogram(n_clicks):
                     html.P('Select color mode for histogram {}'.format(i+1)),
                     dcc.RadioItems(
                         id='histogram-colormode_{}'.format(i),
-                        options=[{'label': i, 'value': i} for i in ['Mono', 'By chromosome', 'Custom']],
+                        options=[{'label': i, 'value': i} for i in ['Mono', 'By Chromosome', 'Custom']],
                         value='Mono',
                         labelStyle={'display': 'inline-block'}
                     ),
-                    #html.Div(id='histogram-colormode-choice_{}'.format(i), className='indent')
-                ], className='indent')
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)])
+                    html.Div([
+                        html.P('Select color for histogram {}'.format(i+1)),
+                        ColorPickerBox(id='histogram-colorpickerbox_{}'.format(i), 
+                                       label='', 
+                                       style={'display': 'hidden','margin': '0.2em'}
+                                       )
+                        ], id='histogram-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for histogram {}'.format(i+1)),
+                        dcc.Input(id='histogram-colorcolumn_{}'.format(i),
+                                  type='number',
+                                  min=4,
+                                  value=4,
+                                  step=1,
+                                  style={'width': '45%'}
+                                )
+                        ], id='histogram-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+
+        ], id='histogram-idx_{}'.format(i), style={'display': 'none'}, className='indent')
+        
+    return html.Div([single_element(i) for i in range(5)])
 
 
-def expand_scatter(n_clicks):
+def expand_scatter():
 
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='scatter-upload_{}'.format(i),
                         children=html.Div(['Upload scatter {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for scatter {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for scatter {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='scatter-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -315,29 +659,46 @@ def expand_scatter(n_clicks):
                     html.P('Select color mode for scatter {}'.format(i+1)),
                     dcc.RadioItems(
                         id='scatter-colormode_{}'.format(i),
-                        options=[{'label': i, 'value': i} for i in ['Mono', 'By chromosome', 'Custom']],
-                        value='By chromosome',
+                        options=[{'label': i, 'value': i} for i in ['Mono', 'By Chromosome', 'Custom']],
+                        value='By Chromosome',
                         labelStyle={'display': 'inline-block'},
                     ),
-                    html.Div(id='scatter-colormode-choice_{}'.format(i), className='indent')
-                ], className='indent')
+                    html.Div([
+                        html.P('Select color for scatter {}'.format(i+1)),
+                        ColorPickerBox(id='scatter-colorpickerbox_{}'.format(i), 
+                                        label='', 
+                                        style={'display': 'hidden','margin': '0.2em'}
+                                        )
+                            ], id='scatter-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for scatter {}'.format(i+1)),
+                        dcc.Input(id='scatter-colorcolumn_{}'.format(i),
+                                    type='number',
+                                    min=4,
+                                    value=4,
+                                    step=1,
+                                    style={'width': '45%'}
+                                )
+                        ], id='scatter-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                ], id='scatter-idx_{}'.format(i), style={'display': 'none'}, className='indent')
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)])
+    
+    return html.Div([single_element(i) for i in range(5)])
 
 
-def expand_line(n_clicks):
+def expand_line():
 
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='line-upload_{}'.format(i),
                         children=html.Div(['Upload line {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for line {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for line {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='line-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -395,7 +756,7 @@ def expand_line(n_clicks):
                     ),
                     html.P('Select line width (px) for line {}'.format(i+1)),
                     dcc.Input(
-                        id='line-markersymbol_{}'.format(i),
+                        id='line-linewidth_{}'.format(i),
                         type='number',
                         min=0,
                         max=10,
@@ -416,23 +777,39 @@ def expand_line(n_clicks):
                     html.P('Select color mode for line {}'.format(i+1)),
                     dcc.RadioItems(
                         id='line-colormode_{}'.format(i),
-                        options=[{'label': i, 'value': i} for i in ['Mono', 'By chromosome']],
+                        options=[{'label': i, 'value': i} for i in ['Mono', 'By Chromosome']],
                         value='Mono',
                         labelStyle={'display': 'inline-block'},
                     ),
-                    html.Div(id='line-colormode-choice_{}'.format(i), className='indent')
-                ], className='indent')
+                    html.Div([
+                        html.P('Select color for line {}'.format(i+1)),
+                        ColorPickerBox(id='line-colorpickerbox_{}'.format(i), 
+                                        label='', 
+                                        style={'display': 'hidden','margin': '0.2em'}
+                                        )
+                            ], id='line-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for line {}'.format(i+1)),
+                        dcc.Input(id='line-colorcolumn_{}'.format(i),
+                                    type='number',
+                                    min=4,
+                                    value=4,
+                                    step=1,
+                                    style={'width': '45%'}
+                                )
+                        ], id='line-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                ], id='line-idx_{}'.format(i), style={'display': 'none'}, className='indent')
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)])
+    return html.Div([single_element(i) for i in range(5)])
 
 
-def expand_area(n_clicks):
+def expand_area():
 
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='area-upload_{}'.format(i),
                         children=html.Div(['Upload area {} here'.format(i+1)]),
@@ -488,31 +865,47 @@ def expand_area(n_clicks):
                     html.P('Select color mode for area {}'.format(i+1)),
                     dcc.RadioItems(
                         id='area-colormode_{}'.format(i),
-                        options=[{'label': i, 'value': i} for i in ['Mono', 'By chromosome', 'Custom']],
-                        value='By chromosome',
+                        options=[{'label': i, 'value': i} for i in ['Mono', 'By Chromosome', 'Custom']],
+                        value='By Chromosome',
                         labelStyle={'display': 'inline-block'},
                     ),
-                    html.Div(id='area-colormode-choice_{}'.format(i), className='indent')
-                ], className='indent')
+                    html.Div([
+                        html.P('Select color for area {}'.format(i+1)),
+                        ColorPickerBox(id='area-colorpickerbox_{}'.format(i), 
+                                        label='', 
+                                        style={'display': 'hidden','margin': '0.2em'}
+                                        )
+                            ], id='area-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for area {}'.format(i+1)),
+                        dcc.Input(id='area-colorcolumn_{}'.format(i),
+                                    type='number',
+                                    min=4,
+                                    value=4,
+                                    step=1,
+                                    style={'width': '45%'}
+                                )
+                        ], id='area-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                ], id='area-idx_{}'.format(i), style={'display': 'none'}, className='indent')
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)])
+    return html.Div([single_element(i) for i in range(5)])
 
 
 
 
-def expand_tile(n_clicks):
+def expand_tile():
 
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='tile-upload_{}'.format(i),
                         children=html.Div(['Upload tile {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for tile {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for tile {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='tile-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -560,7 +953,7 @@ def expand_tile(n_clicks):
                     ),
                     html.P('Select line width (px) for line {}'.format(i+1)),
                     dcc.Input(
-                        id='line-markersymbol_{}'.format(i),
+                        id='tile-linewidth_{}'.format(i),
                         type='number',
                         min=1,
                         max=10,
@@ -571,29 +964,45 @@ def expand_tile(n_clicks):
                     html.P('Select color mode for tile {}'.format(i+1)),
                     dcc.RadioItems(
                         id='tile-colormode_{}'.format(i),
-                        options=[{'label': i, 'value': i} for i in ['Mono', 'By chromosome', 'Custom']],
-                        value='By chromosome',
+                        options=[{'label': i, 'value': i} for i in ['Mono', 'By Chromosome', 'Custom']],
+                        value='By Chromosome',
                         labelStyle={'display': 'inline-block'},
                     ),
-                    html.Div(id='tile-colormode-choice_{}'.format(i), className='indent')
-                ], className='indent')
+                    html.Div([
+                        html.P('Select color for tile {}'.format(i+1)),
+                        ColorPickerBox(id='tile-colorpickerbox_{}'.format(i), 
+                                        label='', 
+                                        style={'display': 'hidden','margin': '0.2em'}
+                                        )
+                            ], id='tile-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for tile {}'.format(i+1)),
+                        dcc.Input(id='tile-colorcolumn_{}'.format(i),
+                                    type='number',
+                                    min=4,
+                                    value=4,
+                                    step=1,
+                                    style={'width': '45%'}
+                                )
+                        ], id='tile-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                ], id='tile-idx_{}'.format(i), style={'display': 'none'}, className='indent')
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)])
+    return html.Div([single_element(i) for i in range(5)])
 
 
-def expand_heatmap(n_clicks):
+def expand_heatmap():
 
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='heatmap-upload_{}'.format(i),
                         children=html.Div(['Upload heatmap {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for heatmap {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for heatmap {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='heatmap-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -639,32 +1048,43 @@ def expand_heatmap(n_clicks):
                         value=0.8,
                         style={'width': '45%'}
                     ),
-                    
-                    html.P('Select palette for heatmap {}'.format(i+1)),
+                    html.P('Select colorscale for heatmap {}'.format(i+1)),
                     dash_colorscales.DashColorscales(
                         id='heatmap-palette_{}'.format(i),
                         colorscale=RdBu,
                         nSwatches=11,
                         fixSwatches=False
+                    ),
+                    html.P('Reverse colorscale for heatmap {}'.format(i+1)),
+                    dcc.RadioItems(
+                        id='heatmap-palatte-reverse_{}'.format(i),
+                        options=[{'label': i, 'value': i} for i in ['True', 'False']],
+                        value='True',
+                        labelStyle={'display': 'inline-block'}
+                    ),
+                    html.P('Choose type of colorscale for heatmap {}'.format(i+1)),
+                    dcc.RadioItems(
+                        id='heatmap-palatte-scale_{}'.format(i),
+                        options=[{'label': i, 'value': i} for i in ['div', 'seq']],
+                        value='True',
                     )
                     
-                ], className='indent')
+                ], id='heatmap-idx_{}'.format(i), style={'display': 'none'}, className='indent'
+            )
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)])
+    return html.Div([single_element(i) for i in range(5)])
 
-def expand_connector(n_clicks):
+def expand_connector():
 
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='connector-upload_{}'.format(i),
                         children=html.Div(['Upload connector {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for connector {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for connector {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='connector-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -703,25 +1123,62 @@ def expand_connector(n_clicks):
                         value=1,
                         style={'width': '45%'}
                     ),
+                    html.P('Select line width for connector {}'.format(i+1)),
+                    dcc.Input(
+                        id='connector-linewidth_{}'.format(i),
+                        type='number',
+                        min=0.5,
+                        max=10.0,
+                        step=0.5,
+                        value=1,
+                        style={'width': '45%'}
+                    ),
+                    html.P('Select color mode for connector {}'.format(i+1)),
+                    dcc.RadioItems(
+                        id='connector-colormode_{}'.format(i),
+                        options=[{'label': i, 'value': i} for i in ['Mono', 'Custom']],
+                        value='Mono',
+                        labelStyle={'display': 'inline-block'},
+                    ),
+                    html.Div([
+                        html.P('Select color for connector {}'.format(i+1)),
+                        ColorPickerBox(id='connector-colorpickerbox_{}'.format(i), 
+                                       label='', 
+                                       style={'display': 'hidden', 'margin': '0.2em'}
+                                        )
+                            ], id='connector-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for connector {}'.format(i+1)),
+                        dcc.Input(id='connector-colorcolumn_{}'.format(i),
+                                    type='number',
+                                    min=3,
+                                    value=3,
+                                    step=1,
+                                    style={'width': '45%'}
+                                )
+                        ], id='connector-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+
                     # I disabled custom segment radius ratio
                     
-                ], className='indent')
+                ], id='connector-idx_{}'.format(i), style={'display': 'none'}, className='indent'
+            )
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)])
+   
+    return html.Div([single_element(i) for i in range(5)])
 
-def expand_link(n_clicks):
+def expand_link():
     # disable By chromosome color mode
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='link-upload_{}'.format(i),
                         children=html.Div(['Upload link {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for link {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for link {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='link-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -776,7 +1233,7 @@ def expand_link(n_clicks):
                     ),
                     html.P('Select line width (px) for link {}'.format(i+1)),
                     dcc.Input(
-                        id='line-markersymbol_{}'.format(i),
+                        id='link-linewidth_{}'.format(i),
                         type='number',
                         min=1,
                         max=10,
@@ -791,26 +1248,43 @@ def expand_link(n_clicks):
                         value='Mono',
                         labelStyle={'display': 'inline-block'},
                     ),
-                    html.Div(id='link-colormode-choice_{}'.format(i), className='indent')
-                    
-                ], className='indent')
+                    html.Div([
+                        html.P('Select color for link {}'.format(i+1)),
+                        ColorPickerBox(id='link-colorpickerbox_{}'.format(i), 
+                                       label='', 
+                                       style={'display': 'hidden', 'margin': '0.2em'}
+                                        )
+                            ], id='link-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for link {}'.format(i+1)),
+                        dcc.Input(id='link-colorcolumn_{}'.format(i),
+                                    type='number',
+                                    min=6,
+                                    value=6,
+                                    step=1,
+                                    style={'width': '45%'}
+                                )
+                        ], id='link-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)]) 
+                ], id='link-idx_{}'.format(i), style={'display': 'none'}, className='indent'
+            )
+
+    return html.Div([single_element(i) for i in range(5)]) 
     
 
-def expand_ribbon(n_clicks):
+def expand_ribbon():
     # disable By chromosome color mode
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='ribbon-upload_{}'.format(i),
                         children=html.Div(['Upload ribbon {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for ribbon {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for ribbon {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='ribbon-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -863,16 +1337,7 @@ def expand_ribbon(n_clicks):
                         value=0.6,
                         style={'width': '45%'}
                     ),
-                    html.P('Select line width (px) for ribbon {}'.format(i+1)),
-                    dcc.Input(
-                        id='line-markersymbol_{}'.format(i),
-                        type='number',
-                        min=1,
-                        max=10,
-                        step=1,
-                        value=3,
-                        style={'width': '45%'}
-                    ),
+                    
                     html.P('Select color mode for ribbon {}'.format(i+1)),
                     dcc.RadioItems(
                         id='ribbon-colormode_{}'.format(i),
@@ -880,25 +1345,40 @@ def expand_ribbon(n_clicks):
                         value='Mono',
                         labelStyle={'display': 'inline-block'},
                     ),
-                    html.Div(id='ribbon-colormode-choice_{}'.format(i), className='indent')
-                    
-                ], className='indent')
+                    html.Div([
+                        html.P('Select color for ribbon {}'.format(i+1)),
+                        ColorPickerBox(id='ribbon-colorpickerbox_{}'.format(i), 
+                                       label='', 
+                                       style={'display': 'hidden', 'margin': '0.2em'}
+                                        )
+                            ], id='ribbon-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for ribbon {}'.format(i+1)),
+                        dcc.Input(id='ribbon-colorcolumn_{}'.format(i),
+                                    type='number',
+                                    min=6,
+                                    value=6,
+                                    step=1,
+                                    style={'width': '45%'}
+                                )
+                        ], id='ribbon-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),                    
+                ], id='ribbon-idx_{}'.format(i), style={'display': 'none'}, className='indent')
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)]) 
+    return html.Div([single_element(i) for i in range(5)]) 
     
-def expand_twistedribbon(n_clicks):
+def expand_twistedribbon():
     # disable By chromosome color mode
     def single_element(i):
         return html.Div([
+                    html.Hr(),
                     dcc.Upload(
                         id='twistedribbon-upload_{}'.format(i),
                         children=html.Div(['Upload twisted ribbon {} here'.format(i+1)]),
                         style=UPLOADBOX_STYLES,
                     ),
-                    html.P('Choose a field separator for twisted ribbon {}'.format(i+1), style=FS_STYLES),
+                    html.P('Choose field separator for twisted ribbon {}'.format(i+1), style=FS_STYLES),
                     dcc.RadioItems(
                         id='twistedribbon-fs_{}'.format(i),
                         options=[{'label': i, 'value': i} for i in ['Tab', 'Blank', 'Comma']],
@@ -951,16 +1431,7 @@ def expand_twistedribbon(n_clicks):
                         value=0.6,
                         style={'width': '45%'}
                     ),
-                    html.P('Select line width (px) for twisted ribbon {}'.format(i+1)),
-                    dcc.Input(
-                        id='line-markersymbol_{}'.format(i),
-                        type='number',
-                        min=1,
-                        max=10,
-                        step=1,
-                        value=3,
-                        style={'width': '45%'}
-                    ),
+                    
                     html.P('Select color mode for twisted ribbon {}'.format(i+1)),
                     dcc.RadioItems(
                         id='twistedribbon-colormode_{}'.format(i),
@@ -968,13 +1439,31 @@ def expand_twistedribbon(n_clicks):
                         value='Mono',
                         labelStyle={'display': 'inline-block'},
                     ),
-                    html.Div(id='twistedribbon-colormode-choice_{}'.format(i), className='indent')
+                    html.Div([
+                        html.P('Select color for twistedribbon {}'.format(i+1)),
+                        ColorPickerBox(id='twistedribbon-colorpickerbox_{}'.format(i), 
+                                       label='', 
+                                       style={'display': 'hidden', 'margin': '0.2em'}
+                                        )
+                            ], id='twistedribbon-colormode-mono_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),
+                    html.Div([
+                        html.P('Input color column for twisted ribbon {}'.format(i+1)),
+                        dcc.Input(id='twistedribbon-colorcolumn_{}'.format(i),
+                                    type='number',
+                                    min=6,
+                                    value=6,
+                                    step=1,
+                                    style={'width': '45%'}
+                                )
+                        ], id='twistedribbon-colormode-custom_{}'.format(i), style={'display': 'none'}, className='indent'
+                    ),                    
                     
-                ], className='indent')
+                ], id='twistedribbon-idx_{}'.format(i), style={'display': 'none'}, className='indent')
 
-    if n_clicks is None:
-        return html.Div([single_element(1)])
-    else:    
-        return html.Div([single_element(i) for i in range(n_clicks)]) 
+    return html.Div([single_element(i) for i in range(5)]) 
+
+
+
 
 

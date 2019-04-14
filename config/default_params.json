@@ -2,7 +2,7 @@
     "General": {
         "width": 1500,
         "height": 1500,
-        "title": "my PCircos plot",
+        "title": "my Circos plot",
         "titlefont": {
             "family": "Times New Roman",
             "size": 18,
@@ -33,7 +33,7 @@
     },
     "Category": {
         "ideogram": {
-            "ideogram": {
+            "size": {
                 "file": {
                     "path": "/path/to/chr_size_info/data",
                     "header": "infer",
@@ -213,7 +213,7 @@
                 "opacity": 0.9,
                 "marker": {
                     "symbol": 0,
-                    "size": 5,
+                    "size": 0,
                     "color": "black"
                 },
                 "line": {

@@ -4,6 +4,8 @@ import colorlover as cl
 import sys
 sys.path.append('../')
 import colors
+import io
+import base64
 '''
 This code converts reads input file and output a dictionary which includes the following:
      theta_values for various circular plots,
@@ -23,11 +25,25 @@ def chr_info(input_file_path,
              custom_color=False,
              dash_dict=None
              ):
-   
-    #################ONGOING
-    # If using dash app, when we are selecting chromosomes, we only retain data that is in the chromosome_checklist
-
-    chr_info_pd = pd.read_csv(input_file_path, sep=sep, header=header, engine='python').fillna(0)
+   ### ONGOING
+    try:
+        chr_info_pd = pd.read_csv(input_file_path, sep=sep, header=header, engine='python').fillna(0)
+    except Exception:
+        try:
+            chr_info_pd = pd.read_csv(input_file_path, sep=sep)
+        except Exception:
+            try:
+                chr_info_pd = pd.read_csv(input_file_path, sep='\t')
+            except Exception:
+                try:
+                    chr_info_pd = pd.read_csv(input_file_path, sep=' ')
+                except Exception:
+                    try:
+                        chr_info_pd = pd.read_csv(input_file_path, sep=',')
+                    except Exception:
+                        print('unable to read ideogram, printing input file path below')
+                        print(input_file_path)
+        
 
     if dash_dict is not None:
         for i in range(len(chr_info_pd)):
@@ -64,9 +80,9 @@ def chr_info(input_file_path,
     
     if custom_spacing:
         try:
-            chr_spacing = chr_info[:,3]
+            chr_spacing = chr_info[:,4]
         except IndexError:
-            print ('4th column is missing for inter-chromosome custom spacing, using default spacing values')
+            print ('5th column is missing for inter-chromosome custom spacing, using default spacing values')
             chr_spacing = np.ones(chr_size.shape)*(0.05*sum(chr_size)/len(chr_size))
     else:
         chr_spacing = np.ones(chr_size.shape)*(0.05*sum(chr_size)/len(chr_size))
@@ -74,9 +90,9 @@ def chr_info(input_file_path,
         
     if custom_color:
         try:
-            chr_color = colors.to_rgb(chr_info[:,4])
+            chr_color = colors.to_rgb(chr_info[:,3])
         except IndexError:
-            print ('5th column is missing for custom chromosome color, using default method to assign chromosome colors')
+            print ('4th column is missing for custom chromosome color, using default method to assign chromosome colors')
             if len(chr_info) <= 30:
                 chr_color = colors.to_rgb(default_list)[:len(chr_info)]
             else: 

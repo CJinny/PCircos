@@ -34,6 +34,9 @@ from dashapp_functions import *
 import io
 import base64
 import json
+from dash_dict import *
+from dash.exceptions import PreventUpdate
+
 
 __author__ = 'Jin Cui'
 __version__ = '1.0.0'
@@ -49,7 +52,8 @@ UPLOADBOX_STYLES = {'display': 'block', 'position': 'relative', 'width': '95%', 
                     'marginBottom': '0.8em', 'overflow': 'auto'
                     }
 FS_STYLES = {'marginTop': '0.6em', 'marginBottom': '0.4em'}
-
+P_NELEMENT_STYLES = {'width': '10.5em'}
+SWITCH_STYLES = {'display': 'inline-block', 'marginTop': '0.3em' }
 '''
 external_css = ['pcircos.css', 'jquery.dataTables.min.css', 'jquery-ui.css', 'https://codepen.io/chriddyp/pen/bWLwgP.css']
 external_js = [ "https://code.jquery.com/jquery-3.3.1.js",
@@ -74,36 +78,9 @@ app = dash.Dash(__name__, external_stylesheets=external_css)
 app.config.supress_callback_exceptions = True
 
 
-fig_instance = Figure(input_json_path=sys.argv[1])
-SUM = fig_instance.SUM
-x_range = fig_instance.config_dict['General']['xaxis']['range']
-
-try:
-    assert sum(x_range) == 0
-except AssertionError:
-    print ('Please make sure xaxis plus and minus limits have the same absolute value')
-
-y_range = fig_instance.config_dict['General']['yaxis']['range']
-try:
-    assert sum(y_range) == 0
-except AssertionError:
-    print ('Please make sure yaxis plus and minus limits have the same absolute value')
-
-try:
-    assert x_range == y_range
-except AssertionError:
-    print ('Warning, please make sure xaxis and yaxis range is the same')
-
-rlimit = (x_range[1] + y_range[1])/2.0
-
-# extract default value from user input json file
-
-degreerange = fig_instance.config_dict['Category']['ideogram']['ideogram']['degreerange'].copy()
-
-checkbox_options = [*map(lambda x: {'label': str(x), 'value': str(x)}, fig_instance.get_chr_info()['chr_label'])].copy()
-
-checkbox_values = fig_instance.get_chr_info()['chr_label'].tolist()
-#checkbox_values = fig_instance.get_chr_info()['chr_label'].tolist().copy()
+#fig_instance = Figure(input_json_path=sys.argv[1])
+#checkbox_options = [*map(lambda x: {'label': str(x), 'value': str(x)}, fig_instance.get_chr_info()['chr_label'])].copy()
+#checkbox_values = fig_instance.get_chr_info()['chr_label'].tolist()
 
 
 
@@ -136,8 +113,8 @@ app.layout = html.Div([
                                         dcc.Input(
                                             id='ideogram-degreerange-min', 
                                             type='number', 
-                                            value=12, 
-                                            step=1, 
+                                            value=0, 
+                                            step=10, 
                                             min=0, 
                                             max=179, 
                                             style={'width': '45%'}
@@ -146,8 +123,8 @@ app.layout = html.Div([
                                         dcc.Input(
                                             id='ideogram-degreerange-max', 
                                             type='number', 
-                                            value=348, 
-                                            step=1, 
+                                            value=360, 
+                                            step=10, 
                                             min=180, 
                                             max=360, 
                                             style={'width': '45%'} 
@@ -231,27 +208,6 @@ app.layout = html.Div([
                                     ], id='ideogram-chrannotation-font'),
                                 ], className='indent')
                             ]),
-
-                            html.Details([
-                                html.Summary('Ideogram filter', className='summary-secondary'),
-                                html.Div([
-                                    html.P('Select chromosomes'),
-                                    dcc.Checklist(id='chromosome_checklist',
-                                                options=checkbox_options,
-                                                values=checkbox_values,
-                                                labelStyle={'display': 'inline-block'}
-                                    ),
-                                    html.Div([
-                                        html.P('Enable custom color', className='booleanswitch'),
-                                        daq.BooleanSwitch(
-                                            id='ideogram-customcolor-enabler',
-                                            on=False,
-                                            style={'display':'inline-block'}
-                                        ),
-                                    ]),
-                                    html.Div(id='ideogram-customcolorlist'),
-                                ], className='indent')
-                            ]),
                             
                             html.Details([
                                 html.Summary('Ideogram ticks', className='summary-secondary'),
@@ -324,19 +280,18 @@ app.layout = html.Div([
                             html.Details([
                                 html.Summary('Ring', className='summary-secondary'),
                                 html.Div([
-                                    html.P('Input the number of ring element(s)'),
 
                                     html.Div([
-                                        dcc.Input(id='ring-number', value=0, min=0, max=200, type='number', style={'display': 'inline-block'}),
+                                        html.P('Number of ring(s)', style=P_NELEMENT_STYLES),
                                         daq.BooleanSwitch(
                                             id='ring-number-lock',
                                             on=False,
                                             label='lock',
                                             labelPosition='bottom',
-                                            style={'display': 'inline-block', 'float': 'right'}
+                                            style=SWITCH_STYLES
                                         )
-                                    ], style={'marginBottom': '1.2em'}),
-                                    
+                                    ], style={ 'display': 'inline-flex', 'marginBottom': '-0.4em'}),
+                                    dcc.Input(id='ring-number', value=0, min=0, max=200, type='number', style={'display': 'inline-block', 'height': '1.2em', 'width': '35%', 'fontSize': 'medium'}),
                                     html.Div(id='ring-expand'),
                                   
                                     ], style={'paddingLeft': '0.2em', 'marginBottom': '1.2em'}
@@ -393,7 +348,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of histogram(s)'),
                                     html.Div([
-                                        dcc.Input(id='histogram-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='histogram-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='histogram-number-lock',
                                             on=False,
@@ -402,7 +357,9 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='histogram-expand'),
+                                    #html.Div(id='histogram-expand'),
+                                    html.Div([expand_histogram()]),
+
                                 ], className='indent'),
                             ]),
 
@@ -411,7 +368,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of scatter(s)'),
                                     html.Div([
-                                        dcc.Input(id='scatter-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='scatter-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='scatter-number-lock',
                                             on=False,
@@ -420,7 +377,8 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='scatter-expand'),
+                                    #html.Div(id='scatter-expand'),
+                                    html.Div([expand_scatter()]),
                                 ], className='indent')
                             ]),
 
@@ -429,7 +387,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of line(s)'),
                                     html.Div([
-                                        dcc.Input(id='line-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='line-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='line-number-lock',
                                             on=False,
@@ -438,7 +396,8 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='line-expand'),
+                                    #html.Div(id='line-expand'),
+                                    html.Div([expand_line()]),
                                 ], className='indent')
                             ]),
 
@@ -447,7 +406,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of area(s)'),
                                     html.Div([
-                                        dcc.Input(id='area-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='area-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='area-number-lock',
                                             on=False,
@@ -456,7 +415,8 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='area-expand'),
+                                    #html.Div(id='area-expand'),
+                                    html.Div([expand_area()]),
                                 ], className='indent')
                             ]),
 
@@ -465,7 +425,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of tile(s)'),
                                     html.Div([
-                                        dcc.Input(id='tile-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='tile-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='tile-number-lock',
                                             on=False,
@@ -474,7 +434,8 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='tile-expand'),
+                                    #html.Div(id='tile-expand'),
+                                    html.Div([expand_tile()]),
                                 ], className='indent')
                             ]),
 
@@ -483,7 +444,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of heatmap(s)'),
                                     html.Div([
-                                        dcc.Input(id='heatmap-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='heatmap-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='heatmap-number-lock',
                                             on=False,
@@ -492,7 +453,8 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='heatmap-expand'),
+                                    #html.Div(id='heatmap-expand'),
+                                    html.Div([expand_heatmap()]),
                                 ], className='indent')
                             ]),
 
@@ -501,7 +463,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of connector(s)'),
                                     html.Div([
-                                        dcc.Input(id='connector-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='connector-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='connector-number-lock',
                                             on=False,
@@ -510,7 +472,8 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='connector-expand'),
+                                    #html.Div(id='connector-expand'),
+                                    html.Div([expand_connector()]),
                                 ], className='indent')
                             ]),
 
@@ -519,7 +482,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of link(s)'),
                                     html.Div([
-                                        dcc.Input(id='link-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='link-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='link-number-lock',
                                             on=False,
@@ -528,7 +491,8 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='link-expand'),
+                                    #html.Div(id='link-expand'),
+                                    html.Div([expand_link()]),
                                 ], className='indent')
                             ]),
 
@@ -537,7 +501,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of ribbon(s)'),
                                     html.Div([
-                                        dcc.Input(id='ribbon-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='ribbon-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='ribbon-number-lock',
                                             on=False,
@@ -546,7 +510,8 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='ribbon-expand'),
+                                    #html.Div(id='ribbon-expand'),
+                                    html.Div([expand_ribbon()]),
                                 ], className='indent')
                             ]),
 
@@ -555,7 +520,7 @@ app.layout = html.Div([
                                 html.Div([
                                     html.P('Input the number of twisted ribbon(s)'),
                                     html.Div([
-                                        dcc.Input(id='twistedribbon-number', value=0, min=0, max=20, type='number', style={'display': 'inline-block', 'width': '45%'}),
+                                        dcc.Input(id='twistedribbon-number', value=0, min=0, max=5, type='number', style={'display': 'inline-block', 'width': '45%'}),
                                         daq.BooleanSwitch(
                                             id='twistedribbon-number-lock',
                                             on=False,
@@ -564,15 +529,11 @@ app.layout = html.Div([
                                             style={'display': 'inline-block', 'float': 'right'}
                                         )
                                     ], style={'marginBottom': '1.2em'}),
-                                    html.Div(id='twistedribbon-expand'),
+                                    #html.Div(id='twistedribbon-expand'),
+                                    html.Div([expand_twistedribbon()]),
                                 ], className='indent')
                             ]),
-
-
-
-
-
-                         
+                  
                         ])
                     ]),
 
@@ -596,8 +557,7 @@ app.layout = html.Div([
                     dcc.Store(id='ribbon-output'),
                     dcc.Store(id='twistedribbon-output'),
 
-
-                    dcc.Store(id='merge_all')
+                    dcc.Store(id='combined-output')
 
                 ]),
 
@@ -617,15 +577,6 @@ def dash_input():
 
 
 
-def dash_state():
-    dash_states = [State('ideogram-degreerange-min', 'value'),
-                   State('ideogram-degreerange-max', 'value'),
-                   State('chromosome_checklist', 'values'),
-                   State('ideogram-tick-format', 'value'),
-                   ]
-    return dash_states
-
-
 
 
 @app.callback(
@@ -643,6 +594,7 @@ def enable_ideogramchrannotation(bool_value):
 
 
 ## display or hide custom colors
+'''
 @app.callback(
     Output('ideogram-customcolorlist', 'style'),
     [
@@ -655,17 +607,16 @@ def enable_ideogramcustomcolor(bool_value):
     else:
         return {'display': 'none'}
 
-## enable selection of custom colors for each chromsoome
 @app.callback(
     Output('ideogram-customcolorlist', 'children'),
     [
-        Input('chromosome_checklist', 'values')
+        Input('chromosome-checklist', 'values')
     ]
 )
 
 def ideogram_colorbox(chromosome_checklist):
     return expand_chromosome_color(chromosome_checklist)
-
+'''
 
 
 @app.callback(
@@ -698,7 +649,7 @@ def ideogram_tick_controls(bool_value):
         Input('ideogram-chrannotation-anglelimit', 'value'),
         Input('ideogram-degreerange-min', 'value'),
         Input('ideogram-degreerange-max', 'value'),
-        Input('chromosome_checklist', 'values'),
+        #Input('chromosome-checklist', 'values'),
         Input('ideogram-ticks-enabler', 'on'),
         Input('ideogram-majortick-spacing', 'value'),
         Input('ideogram-minortick-spacing', 'value'),
@@ -710,48 +661,69 @@ def ideogram_tick_controls(bool_value):
 def ideogram_callback(contents, fs, opacity, chrannotation,
                       chrannotation_radius, chrannotation_fontsize, chrannotation_fonttype,
                       chrannotation_fontcolor, chrannotation_angleoffset, chrannotation_anglelimit,
-                      degreerange_min, degreerange_max, chromosome_checklist, 
-                      ticks_enabler, majortick_spacing, minortick_spacing, tick_format): 
-    
-    content_string = interp_contents(contents)
-    sep = interp_fs(fs)
+                      degreerange_min, degreerange_max, 
+                      #chromosome_checklist, 
+                      ticks_enabler, majortick_spacing, minortick_spacing, tick_format
+                     ): 
 
     degreerange = [degreerange_min, degreerange_max]
 
-    ## need to add decoding function before reading content_string by pandas
+    try:
+        content_string = interp_contents(contents)
+        decoded = base64.b64decode(content_string)
+        path = io.StringIO(decoded.decode('utf-8'))
+        df = pd.read_csv(path, sep=interp_fs(fs), header='infer')
+        print(df.head())
+        print('ideogram upload successful')
+        print(path)
+    except Exception:
+        print('unable to print ideogram dict')
+        
+
     ideogram_dict = {
-        'file': {
-            'content_string': content_string, 'header': 'infer', 'sep': sep
-        },
-        'degreerange': degreerange,
-        'showfillcolor': True,
-        'layout': {'opacity': opacity},
-        'chrannotation': {
-            'show': chrannotation, 
-            'radius': {'R': chrannotation_radius},
-            'fonttype': chrannotation_fonttype,
-            'textangle': {
-                'angleoffset': chrannotation_angleoffset,
-                'anglelimit': chrannotation_anglelimit
+        'ideogram':{
+            'file': {
+                'path': content_string, 'sep': interp_fs(fs)
             },
-            'layout': {
-                'font': {
-                    'size': chrannotation_fontsize,
-                    'color': revert_rgb(chrannotation_fontcolor)
-                }
-            },                   
+            'radius': {'R0': 1.0, 'R1': 1.1},
+            'degreerange': degreerange,
+            'showfillcolor': True,
+            'layout': {'opacity': opacity},
+            'chrannotation': {
+                'show': chrannotation, 
+                'radius': {'R': chrannotation_radius},
+                'fonttype': chrannotation_fonttype,
+                'textangle': {
+                    'angleoffset': chrannotation_angleoffset,
+                    'anglelimit': chrannotation_anglelimit
+                },
+                'layout': {
+                    'font': {
+                        'size': chrannotation_fontsize,
+                        'color': revert_rgb(chrannotation_fontcolor)
+                    }
+                },                   
+            },
+            "customoptions": {
+                "customlabel": "True",
+                "customspacing": "False",
+                "customcolor": "True"
+            },
         },
         'majortick': {
             'show': ticks_enabler,
-            'spacing': majortick_spacing
+            'spacing': majortick_spacing,
+            "radius": {"R0": 1.1, "R1": 1.12},
         },
         'minortick': {
             'show': ticks_enabler,
-            'spacing': minortick_spacing
+            'spacing': minortick_spacing,
+            "radius": {"R0": 1.1, "R1": 1.108},
         },
         'ticklabel': {
             'show': ticks_enabler,
             'spacing': majortick_spacing,
+            "radius": {"R": 1.2},
             'textformat': tick_format,
             'textangle': {
                 'angleoffset': chrannotation_angleoffset,
@@ -759,8 +731,9 @@ def ideogram_callback(contents, fs, opacity, chrannotation,
             }
         }
     }
-    #print(ideogram_dict)
-    return json.dumps(ideogram_dict)
+   
+
+    return ideogram_dict
 
 
 @app.callback(
@@ -782,12 +755,12 @@ def cytoband_callback(contents, fs, opacity):
     else:
         cytoband_dict = {
             'file': {
-                'content_string': content_string, 'header': 'infer', 'sep': sep
+                'path': content_string, 'header': 'infer', 'sep': sep
             },
             'layout': {'opacity': opacity}
         }
-    print(cytoband_dict)
-    return json.dumps(cytoband_dict)
+    #print(cytoband_dict)
+    return cytoband_dict
 
 
 @app.callback(
@@ -830,11 +803,11 @@ def highlight_callback(contents, fs):
     else:
         highlight_dict = {
             'file': {
-                'content_string': content_string, 'header': 'infer', 'sep': sep
+                'path': content_string, 'header': 'infer', 'sep': sep
             }
         }
     #print(highlight_dict)
-    return json.dumps(highlight_dict)
+    return highlight_dict
             
 
 @app.callback(
@@ -853,11 +826,1667 @@ def annotation_callback(contents, fs):
     else:
         annotation_dict = {
             'file': {
-                'content_string': content_string, 'header': 'infer', 'sep': sep
+                'path': content_string, 'header': 'infer', 'sep': sep
             }
         }
     return json.dumps(annotation_dict)
 
+
+
+## display or hide depending on the number of histogram user inputs
+### I have to list all possible combinations since one of the limitations of dash is multiple outputs
+
+### histogram list of callbacks
+@app.callback(
+    Output('histogram-idx_0', 'style'),
+    [Input('histogram-number', 'value')]
+)
+def toggle_histogram_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('histogram-idx_1', 'style'),
+    [Input('histogram-number', 'value')]
+)
+def toggle_histogram_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('histogram-idx_2', 'style'),
+    [Input('histogram-number', 'value')]
+)
+def toggle_histogram_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('histogram-idx_3', 'style'),
+    [Input('histogram-number', 'value')]
+)
+def toggle_histogram_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('histogram-idx_4', 'style'),
+    [Input('histogram-number', 'value')]
+)
+def toggle_histogram_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+
+@app.callback(
+    Output('histogram-colormode-mono_0', 'style'),
+    [Input('histogram-colormode_0', 'value')]
+)
+
+def histogram_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('histogram-colormode-custom_0', 'style'),
+    [Input('histogram-colormode_0', 'value')]
+)
+
+def histogram_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('histogram-colormode-mono_1', 'style'),
+    [Input('histogram-colormode_1', 'value')]
+)
+
+def histogram_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('histogram-colormode-custom_1', 'style'),
+    [Input('histogram-colormode_1', 'value')]
+)
+
+def histogram_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('histogram-colormode-mono_2', 'style'),
+    [Input('histogram-colormode_2', 'value')]
+)
+
+def histogram_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('histogram-colormode-custom_2', 'style'),
+    [Input('histogram-colormode_2', 'value')]
+)
+
+def histogram_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('histogram-colormode-mono_3', 'style'),
+    [Input('histogram-colormode_3', 'value')]
+)
+
+def histogram_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('histogram-colormode-custom_3', 'style'),
+    [Input('histogram-colormode_3', 'value')]
+)
+
+def histogram_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('histogram-colormode-mono_4', 'style'),
+    [Input('histogram-colormode_4', 'value')]
+)
+
+def histogram_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('histogram-colormode-custom_4', 'style'),
+    [Input('histogram-colormode_4', 'value')]
+)
+
+def histogram_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('histogram-output', 'data'),
+    histogram_input_list()
+)
+
+def store_histogram(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[9*i]), 'sep': interp_fs(args[9*i+1])
+            },
+            'hovertextformat': args[9*i+2],
+            'radius': {'R0': args[9*i+3], 'R1': args[9*i+4]},
+            'layout': {'opacity': args[9*i+5]}
+        }
+        if args[9*i+6] == 'By Chromosome':
+            di['colorcolumn'] = 'ideogram'
+        elif args[9*i+6] == 'Mono':
+            di['layout']['fillcolor'] = args[9*i+7]
+        elif args[9*i+6] == 'Custom':
+            di['colorcolumn'] = args[9*i+8]
+        res.append(di)
+    #print(res)
+    return res
+
+
+
+#### scatter list of callbacks
+@app.callback(
+    Output('scatter-idx_0', 'style'),
+    [Input('scatter-number', 'value')]
+)
+def toggle_scatter_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('scatter-idx_1', 'style'),
+    [Input('scatter-number', 'value')]
+)
+def toggle_scatter_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('scatter-idx_2', 'style'),
+    [Input('scatter-number', 'value')]
+)
+def toggle_scatter_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('scatter-idx_3', 'style'),
+    [Input('scatter-number', 'value')]
+)
+def toggle_scatter_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('scatter-idx_4', 'style'),
+    [Input('scatter-number', 'value')]
+)
+def toggle_scatter_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+
+
+
+@app.callback(
+    Output('scatter-colormode-mono_0', 'style'),
+    [Input('scatter-colormode_0', 'value')]
+)
+
+def scatter_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('scatter-colormode-custom_0', 'style'),
+    [Input('scatter-colormode_0', 'value')]
+)
+
+def scatter_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('scatter-colormode-mono_1', 'style'),
+    [Input('scatter-colormode_1', 'value')]
+)
+
+def scatter_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('scatter-colormode-custom_1', 'style'),
+    [Input('scatter-colormode_1', 'value')]
+)
+
+def scatter_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('scatter-colormode-mono_2', 'style'),
+    [Input('scatter-colormode_2', 'value')]
+)
+
+def scatter_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('scatter-colormode-custom_2', 'style'),
+    [Input('scatter-colormode_2', 'value')]
+)
+
+def scatter_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('scatter-colormode-mono_3', 'style'),
+    [Input('scatter-colormode_3', 'value')]
+)
+
+def scatter_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('scatter-colormode-custom_3', 'style'),
+    [Input('scatter-colormode_3', 'value')]
+)
+
+def scatter_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('scatter-colormode-mono_4', 'style'),
+    [Input('scatter-colormode_4', 'value')]
+)
+
+def scatter_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('scatter-colormode-custom_4', 'style'),
+    [Input('scatter-colormode_4', 'value')]
+)
+
+def scatter_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('scatter-output', 'data'),
+    scatter_input_list()
+)
+
+def store_scatter(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[11*i]), 'sep': interp_fs(args[11*i+1])
+            },
+            'hovertextformat': args[11*i+2],
+            'radius': {'R0': args[11*i+3], 'R1': args[11*i+4]},
+            'trace': {'marker': {'size': args[11*i+6], 'opacity': args[11*i+5], 'symbol': args[11*i+7]}}
+        }
+        if args[11*i+8] == 'By Chromosome':
+            di['colorcolumn'] = 'ideogram'
+        elif args[11*i+8] == 'Mono':
+            di['trace']['color'] = args[11*i+9]
+        elif args[11*i+8] == 'Custom':
+            di['colorcolumn'] = args[11*i+10]
+        res.append(di)
+    #print(res)
+    return res
+
+###
+#### line list of callbacks
+@app.callback(
+    Output('line-idx_0', 'style'),
+    [Input('line-number', 'value')]
+)
+def toggle_line_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('line-idx_1', 'style'),
+    [Input('line-number', 'value')]
+)
+def toggle_line_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('line-idx_2', 'style'),
+    [Input('line-number', 'value')]
+)
+def toggle_line_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('line-idx_3', 'style'),
+    [Input('line-number', 'value')]
+)
+def toggle_line_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('line-idx_4', 'style'),
+    [Input('line-number', 'value')]
+)
+def toggle_line_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+
+
+@app.callback(
+    Output('line-colormode-mono_0', 'style'),
+    [Input('line-colormode_0', 'value')]
+)
+
+def line_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('line-colormode-custom_0', 'style'),
+    [Input('line-colormode_0', 'value')]
+)
+
+def line_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('line-colormode-mono_1', 'style'),
+    [Input('line-colormode_1', 'value')]
+)
+
+def line_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('line-colormode-custom_1', 'style'),
+    [Input('line-colormode_1', 'value')]
+)
+
+def line_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('line-colormode-mono_2', 'style'),
+    [Input('line-colormode_2', 'value')]
+)
+
+def line_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('line-colormode-custom_2', 'style'),
+    [Input('line-colormode_2', 'value')]
+)
+
+def line_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('line-colormode-mono_3', 'style'),
+    [Input('line-colormode_3', 'value')]
+)
+
+def line_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('line-colormode-custom_3', 'style'),
+    [Input('line-colormode_3', 'value')]
+)
+
+def line_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('line-colormode-mono_4', 'style'),
+    [Input('line-colormode_4', 'value')]
+)
+
+def line_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('line-colormode-custom_4', 'style'),
+    [Input('line-colormode_4', 'value')]
+)
+
+def line_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+
+@app.callback(
+    Output('line-output', 'data'),
+    line_input_list()
+)
+
+def store_line(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[12*i]), 'sep': interp_fs(args[12*i+1])
+            },
+            'hovertextformat': args[12*i+2],
+            'radius': {'R0': args[12*i+3], 'R1': args[12*i+4]},
+            'marker': {'size': args[12*i+6]},
+            'line': {'width': args[12*i+7], 'opacity': args[12*i+5], 'smoothing': args[12*i+8]}
+        }
+        if args[12*i+9] == 'By Chromosome':
+            di['colorcolumn'] = 'ideogram'
+        elif args[12*i+9] == 'Mono':
+            di['marker']['color'] = args[12*i+10]
+            di['line']['color'] = args[12*i+10]
+        elif args[12*i+9] == 'Custom':
+            di['colorcolumn'] = args[12*i+11]
+        res.append(di)
+    #print(res)
+    return res
+
+
+#### area list of callbacks
+@app.callback(
+    Output('area-idx_0', 'style'),
+    [Input('area-number', 'value')]
+)
+def toggle_area_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('area-idx_1', 'style'),
+    [Input('area-number', 'value')]
+)
+def toggle_area_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('area-idx_2', 'style'),
+    [Input('area-number', 'value')]
+)
+def toggle_area_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('area-idx_3', 'style'),
+    [Input('area-number', 'value')]
+)
+def toggle_area_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('area-idx_4', 'style'),
+    [Input('area-number', 'value')]
+)
+def toggle_area_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+
+@app.callback(
+    Output('area-colormode-mono_0', 'style'),
+    [Input('area-colormode_0', 'value')]
+)
+
+def area_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('area-colormode-custom_0', 'style'),
+    [Input('area-colormode_0', 'value')]
+)
+
+def area_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('area-colormode-mono_1', 'style'),
+    [Input('area-colormode_1', 'value')]
+)
+
+def area_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('area-colormode-custom_1', 'style'),
+    [Input('area-colormode_1', 'value')]
+)
+
+def area_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('area-colormode-mono_2', 'style'),
+    [Input('area-colormode_2', 'value')]
+)
+
+def area_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('area-colormode-custom_2', 'style'),
+    [Input('area-colormode_2', 'value')]
+)
+
+def area_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('area-colormode-mono_3', 'style'),
+    [Input('area-colormode_3', 'value')]
+)
+
+def area_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('area-colormode-custom_3', 'style'),
+    [Input('area-colormode_3', 'value')]
+)
+
+def area_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('area-colormode-mono_4', 'style'),
+    [Input('area-colormode_4', 'value')]
+)
+
+def area_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('area-colormode-custom_4', 'style'),
+    [Input('area-colormode_4', 'value')]
+)
+
+def area_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('area-output', 'data'),
+    area_input_list()
+)
+
+def store_area(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[9*i]), 'sep': interp_fs(args[9*i+1])
+            },
+            'hovertextformat': args[9*i+2],
+            'radius': {'R0': args[9*i+3], 'R1': args[9*i+4]},
+            'layout': {'opacity': args[9*i+5]}
+        }
+        if args[9*i+6] == 'By Chromosome':
+            di['colorcolumn'] = 'ideogram'
+        elif args[9*i+6] == 'Mono':
+            di['layout']['fillcolor'] = args[9*i+7]
+        elif args[9*i+6] == 'Custom':
+            di['colorcolumn'] = args[9*i+8]
+        res.append(di)
+    #print(res)
+    return res
+
+
+#### tile list of callbacks
+@app.callback(
+    Output('tile-idx_0', 'style'),
+    [Input('tile-number', 'value')]
+)
+def toggle_tile_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('tile-idx_1', 'style'),
+    [Input('tile-number', 'value')]
+)
+def toggle_tile_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('tile-idx_2', 'style'),
+    [Input('tile-number', 'value')]
+)
+def toggle_tile_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('tile-idx_3', 'style'),
+    [Input('tile-number', 'value')]
+)
+def toggle_tile_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('tile-idx_4', 'style'),
+    [Input('tile-number', 'value')]
+)
+def toggle_tile_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+
+@app.callback(
+    Output('tile-colormode-mono_0', 'style'),
+    [Input('tile-colormode_0', 'value')]
+)
+
+def tile_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('tile-colormode-custom_0', 'style'),
+    [Input('tile-colormode_0', 'value')]
+)
+
+def tile_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('tile-colormode-mono_1', 'style'),
+    [Input('tile-colormode_1', 'value')]
+)
+
+def tile_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('tile-colormode-custom_1', 'style'),
+    [Input('tile-colormode_1', 'value')]
+)
+
+def tile_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('tile-colormode-mono_2', 'style'),
+    [Input('tile-colormode_2', 'value')]
+)
+
+def tile_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('tile-colormode-custom_2', 'style'),
+    [Input('tile-colormode_2', 'value')]
+)
+
+def tile_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('tile-colormode-mono_3', 'style'),
+    [Input('tile-colormode_3', 'value')]
+)
+
+def tile_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('tile-colormode-custom_3', 'style'),
+    [Input('tile-colormode_3', 'value')]
+)
+
+def tile_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('tile-colormode-mono_4', 'style'),
+    [Input('tile-colormode_4', 'value')]
+)
+
+def tile_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('tile-colormode-custom_4', 'style'),
+    [Input('tile-colormode_4', 'value')]
+)
+
+def tile_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+
+@app.callback(
+    Output('tile-output', 'data'),
+    tile_input_list()
+)
+
+def store_tile(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[10*i]), 'sep': interp_fs(args[10*i+1])
+            },
+            'hovertextformat': args[10*i+2],
+            'radius': {'R0': args[10*i+3], 'R1': args[10*i+4]},
+            'layout': {'opacity': args[10*i+5], 
+                      'line': {'width': args[10*i+6]} }
+        }
+        if args[10*i+7] == 'By Chromosome':
+            di['colorcolumn'] = 'ideogram'
+        elif args[10*i+7] == 'Mono':
+            di['layout']['line']['color'] = args[10*i+8]
+        elif args[10*i+7] == 'Custom':
+            di['colorcolumn'] = args[10*i+9]
+        res.append(di)
+    print(res)
+    return res
+
+
+#### heatmap list of callbacks
+@app.callback(
+    Output('heatmap-idx_0', 'style'),
+    [Input('heatmap-number', 'value')]
+)
+def toggle_heatmap_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('heatmap-idx_1', 'style'),
+    [Input('heatmap-number', 'value')]
+)
+def toggle_heatmap_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('heatmap-idx_2', 'style'),
+    [Input('heatmap-number', 'value')]
+)
+def toggle_heatmap_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('heatmap-idx_3', 'style'),
+    [Input('heatmap-number', 'value')]
+)
+def toggle_heatmap_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('heatmap-idx_4', 'style'),
+    [Input('heatmap-number', 'value')]
+)
+def toggle_heatmap_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+### ONGOING
+### Dash ColorScales component colorscale property => palatte dict in config
+
+@app.callback(
+    Output('heatmap-output', 'data'),
+    heatmap_input_list()
+)
+def store_heatmap(number, *args):
+    print('triggering heatmap')
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[9*i]), 'sep': interp_fs(args[9*i+1])
+            },
+            'hovertextformat': args[9*i+2],
+            'radius': {'R0': args[9*i+3], 'R1': args[9*i+4]},
+            'layout': {'opacity': args[9*i+5]},
+            'palatte': { 'palatte': args[9*i+6], 
+                         'reverse': args[9*i+7],
+                         'scale': args[9*i+8],
+                         }
+        }
+        res.append(di)
+    print(res)
+    
+    return res
+
+#### connector list of callbacks
+@app.callback(
+    Output('connector-idx_0', 'style'),
+    [Input('connector-number', 'value')]
+)
+def toggle_connector_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('connector-idx_1', 'style'),
+    [Input('connector-number', 'value')]
+)
+def toggle_connector_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('connector-idx_2', 'style'),
+    [Input('connector-number', 'value')]
+)
+def toggle_connector_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('connector-idx_3', 'style'),
+    [Input('connector-number', 'value')]
+)
+def toggle_connector_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('connector-idx_4', 'style'),
+    [Input('connector-number', 'value')]
+)
+def toggle_connector_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('connector-colormode-mono_0', 'style'),
+    [Input('connector-colormode_0', 'value')]
+)
+
+def connector_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('connector-colormode-custom_0', 'style'),
+    [Input('connector-colormode_0', 'value')]
+)
+
+def connector_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('connector-colormode-mono_1', 'style'),
+    [Input('connector-colormode_1', 'value')]
+)
+
+def connector_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('connector-colormode-custom_1', 'style'),
+    [Input('connector-colormode_1', 'value')]
+)
+
+def connector_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('connector-colormode-mono_2', 'style'),
+    [Input('connector-colormode_2', 'value')]
+)
+
+def connector_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('connector-colormode-custom_2', 'style'),
+    [Input('connector-colormode_2', 'value')]
+)
+
+def connector_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('connector-colormode-mono_3', 'style'),
+    [Input('connector-colormode_3', 'value')]
+)
+
+def connector_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('connector-colormode-custom_3', 'style'),
+    [Input('connector-colormode_3', 'value')]
+)
+
+def connector_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('connector-colormode-mono_4', 'style'),
+    [Input('connector-colormode_4', 'value')]
+)
+
+def connector_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('connector-colormode-custom_4', 'style'),
+    [Input('connector-colormode_4', 'value')]
+)
+
+def connector_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+
+@app.callback(
+    Output('connector-output', 'data'),
+    connector_input_list()
+)
+
+def store_connector(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[9*i]), 'sep': interp_fs(args[9*i+1])
+            },
+            'radius': {'R0': args[9*i+2], 'R1': args[9*i+3]},
+            'layout': {'opacity': args[9*i+4], 'line': {'width': args[9*i+5]}}
+        }
+        if args[9*i+6] == 'By Chromosome':
+            di['colorcolumn'] = 'ideogram'
+        if args[9*i+6] == 'Mono':
+            di['layout']['line']['color'] = args[9*i+7]
+        elif args[9*i+6] == 'Custom':
+            di['colorcolumn'] = args[9*i+8]
+        res.append(di)
+    #print(res)
+    return res
+
+
+#### link list of callbacks
+@app.callback(
+    Output('link-idx_0', 'style'),
+    [Input('link-number', 'value')]
+)
+def toggle_link_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('link-idx_1', 'style'),
+    [Input('link-number', 'value')]
+)
+def toggle_link_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('link-idx_2', 'style'),
+    [Input('link-number', 'value')]
+)
+def toggle_link_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('link-idx_3', 'style'),
+    [Input('link-number', 'value')]
+)
+def toggle_link_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('link-idx_4', 'style'),
+    [Input('link-number', 'value')]
+)
+def toggle_link_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('link-colormode-mono_0', 'style'),
+    [Input('link-colormode_0', 'value')]
+)
+
+def link_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('link-colormode-custom_0', 'style'),
+    [Input('link-colormode_0', 'value')]
+)
+
+def link_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('link-colormode-mono_1', 'style'),
+    [Input('link-colormode_1', 'value')]
+)
+
+def link_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('link-colormode-custom_1', 'style'),
+    [Input('link-colormode_1', 'value')]
+)
+
+def link_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('link-colormode-mono_2', 'style'),
+    [Input('link-colormode_2', 'value')]
+)
+
+def link_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('link-colormode-custom_2', 'style'),
+    [Input('link-colormode_2', 'value')]
+)
+
+def link_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('link-colormode-mono_3', 'style'),
+    [Input('link-colormode_3', 'value')]
+)
+
+def link_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('link-colormode-custom_3', 'style'),
+    [Input('link-colormode_3', 'value')]
+)
+
+def link_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('link-colormode-mono_4', 'style'),
+    [Input('link-colormode_4', 'value')]
+)
+
+def link_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('link-colormode-custom_4', 'style'),
+    [Input('link-colormode_4', 'value')]
+)
+
+def link_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('link-output', 'data'),
+    link_input_list()
+)
+
+def store_link(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[11*i]), 'sep': interp_fs(args[11*i+1])
+            },
+            'hovertextformat': [args[11*i+2], args[11*i+3]],
+            'radius': {'R0': args[11*i+4], 'R1': args[11*i+5]},
+            'layout': {'opacity': args[11*i+6], 
+                      'line': {'width': args[11*i+7]}}
+        }
+        
+        if args[11*i+8] == 'Mono':
+            di['layout']['line']['color'] = args[11*i+9]
+        elif args[11*i+8] == 'Custom':
+            di['colorcolumn'] = args[11*i+10]
+        res.append(di)
+   #print(res)
+    return res
+
+
+#### ribbon list of callbacks
+@app.callback(
+    Output('ribbon-idx_0', 'style'),
+    [Input('ribbon-number', 'value')]
+)
+def toggle_ribbon_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('ribbon-idx_1', 'style'),
+    [Input('ribbon-number', 'value')]
+)
+def toggle_ribbon_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('ribbon-idx_2', 'style'),
+    [Input('ribbon-number', 'value')]
+)
+def toggle_ribbon_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('ribbon-idx_3', 'style'),
+    [Input('ribbon-number', 'value')]
+)
+def toggle_ribbon_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('ribbon-idx_4', 'style'),
+    [Input('ribbon-number', 'value')]
+)
+def toggle_ribbon_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('ribbon-colormode-mono_0', 'style'),
+    [Input('ribbon-colormode_0', 'value')]
+)
+
+def ribbon_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('ribbon-colormode-custom_0', 'style'),
+    [Input('ribbon-colormode_0', 'value')]
+)
+
+def ribbon_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('ribbon-colormode-mono_1', 'style'),
+    [Input('ribbon-colormode_1', 'value')]
+)
+
+def ribbon_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('ribbon-colormode-custom_1', 'style'),
+    [Input('ribbon-colormode_1', 'value')]
+)
+
+def ribbon_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('ribbon-colormode-mono_2', 'style'),
+    [Input('ribbon-colormode_2', 'value')]
+)
+
+def ribbon_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('ribbon-colormode-custom_2', 'style'),
+    [Input('ribbon-colormode_2', 'value')]
+)
+
+def ribbon_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('ribbon-colormode-mono_3', 'style'),
+    [Input('ribbon-colormode_3', 'value')]
+)
+
+def ribbon_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('ribbon-colormode-custom_3', 'style'),
+    [Input('ribbon-colormode_3', 'value')]
+)
+
+def ribbon_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('ribbon-colormode-mono_4', 'style'),
+    [Input('ribbon-colormode_4', 'value')]
+)
+
+def ribbon_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('ribbon-colormode-custom_4', 'style'),
+    [Input('ribbon-colormode_4', 'value')]
+)
+
+def ribbon_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('ribbon-output', 'data'),
+    ribbon_input_list()
+)
+
+def store_ribbon(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[10*i]), 'sep': interp_fs(args[10*i+1])
+            },
+            'hovertextformat': [args[10*i+2], args[10*i+3]],
+            'radius': {'R0': args[10*i+4], 'R1': args[10*i+5]},
+            'layout': {'opacity': args[10*i+6]}
+        }
+        
+        if args[10*i+7] == 'Mono':
+            di['layout']['fillcolor'] = args[10*i+8]
+        elif args[10*i+7] == 'Custom':
+            di['colorcolumn'] = args[10*i+9]
+        res.append(di)
+    #print(res)
+    return res
+
+
+#### twistedribbon list of callbacks
+@app.callback(
+    Output('twistedribbon-idx_0', 'style'),
+    [Input('twistedribbon-number', 'value')]
+)
+def toggle_twistedribbon_0(number):
+    if number >= 1: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('twistedribbon-idx_1', 'style'),
+    [Input('twistedribbon-number', 'value')]
+)
+def toggle_twistedribbon_1(number):
+    if number >= 2: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('twistedribbon-idx_2', 'style'),
+    [Input('twistedribbon-number', 'value')]
+)
+def toggle_twistedribbon_2(number):
+    if number >= 3: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('twistedribbon-idx_3', 'style'),
+    [Input('twistedribbon-number', 'value')]
+)
+def toggle_twistedribbon_3(number):
+    if number >= 4: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('twistedribbon-idx_4', 'style'),
+    [Input('twistedribbon-number', 'value')]
+)
+def toggle_twistedribbon_4(number):
+    if number >= 5: return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('twistedribbon-colormode-mono_0', 'style'),
+    [Input('twistedribbon-colormode_0', 'value')]
+)
+
+def twistedribbon_colormode_mono_0(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('twistedribbon-colormode-custom_0', 'style'),
+    [Input('twistedribbon-colormode_0', 'value')]
+)
+
+def twistedribbon_colormode_custom_0(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('twistedribbon-colormode-mono_1', 'style'),
+    [Input('twistedribbon-colormode_1', 'value')]
+)
+
+def twistedribbon_colormode_mono_1(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('twistedribbon-colormode-custom_1', 'style'),
+    [Input('twistedribbon-colormode_1', 'value')]
+)
+
+def twistedribbon_colormode_custom_1(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'} 
+
+@app.callback(
+    Output('twistedribbon-colormode-mono_2', 'style'),
+    [Input('twistedribbon-colormode_2', 'value')]
+)
+
+def twistedribbon_colormode_mono_2(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+    
+@app.callback(
+    Output('twistedribbon-colormode-custom_2', 'style'),
+    [Input('twistedribbon-colormode_2', 'value')]
+)
+
+def twistedribbon_colormode_custom_2(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('twistedribbon-colormode-mono_3', 'style'),
+    [Input('twistedribbon-colormode_3', 'value')]
+)
+
+def twistedribbon_colormode_mono_3(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('twistedribbon-colormode-custom_3', 'style'),
+    [Input('twistedribbon-colormode_3', 'value')]
+)
+
+def twistedribbon_colormode_custom_3(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+
+@app.callback(
+    Output('twistedribbon-colormode-mono_4', 'style'),
+    [Input('twistedribbon-colormode_4', 'value')]
+)
+
+def twistedribbon_colormode_mono_4(value):
+    if value == 'Mono':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+     
+@app.callback(
+    Output('twistedribbon-colormode-custom_4', 'style'),
+    [Input('twistedribbon-colormode_4', 'value')]
+)
+
+def twistedribbon_colormode_custom_4(value):
+    if value == 'Custom':
+        return {'display': 'block'}
+    else: return {'display': 'none'}
+
+@app.callback(
+    Output('twistedribbon-output', 'data'),
+    twistedribbon_input_list()
+)
+
+def store_twistedribbon(number, *args):
+    res = []
+    for i in range(number):
+        di = {
+            'file': { 
+                'path': interp_contents(args[10*i]), 'sep': interp_fs(args[10*i+1])
+            },
+            'hovertextformat': [args[10*i+2], args[10*i+3]],
+            'radius': {'R0': args[10*i+4], 'R1': args[10*i+5]},
+            'layout': {'opacity': args[10*i+6]}
+        }
+        
+        if args[10*i+7] == 'Mono':
+            di['layout']['fillcolor'] = args[10*i+8]
+        elif args[10*i+7] == 'Custom':
+            di['colorcolumn'] = args[10*i+9]
+        res.append(di)
+    #print(res)
+    return res
+
+'''
+@app.callback(
+    Output('combined-output', 'data'),
+    [
+        Input('ideogram-output', 'data'),
+        Input('cytoband-output', 'data'),
+        Input('ring-output', 'data'),
+        Input('highlight-output', 'data'),
+        Input('annotation-output', 'data'),
+        Input('histogram-output', 'data'),
+        Input('scatter-output', 'data'),
+        Input('line-output', 'data'),
+        Input('area-output', 'data'),
+        Input('tile-output', 'data'),
+        Input('heatmap-output', 'data'),
+        Input('connector-output', 'data'),
+        Input('link-output', 'data'),
+        Input('ribbon-output', 'data'),
+        Input('twistedribbon-output', 'data'),
+    ]
+)
+def merge_all(*args):
+    # it seems that I cannot remove keys with empty list otherwise a runtimeerror would occur saying dictionary changed size during iteration
+    res = {
+            'General': {'width': 1400, 'height': 1400},
+            'Category': {
+                'ideogram': args[0],
+                'cytoband': args[1],
+                'ring': args[2],
+                'highlight': args[3],
+                'annotation': args[4],
+                'histogram': args[5],
+                'scatter': args[6],
+                'line': args[7],
+                'area': args[8],
+                'tile': args[9],
+                'heatmap': args[10],
+                'connector': args[11],
+                'link': args[12],
+                'ribbon': args[13],
+                'twistedribbon': args[14]
+                }
+            }
+    print('printing combined-all')
+    print(res)
+    
+    return res    
+'''
 
 @app.callback(
     Output('histogram-number', 'disabled'),
@@ -869,18 +2498,6 @@ def histogram_number_lock(bool_value):
     return bool_value
 
 @app.callback(
-    Output('histogram-expand', 'children'),
-    [
-        Input('histogram-number', 'value')
-    ]
-)
-def n_histogram(number):
-    return expand_histogram(number)
-
-  
-
-
-@app.callback(
     Output('scatter-number', 'disabled'),
     [
         Input('scatter-number-lock', 'on')
@@ -889,16 +2506,6 @@ def n_histogram(number):
 
 def scatter_number_lock(bool_value):
     return bool_value
-
-@app.callback(
-    Output('scatter-expand', 'children'),
-    [
-        Input('scatter-number', 'value')
-    ]
-)
-def n_scatter(number):
-    return expand_scatter(number)
-
 
 
 @app.callback(
@@ -910,14 +2517,7 @@ def n_scatter(number):
 def line_number_lock(bool_value):
     return bool_value
 
-@app.callback(
-    Output('line-expand', 'children'),
-    [
-        Input('line-number', 'value')
-    ]
-)
-def n_line(number):
-    return expand_line(number)
+
 
 
 @app.callback(
@@ -929,14 +2529,6 @@ def n_line(number):
 def area_number_lock(bool_value):
     return bool_value
 
-@app.callback(
-    Output('area-expand', 'children'),
-    [
-        Input('area-number', 'value')
-    ]
-)
-def n_area(number):
-    return expand_area(number)
 
 @app.callback(
     Output('tile-number', 'disabled'),
@@ -946,15 +2538,6 @@ def n_area(number):
 )
 def tile_number_lock(bool_value):
     return bool_value
-
-@app.callback(
-    Output('tile-expand', 'children'),
-    [
-        Input('tile-number', 'value')
-    ]
-)
-def n_tile(number):
-    return expand_tile(number)
 
 
 
@@ -967,16 +2550,6 @@ def n_tile(number):
 def heatmap_number_lock(bool_value):
     return bool_value
 
-@app.callback(
-    Output('heatmap-expand', 'children'),
-    [
-        Input('heatmap-number', 'value')
-    ]
-)
-def n_heatmap(number):
-    return expand_heatmap(number)
-
-
 
 @app.callback(
     Output('connector-number', 'disabled'),
@@ -986,15 +2559,6 @@ def n_heatmap(number):
 )
 def connector_number_lock(bool_value):
     return bool_value
-
-@app.callback(
-    Output('connector-expand', 'children'),
-    [
-        Input('connector-number', 'value')
-    ]
-)
-def n_connector(number):
-    return expand_connector(number)
 
 
 @app.callback(
@@ -1006,15 +2570,6 @@ def n_connector(number):
 def link_number_lock(bool_value):
     return bool_value
 
-@app.callback(
-    Output('link-expand', 'children'),
-    [
-        Input('link-number', 'value')
-    ]
-)
-def n_link(number):
-    return expand_link(number)
-
 
 @app.callback(
     Output('ribbon-number', 'disabled'),
@@ -1025,14 +2580,6 @@ def n_link(number):
 def ribbon_number_lock(bool_value):
     return bool_value
 
-@app.callback(
-    Output('ribbon-expand', 'children'),
-    [
-        Input('ribbon-number', 'value')
-    ]
-)
-def n_ribbon(number):
-    return expand_ribbon(number)
 
 
 @app.callback(
@@ -1044,89 +2591,66 @@ def n_ribbon(number):
 def twistedribbon_number_lock(bool_value):
     return bool_value
 
+
+
 @app.callback(
-    Output('twistedribbon-expand', 'children'),
+    Output('PCircos_update', 'figure'),
+    dash_input(),
     [
-        Input('twistedribbon-number', 'value')
+        State('ideogram-output', 'data'),
+        State('cytoband-output', 'data'),
+        State('ring-output', 'data'),
+        State('highlight-output', 'data'),
+        State('annotation-output', 'data'),
+        State('histogram-output', 'data'),
+        State('scatter-output', 'data'),
+        State('line-output', 'data'),
+        State('area-output', 'data'),
+        State('tile-output', 'data'),
+        State('heatmap-output', 'data'),
+        State('connector-output', 'data'),
+        State('link-output', 'data'),
+        State('ribbon-output', 'data'),
+        State('twistedribbon-output', 'data'),
     ]
 )
-def n_twistedribbon(number):
-    return expand_twistedribbon(number)
+def merge_all(n_clicks, *args):
+    # it seems that I cannot remove keys with empty list otherwise a runtimeerror would occur saying dictionary changed size during iteration
+    if n_clicks is None:
+        raise PreventUpdate
+
+    res = {
+            'General': {'width': 1400, 'height': 1400},
+            'Category': {
+                'ideogram': args[0],
+                'cytoband': args[1],
+                'ring': args[2],
+                'highlight': args[3],
+                'annotation': args[4],
+                'histogram': args[5],
+                'scatter': args[6],
+                'line': args[7],
+                'area': args[8],
+                'tile': args[9],
+                'heatmap': args[10],
+                'connector': args[11],
+                'link': args[12],
+                'ribbon': args[13],
+                'twistedribbon': args[14]
+                }
+            }
+    print('updating dash_dict state')
+    convert_dict(res)
+    print(res)
 
 
-## ONGOING
-## Difficult part, need to parse n_plots
-'''
-@app.callback(
-    Output('histogram-colormode-choice_0', 'children'),
-    [
-        Input('histogram-colormode_0', 'value')
-    ]
-)
-def histogram_colormode_choice(choice):
-    if choice == 'Mono':
-        return html.Div([
-            html.P('Select color:'),
-            ColorPickerBox(id='histogram_mono_0'.format(i), 
-                            value='red', label='', 
-                            style={'display': 'inline-block','margin': '0.2em'}
-                            ),
-            ], style={'display': 'inline-block'} )
-    elif choice == 'Custom':
-        return html.Div([
-            html.P('Select which column contains the color'),
-            dcc.Input(id='histogram_mono_0'.format(i),
-                        type='number', 
-                        value=12, 
-                        step=1, 
-                        min=0, 
-                        max=179, 
-                        style={'width': '45%'}
-                        ),
-            ], style={'display': 'inline-block'} )
-'''
+    return Figure(dash_dict=res).fig()   
 
-'''
-for i in range(20):
-    try:
-        @app.callback(
-            Output('histogram-colormode-choice_{}'.format(i), 'children'),
-            [
-                Input('histogram-colormode_{}'.format(i), 'value')
-            ]
-        )
-        def histogram_colormode_choice(choice):
-            if choice == 'Mono':
-                return html.Div([
-                    html.P('Select color:'),
-                    ColorPickerBox(id='histogram_mono_{}'.format(i), 
-                                   value='red', label='', 
-                                   style={'display': 'inline-block','margin': '0.2em'}
-                                  ),
-                    ], style={'display': 'inline-block'} )
-            elif choice == 'Custom':
-                return html.Div([
-                    html.P('Select which column contains the color'),
-                    dcc.Input(id='histogram_mono_{}'.format(i),
-                              type='number', 
-                              value=12, 
-                              step=1, 
-                              min=0, 
-                              max=179, 
-                              style={'width': '45%'}
-                             ),
-                    ], style={'display': 'inline-block'} )
 
-    except Exception:
-        pass
+
+
 
 '''
-#for val in range(app.layout['histogram-number'].value):
-
-
-
-
-
 @app.callback(
     Output('PCircos_update', 'figure'),
     dash_input(),
@@ -1154,6 +2678,8 @@ def update_output(_,
     #print ('figure instance is:')
     #print (Figure(input_json_path=sys.argv[1], dash_dict=dash_dict).fig())
     return Figure(input_json_path=sys.argv[1], dash_dict=dash_dict).fig()
+'''
+
 
 if __name__ == '__main__':
     #print (app.layout)

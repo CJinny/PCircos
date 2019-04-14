@@ -97,7 +97,6 @@ class Complex(object):
             # chr_name start end val
 
 
-
             assert self.ideogram_theta_list(ideogram_coord_config, SUM, degreerange=degreerange)
             data_theta_interval = maths.to_theta(data_array[:,1:3], SUM, degreerange=degreerange)
             data_complex_0 = maths.to_arc(data_theta_interval, radius_dict['R0'], self.ideogram_theta_list(ideogram_coord_config, SUM, degreerange=degreerange))
