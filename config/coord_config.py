@@ -73,7 +73,7 @@ def chr_info(input_file_path,
         try: 
             chr_label = chr_info[:,2]
         except IndexError:
-            print ('3rd column is missing for chromosome custom label, using chromosome names as label')
+            print('3rd column is missing for chromosome custom label, using chromosome names as label')
             chr_label = chr_name
     else:
         chr_label = chr_name
@@ -82,7 +82,7 @@ def chr_info(input_file_path,
         try:
             chr_spacing = chr_info[:,4]
         except IndexError:
-            print ('5th column is missing for inter-chromosome custom spacing, using default spacing values')
+            print('5th column is missing for inter-chromosome custom spacing, using default spacing values')
             chr_spacing = np.ones(chr_size.shape)*(0.05*sum(chr_size)/len(chr_size))
     else:
         chr_spacing = np.ones(chr_size.shape)*(0.05*sum(chr_size)/len(chr_size))
@@ -92,7 +92,7 @@ def chr_info(input_file_path,
         try:
             chr_color = colors.to_rgb(chr_info[:,3])
         except IndexError:
-            print ('4th column is missing for custom chromosome color, using default method to assign chromosome colors')
+            print('4th column is missing for custom chromosome color, using default method to assign chromosome colors')
             if len(chr_info) <= 30:
                 chr_color = colors.to_rgb(default_list)[:len(chr_info)]
             else: 
