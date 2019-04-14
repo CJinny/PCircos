@@ -8,7 +8,7 @@ import colors
 import copy
 from Complex import Complex
 from config import json_config, coord_config
-from dash_dict import *
+#from dash_dict import *
 
 
 # input_json_path = sys.argv[1]

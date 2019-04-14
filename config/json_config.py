@@ -101,6 +101,9 @@ def json2dict(input_dict):
         try:
             defaultdict = json_dict("config/default_params.json")
         except FileNotFoundError:
+            try:
+                defaultdict = json_dict("contents/PCircos/config/default_params.json")
+
             print ('default_params json file not found')
 
     nested_fill_dict(input_json_dict, defaultdict)
