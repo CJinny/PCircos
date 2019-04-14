@@ -158,7 +158,6 @@
                     "header": "infer",
                     "sep": "\t"
                 },
-                "sortbycolor": "False",
                 "colorcolumn": "None",
                 "radius": {
                     "R0": 0.945,
