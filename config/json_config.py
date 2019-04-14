@@ -102,7 +102,7 @@ def json2dict(input_dict):
             defaultdict = json_dict("config/default_params.json")
         except FileNotFoundError:
             try:
-                defaultdict = json_dict("/contents/PCircos/config/default_params.json")
+                defaultdict = json_dict("/content/PCircos/config/default_params.json")
             except FileNotFoundError:
                 print('default_params json file not found')
 
