@@ -33,7 +33,7 @@
     },
     "Category": {
         "ideogram": {
-            "size": {
+            "patch": {
                 "file": {
                     "path": "/path/to/chr_size_info/data",
                     "header": "infer",
@@ -60,7 +60,7 @@
                         "yref": "y",
                         "showarrow": "False",
                         "font": {
-                            "size": 10,
+                            "size": 15,
                             "color": "black"
                         }
                     }
@@ -213,7 +213,7 @@
                 "opacity": 0.9,
                 "marker": {
                     "symbol": 0,
-                    "size": 0,
+                    "size": 3,
                     "color": "black"
                 },
                 "line": {
@@ -269,7 +269,7 @@
                 "R1": 0
             },
             "sortbycolor": "False",
-            "colorcolumn": "None",
+            "colorcolumn": "ideogram",
             "hovertextformat": " \"Chromosome: {}<br>Position: {}<br>Value: {:.2f}\".format(a[i,0], a[i,1], float(a[i,2]))",
             "trace": {
                 "hoverinfo": "text",

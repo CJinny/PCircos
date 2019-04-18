@@ -1,0 +1,53 @@
+{
+    "Category": {
+        "ideogram": {
+            "patch": {
+                "file": {
+                    "path": "demo_data/chr_size.txt",
+                    "header": "infer",
+                    "sep": "\t"
+                },
+                "showfillcolor": "True",
+                "chrannotation": {
+                    "radius": {
+                        "R": 1.25
+                    }
+                },              
+                "customoptions": {
+                    "customlabel": "True",
+                    "customcolor": "False"
+                }
+            },
+            "majortick": {
+                "show": "True",
+                "spacing": 20000000,
+                "radius": {
+                    "R0": 1.1,
+                    "R1": 1.12
+                }
+            },
+            "minortick": {
+                "show": "True",
+                "spacing": 5000000,
+                "radius": {
+                    "R0": 1.1,
+                    "R1": 1.108
+                }
+            },
+            "ticklabel": {
+                "show": "True",
+                "spacing": 20000000,
+                "textformat": "Mb",
+                "radius": {
+                    "R": 1.16
+                },
+                "layout": {
+                    "font": {
+                        "size": 10,
+                        "color": "black"
+                    }
+                }
+            }
+        }
+    }
+}

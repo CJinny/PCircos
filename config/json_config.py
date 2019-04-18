@@ -53,8 +53,15 @@ def nested_fill_dict(input_dict, default_dict):
         
         if key not in input_dict:
 
-            if key in ['General', 'trace' ]:
+            #if key in ['General', 'trace' ]:
+            if not key in ['Category', 'ideogram', 'patch', 'path', 'file', 'cytoband', 'histogram', 'scatter', 'line', 
+                           'area', 'heatmap', 'tile', 'link', 'ribbon', 'twistedribbon', 'connector', 'annotation', 'highlight', 'ring']:
                 input_dict[key] = default_dict[key]
+
+            elif key == 'line':
+                if 'color' in default_dict[key].keys() and 'width' in default_dict[key].keys():
+                    input_dict[key] = default_dict[key]
+    
 
             elif isinstance(default_dict[key], (str, int, float)):
                 input_dict[key] = default_dict[key]

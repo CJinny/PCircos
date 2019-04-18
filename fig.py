@@ -57,23 +57,23 @@ class Figure(Complex):
 
         self.ideogram = self.categories['ideogram']
 
-        self.ideogram_chr_size = self.ideogram['size']
+        self.ideogram_patch = self.ideogram['patch']
 
 
         self.ideogram_majortick = self.ideogram['majortick']
         self.ideogram_minortick = self.ideogram['minortick']
         self.ideogram_ticklabel = self.ideogram['ticklabel']
 
-        self.ideogram_radius_dict = self.ideogram_chr_size['radius']
+        self.ideogram_radius_dict = self.ideogram_patch['radius']
 
-        self.show_chr_annotation = self.ideogram_chr_size['chrannotation']['show']
+        self.show_chr_annotation = self.ideogram_patch['chrannotation']['show']
        
         
         self.major_tick_radius_dict = self.ideogram_majortick['radius']
         self.minor_tick_radius_dict = self.ideogram_minortick['radius']
         self.tick_label_radius_dict = self.ideogram_ticklabel['radius']
         self.SUM = self.get_ideogram_coord_config()['SUM']
-        self.degreerange = self.ideogram_chr_size['degreerange']
+        self.degreerange = self.ideogram_patch['degreerange']
         self.chr_color_dict = self.get_chr_info()['chr_color_dict']   # a dict: chr_name:chr_color
         self.chr_label_dict = self.get_chr_info()['chr_label_dict']
     
@@ -132,27 +132,25 @@ class Figure(Complex):
 
     def get_chr_info(self):
         
-        #chr_info_file = self.config_dict['Category']['ideogram']['size']['file']
-        #custom_options = self.config_dict['Category']['ideogram']['size']['customoptions']
+        #chr_info_file = self.config_dict['Category']['ideogram']['patch']['file']
+        #custom_options = self.config_dict['Category']['ideogram']['patch']['customoptions']
 
         
-        chr_info_dict = coord_config.chr_info(self.config_dict['Category']['ideogram']['size']['file']['path'], 
-                                            sep=self.config_dict['Category']['ideogram']['size']['file']['sep'],
-                                            custom_label=self.config_dict['Category']['ideogram']['size']['customoptions']['customlabel'], 
-                                            custom_spacing=self.config_dict['Category']['ideogram']['size']['customoptions']['customspacing'], 
-                                            custom_color=self.config_dict['Category']['ideogram']['size']['customoptions']['customcolor'],
-                                            )
+        chr_info_dict = coord_config.chr_info(self.config_dict['Category']['ideogram']['patch']['file']['path'], 
+                                              sep=self.config_dict['Category']['ideogram']['patch']['file']['sep'],
+                                              custom_label=self.config_dict['Category']['ideogram']['patch']['customoptions']['customlabel'], 
+                                              custom_spacing=self.config_dict['Category']['ideogram']['patch']['customoptions']['customspacing'], 
+                                              custom_color=self.config_dict['Category']['ideogram']['patch']['customoptions']['customcolor'],
+                                              )
         
         return chr_info_dict
                                           
-
         
     def get_ideogram_coord_config(self):
         
 
         ideogram_coord_config = coord_config.ideogram_coord_config(self.get_chr_info(), 
-                                                                   #npoints=self.ideogram_chr_size['npoints'],
-                                                                   npoints=self.config_dict['Category']['ideogram']['size']['npoints'],
+                                                                   npoints=self.config_dict['Category']['ideogram']['patch']['npoints'],
                                                                    show_major_tick=self.config_dict['Category']['ideogram']['majortick']['show'],
                                                                    major_tick_spacing=self.config_dict['Category']['ideogram']['majortick']['spacing'],
                                                                    show_minor_tick=self.config_dict['Category']['ideogram']['minortick']['show'],
@@ -222,7 +220,7 @@ class Figure(Complex):
     def get_ideogram_chrannot_complex(self):
         return self.ideogram_chrannot_complex(self.SUM,
                                               degreerange=self.degreerange,
-                                              chr_annotation_radius_dict=self.ideogram_chr_size['chrannotation']['radius']
+                                              chr_annotation_radius_dict=self.ideogram_patch['chrannotation']['radius']
                                               )
     
     def get_tick_label_complex(self):
@@ -498,28 +496,27 @@ class Figure(Complex):
 
                 
                 trace = go.Scatter(x=Complex.real,
-                                    y=Complex.imag,
-                                    text=hovertext
-                                    )
+                                   y=Complex.imag,
+                                   text=hovertext
+                                   )
                 trace.update(item['trace'])
 
                 if key == 'scatter':
-                    if 'color' not in item['trace']['marker']:
+                    #if 'color' not in item['trace']['marker']:
 
-                        chr_label = data_array[:,0]
+                    chr_label = data_array[:,0]
 
-                        if item['colorcolumn'] == 'ideogram':
-                            # follows ideogram color
-                            color = [*map(lambda x: self.chr_color_dict[x], chr_label)]
-                        
-                        elif isinstance(item['colorcolumn'], int):
-                            n = item['colorcolumn']
-                            assert isinstance(n, int)
-                            color = colors.to_rgb(data_array[:,n])
-                        else:
-                            assert item['colorcolumn'] is None
-                            
-                            color = item['trace']['marker']['color']
+                    if item['colorcolumn'] == 'ideogram':
+                        # follows ideogram color
+                        color = [*map(lambda x: self.chr_color_dict[x], chr_label)]
+                    
+                    elif isinstance(item['colorcolumn'], int):
+                        n = item['colorcolumn']
+                        assert isinstance(n, int)
+                        color = colors.to_rgb(data_array[:,n])
+                    else:
+                        assert item['colorcolumn'] is None
+                        color = item['trace']['marker']['color']
 
                     trace['marker'].update(color=color)
 
@@ -599,7 +596,6 @@ class Figure(Complex):
                     if not key == 'area':
                         color = [*map(lambda x: self.chr_color_dict[x], data_array[:,0])]
                     
-                    # ONGOING, histogram only
 
                     else:
                         color = self.get_chr_info()['chr_fillcolor']
@@ -627,7 +623,6 @@ class Figure(Complex):
                         paths_dict[i].update(item['layout'])
 
                 #ONGOING, histogram colorcolumn
-                
 
 
                 elif key in ['heatmap', 'cytoband', 'ribbon', 'twistedribbon', 'tile', 'link', 'area', 'histogram']:
@@ -778,16 +773,16 @@ class Figure(Complex):
         layout_shapes = []
         layout_annotations = []
 
-        if self.ideogram_chr_size['show']:
+        if self.ideogram_patch['show']:
             
-            if not self.ideogram_chr_size['showfillcolor']:
+            if not self.ideogram_patch['showfillcolor']:
                 # if no show fillcolor, there is no need to separate pathstring into list, hense the join
                 # seems like for dictionary update, the dict variable needs to be defined first
 
                 ideogram_pathstring = self.pathjoin(self.ideogram_path(self.get_ideogram_complex()))
 
 
-                layout_dict = self.ideogram_chr_size['layout']
+                layout_dict = self.ideogram_patch['layout']
                 layout_dict.update(dict(path=ideogram_pathstring))
                 layout_shapes.append(layout_dict)
             else:
@@ -795,32 +790,32 @@ class Figure(Complex):
 
                 for i in range(len(ideogram_path_list)):
                     layout_shapes.append(dict(path=ideogram_path_list[i], fillcolor=self.get_chr_info()['chr_fillcolor'][i]))
-                    layout_shapes[i].update(self.ideogram_chr_size['layout'])
+                    layout_shapes[i].update(self.ideogram_patch['layout'])
                     
 
         
-        if self.ideogram_chr_size['chrannotation']['show']:
+        if self.ideogram_patch['chrannotation']['show']:
             
             chrannot_theta = self.get_ideogram_chrannot_theta()
 
             chrannot_theta = self.np_list_concat(chrannot_theta)
 
                 
-            chrannot_complex = maths.to_complex(chrannot_theta, self.ideogram_chr_size['chrannotation']['radius']['R'])
+            chrannot_complex = maths.to_complex(chrannot_theta, self.ideogram_patch['chrannotation']['radius']['R'])
 
             chrannot_complex = self.np_list_concat(chrannot_complex)
 
-            chrannot_angleoffset = self.ideogram_chr_size['chrannotation']['textangle']['angleoffset']
-            chrannot_anglelimit = self.ideogram_chr_size['chrannotation']['textangle']['anglelimit']
+            chrannot_angleoffset = self.ideogram_patch['chrannotation']['textangle']['angleoffset']
+            chrannot_anglelimit = self.ideogram_patch['chrannotation']['textangle']['anglelimit']
                 
-            if self.ideogram_chr_size['chrannotation']['fonttype'] == 'bold':
+            if self.ideogram_patch['chrannotation']['fonttype'] == 'bold':
                 chrannot_text = [*map(lambda x: '<b>{}</b>'.format(x), self.get_chr_info()['chr_label'])]
-            elif self.ideogram_chr_size['chrannotation']['fonttype'] == 'italic':
+            elif self.ideogram_patch['chrannotation']['fonttype'] == 'italic':
                 chrannot_text = [*map(lambda x: '<i>{}</i>'.format(x), self.get_chr_info()['chr_label'])]
-            elif self.ideogram_chr_size['chrannotation']['fonttype'] in ['bold+italic', 'italic+bold']:
+            elif self.ideogram_patch['chrannotation']['fonttype'] in ['bold+italic', 'italic+bold']:
                 chrannot_text = [*map(lambda x: '<b><i>{}</i></b>'.format(x), self.get_chr_info()['chr_label'])]
             else:
-                chrannot_text = '{}'.format(self.get_chr_info()['chr_label'])
+                chrannot_text = [*map(lambda x: '{}'.format(x), self.get_chr_info()['chr_label'])]
 
             textangle = self.angleconvert(chrannot_theta, angleoffset=chrannot_angleoffset, anglelimit=chrannot_anglelimit)
 
@@ -834,7 +829,7 @@ class Figure(Complex):
                                                   textangle=textangle[i]
                                                   )
                                             )
-                layout_annotations[i].update(self.ideogram_chr_size['chrannotation']['layout'])
+                layout_annotations[i].update(self.ideogram_patch['chrannotation']['layout'])
 
 
         if self.ideogram_majortick['show']:

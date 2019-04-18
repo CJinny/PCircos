@@ -1,0 +1,13 @@
+{
+    "Category": {
+        "ideogram": {
+            "patch": {
+                "file": {
+                    "path": "demo_data/chr_size.txt",
+                    "header": "infer",
+                    "sep": "\t"
+                }
+            }
+        }
+    }
+}
