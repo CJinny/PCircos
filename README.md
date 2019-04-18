@@ -9,6 +9,7 @@ The following are needed for PCircos to work:
 - [colorlover](https://github.com/jackparmer/colorlover)
 - [dash](https://dash.plot.ly/)
 - [dash colorscales](https://github.com/plotly/dash-colorscales)
+
 To install dependencies
 ```
 $ pip install plotly 
