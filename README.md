@@ -7,11 +7,16 @@ The following are needed for PCircos to work:
 
 - [plotly](https://plot.ly/python/)
 - [colorlover](https://github.com/jackparmer/colorlover)
-
+- [dash](https://dash.plot.ly/)
+- [dash colorscales](https://github.com/plotly/dash-colorscales)
 To install dependencies
 ```
 $ pip install plotly 
 $ pip install colorlover
+$ pip install dash==0.39.0
+$ pip install dash-daq==0.1.0  
+$ pip install dash_colorscales
+$ pip install -i https://test.pypi.org/simple/ colorpicker-box
 ```
 or if you don't have root privilege
 ```
