@@ -23,41 +23,57 @@ def chr_info(input_file_path,
              custom_label=False,
              custom_spacing=False,
              custom_color=False,
-             dash_dict=None
+             #dash_mode=False
              ):
-   ### ONGOING
+    #print('dash_mode is:{}'.format(dash_mode))
+    #if not dash_mode:
+
+
     try:
-        chr_info_pd = pd.read_csv(input_file_path, sep=sep, header=header, engine='python').fillna(0)
+        chr_info_pd = pd.read_csv(input_file_path, sep=sep, header=header)
+        
     except Exception:
         try:
-            chr_info_pd = pd.read_csv(input_file_path, sep=sep)
+            chr_info_pd = pd.read_csv(input_file_path, sep=sep, header=header, engine='python').fillna(0)
         except Exception:
             try:
-                chr_info_pd = pd.read_csv(input_file_path, sep='\t')
+                chr_info_pd = pd.read_csv(input_file_path, sep=sep)
             except Exception:
                 try:
-                    chr_info_pd = pd.read_csv(input_file_path, sep=' ')
+                    chr_info_pd = pd.read_csv(input_file_path, sep='\t')
                 except Exception:
                     try:
-                        chr_info_pd = pd.read_csv(input_file_path, sep=',')
+                        chr_info_pd = pd.read_csv(input_file_path, sep=' ')
                     except Exception:
-                        print('unable to read ideogram, printing input file path below')
-                        print(input_file_path)
-        
+                        try:
+                            chr_info_pd = pd.read_csv(input_file_path, sep=',')
+                        except Exception:
+                            print('unable to read ideogram, printing input file path below')
+                            print(input_file_path)
 
-    if dash_dict is not None:
-        for i in range(len(chr_info_pd)):
-            if custom_label is False:
-                
-                chr_info_pd = chr_info_pd[chr_info_pd.iloc[:,0].isin(dash_dict['chromosome_checklist'])]
+    
+    '''
+    else:
+        ##### ONGOING
+        ##### need to add custom selection of chromsomes
+        chr_info_pd = pd.read_csv(input_file_path, sep=sep, header=header)
+        print('test chr_info_pd')
+        print(chr_info_pd)
+    '''
+    '''
+    for i in range(len(chr_info_pd)):
+        if custom_label is False:
+            
+            chr_info_pd = chr_info_pd[chr_info_pd.iloc[:,0].isin(dash_dict['chromosome_checklist'])]
 
-            else:
-                chr_info_pd = chr_info_pd[chr_info_pd.iloc[:,2].isin(dash_dict['chromosome_checklist'])]
+        else:
+            chr_info_pd = chr_info_pd[chr_info_pd.iloc[:,2].isin(dash_dict['chromosome_checklist'])]
+    '''
+
 
 
     chr_info=np.array(chr_info_pd.iloc[:])
-    # responsive to dashapp checklist
-    # print(chr_info)
+    
 
 
     assert len(chr_info) > 0
@@ -132,6 +148,7 @@ def chr_info(input_file_path,
     config_dict['chr_spacing'] = chr_spacing
     config_dict['ideogram_bin'] =ideogram_bin
 
+
     return config_dict
 
 
@@ -185,11 +202,13 @@ def ideogram_coord_config(chr_info, npoints=1000,
 
 
 def read_data(input_file_path, category, chr_info, sep='\t', header='infer'):
+    ## deprecated, everythng incorporated into data_array
+    try:
+        pd_data = pd.read_csv(input_file_path, sep=sep, header=header)
+    except Exception:
+        print(input_file_path)
+        pd_data = pd.read_csv(input_file_path, sep=sep, header=header, engine='python').fillna('NA')
     
-    pd_data = pd.read_csv(input_file_path, sep=sep, header=header, engine='python').fillna('NA')
-    
-
-    ####ONGOING 
     pd_data = pd_data[pd_data.iloc[:,0].isin(chr_info['chr_name'])]
     for i in range(len(pd_data)):
         pd_data.iloc[i,0] = chr_info['chr_label_dict'][pd_data.iloc[i,0]]
@@ -201,7 +220,7 @@ def read_data(input_file_path, category, chr_info, sep='\t', header='infer'):
 
     return np.array(pd_data.iloc[:])
 
-    
+
 def data_array(input_file_path, category, chr_info, sep='\t', header='infer', 
                colorcolumn=None, to_rgb=True, sortbycolor=False
               ):
@@ -211,7 +230,6 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
          possibly convert color string to rgb colors (for cytoband, heatmap)
          possibly sort data by colorcolumn (for cytoband, heatmap, annotation)
          Note that you should not sort data for other plots'''
-
 
     '''notice that from ring data doesn't need to be processed'''
     # this function is used for copmlex_config module as well as the hovertext module
@@ -227,8 +245,27 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
         raise ValueError('Please choose a supported category, please note that ideogram, ring data does not go through here')
 
     data_dict = {}
-    input_pd = pd.read_csv(input_file_path, sep=sep, header=header, engine='python').fillna(0)
- 
+    try:
+        input_pd = pd.read_csv(input_file_path, sep=sep, header=header)
+    except Exception:
+        input_pd = pd.read_csv(input_file_path, sep=sep, header=header, engine='python').fillna(0)
+    
+    # read_data for hovertext information, not required for every category
+    try:
+        pd_data = input_pd[input_pd.iloc[:,0].isin(chr_info['chr_name'])]
+        for i in range(len(pd_data)):
+            pd_data.iloc[i,0] = chr_info['chr_label_dict'][pd_data.iloc[i,0]]
+
+        if category in ['link', 'ribbon', 'twistedribbon']:
+            pd_data = pd_data[pd_data.iloc[:,3].isin(chr_info['chr_name'])]
+            for i in range(len(pd_data)):
+                pd_data.iloc[i,3] = chr_info['chr_label_dict'][pd_data.iloc[i,3]]
+        read_data = np.array(pd_data.iloc[:])
+    except Exception:
+        pass
+
+
+
     chr_ideogram_bin = chr_info['ideogram_bin']
 
     # convert chr_name to chr_label, e.g. hs1 => chr1
@@ -249,15 +286,14 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
 
     data_chr = input_array[:,0]
     
-    
-
+   
 
     if category in ['link', 'ribbon', 'twistedribbon']:
         try:
             data_chr_1 = input_array[:,3]
         except IndexError:
-            print ('error, printing input_array')
-            print (input_array) 
+            print('error, printing input_array')
+            print(input_array) 
 
         '''
         for i in range(len(input_array)):
@@ -310,5 +346,11 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
     else:
         data_dict['sortindex'] = list(range(len(input_array)))
     data_dict['data_array'] = input_array
+
+    try:
+        data_dict['read_data'] = read_data
+    except Exception:
+        pass
+
     return data_dict
     

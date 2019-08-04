@@ -122,7 +122,7 @@
                 "show": "False",
                 "spacing": 20000000,
                 "radius": {
-                    "R": 1.2
+                    "R": 1.16
                 },
                 "textformat": "Mb",
                 "textangle": {
@@ -253,7 +253,7 @@
                 "fillcolor": "grey",
                 "line": {
                     "color": "black",
-                    "width": 2
+                    "width": 0
                 }
             }
         },
@@ -277,7 +277,8 @@
                 "marker": {
                     "size": 5,
                     "symbol": 0,
-                    "opacity": 0.9
+                    "opacity": 0.9,
+                    "color": "red"
                 }
             }
         },

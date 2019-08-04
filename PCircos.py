@@ -27,7 +27,7 @@ __version__ = '1.1'
 __date__ = 'April 18 2019'
 
 if (sys.version_info[0]!=3):
-    raise Exception('PCircos requires Python 2, your current Python version is {}.{}.{}'.
+    raise Exception('PCircos requires Python 3, your current Python version is {}.{}.{}'.
                     format(sys.version_info[0],sys.version_info[1],sys.version_info[2]))
 
 
@@ -43,10 +43,11 @@ def run_PCircos():
     except IndexError:
         plot(fig)
 
+
 if __name__ == "__main__":
     t=time()
     run_PCircos()
     print ('total run time:')
     print (time()-t)
-
+    
     # python3 PCircos.py demo_data/demo_params.json > test.txt

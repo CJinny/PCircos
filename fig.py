@@ -8,6 +8,8 @@ import colors
 import copy
 from Complex import Complex
 from config import json_config, coord_config
+import io
+import base64
 #from dash_dict import *
 
 
@@ -40,43 +42,107 @@ class Figure(Complex):
         # not able to read dash_dict twice for some reason
 
         if 'dash_dict' in kwargs:
-            self.dash_dict = kwargs.pop('dash_dict').copy()
-
-        try:
+            self.dash_dict = kwargs['dash_dict'].copy()
+            #print(self.dash_dict)
+            ## a switch        
             self.config_dict = json_config.json2dict(self.dash_dict)
-        except Exception:
-            self.config_dict = json_config.json2dict(kwargs.pop('input_json_path'))
-
+            #print(self.config_dict)
+        #except Exception:
+        else:
+            self.config_dict = json_config.json2dict(kwargs['input_json_path'])
+            
+        ########################################################################
+        # try replacing all self.get_chr_info() with self.chr_info
         
-       
+        self.chr_info = coord_config.chr_info(self.config_dict['Category']['ideogram']['patch']['file']['path'], 
+                                              sep=self.config_dict['Category']['ideogram']['patch']['file']['sep'],
+                                              custom_label=self.config_dict['Category']['ideogram']['patch']['customoptions']['customlabel'], 
+                                              custom_spacing=self.config_dict['Category']['ideogram']['patch']['customoptions']['customspacing'], 
+                                              custom_color=self.config_dict['Category']['ideogram']['patch']['customoptions']['customcolor'],
+                                              )
+        ########################################################################       
+
         self.ideogram_coord_config = self.get_ideogram_coord_config()
 
         self.layout_general = self.config_dict['General']
 
-        self.categories = self.config_dict['Category']
+
+        categories = self.config_dict['Category']
+        keyList = []
+        for key in categories:
+            if key in ['cytoband', 'highlight', 'annotation']:
+                if 'file' not in categories[key]:
+                    keyList.append(key)
+                    
+        for key in keyList:
+            categories.pop(key) 
+        
+        # if cytoband is used, ideogram patch fill is automatically disabled!
+        if 'cytoband' in categories:
+            categories['ideogram']['patch']['showfillcolor'] = False
+
+        ###### for some reason annotation file path is not converted to io.StringIO format
+        
+    
+        self.categories = categories
+
+        
+        print('self.categories')
+        print(self.categories)
+        print('self.categories.keys()')
+        
+
+        print(self.categories.keys())
 
         self.ideogram = self.categories['ideogram']
 
         self.ideogram_patch = self.ideogram['patch']
-
+        #print(self.ideogram_patch)
 
         self.ideogram_majortick = self.ideogram['majortick']
         self.ideogram_minortick = self.ideogram['minortick']
         self.ideogram_ticklabel = self.ideogram['ticklabel']
 
         self.ideogram_radius_dict = self.ideogram_patch['radius']
-
         self.show_chr_annotation = self.ideogram_patch['chrannotation']['show']
-       
         
         self.major_tick_radius_dict = self.ideogram_majortick['radius']
         self.minor_tick_radius_dict = self.ideogram_minortick['radius']
         self.tick_label_radius_dict = self.ideogram_ticklabel['radius']
         self.SUM = self.get_ideogram_coord_config()['SUM']
+
         self.degreerange = self.ideogram_patch['degreerange']
-        self.chr_color_dict = self.get_chr_info()['chr_color_dict']   # a dict: chr_name:chr_color
-        self.chr_label_dict = self.get_chr_info()['chr_label_dict']
-    
+        
+        self.chr_color_dict = self.chr_info['chr_color_dict']
+        self.chr_label_dict = self.chr_info['chr_label_dict']
+
+
+        ############################################################
+        #replace self.get_data_array_dict() & self.read_data() with ONE self.get_data attribute!!
+        get_data_array_dict_ = {}
+        get_read_data_ = {}
+
+        for key in self.categories:
+            if key == 'ideogram':
+                pass
+            else:
+                try:
+                    get_data_array_dict_[key] = self.get_data_array_dict(key)
+                except Exception:
+                    pass
+
+        self.get_data = get_data_array_dict_
+        #print('test self.get_data')
+        #print(self.get_data)
+        #print('done testing')
+
+        
+        #print('test self.get_data_array_dict_')    
+        #print(self.get_data_array_dict_)
+        #print('self.get_data_array_dict_ scatter')
+        #print(self.get_data_array_dict_['scatter'])
+        #print('end')
+
     def generate_dash_dict(self):
         return self.config_dict
 
@@ -107,14 +173,16 @@ class Figure(Complex):
             if item['file']['header'] in ['None', None, 'none']:
                 unsorted_data = coord_config.read_data(item['file']['path'],
                                                        key,
-                                                       self.get_chr_info(),
+                                                       #self.get_chr_info(),
+                                                       self.chr_info,
                                                        sep=item['file']['sep'],
                                                        header=None
                                                        )
             else:
                 unsorted_data =  coord_config.read_data(item['file']['path'],
                                                         key,
-                                                        self.get_chr_info(),
+                                                        #self.get_chr_info(),
+                                                        self.chr_info,
                                                         sep=item['file']['sep']
                                                         )
             if item['sortbycolor']:
@@ -134,7 +202,6 @@ class Figure(Complex):
         
         #chr_info_file = self.config_dict['Category']['ideogram']['patch']['file']
         #custom_options = self.config_dict['Category']['ideogram']['patch']['customoptions']
-
         
         chr_info_dict = coord_config.chr_info(self.config_dict['Category']['ideogram']['patch']['file']['path'], 
                                               sep=self.config_dict['Category']['ideogram']['patch']['file']['sep'],
@@ -143,13 +210,16 @@ class Figure(Complex):
                                               custom_color=self.config_dict['Category']['ideogram']['patch']['customoptions']['customcolor'],
                                               )
         
+
         return chr_info_dict
                                           
-        
+    
+
     def get_ideogram_coord_config(self):
         
-
-        ideogram_coord_config = coord_config.ideogram_coord_config(self.get_chr_info(), 
+        ideogram_coord_config = coord_config.ideogram_coord_config(
+                                                                   #self.get_chr_info(),
+                                                                   self.chr_info,
                                                                    npoints=self.config_dict['Category']['ideogram']['patch']['npoints'],
                                                                    show_major_tick=self.config_dict['Category']['ideogram']['majortick']['show'],
                                                                    major_tick_spacing=self.config_dict['Category']['ideogram']['majortick']['spacing'],
@@ -158,6 +228,8 @@ class Figure(Complex):
                                                                    show_tick_label=self.config_dict['Category']['ideogram']['ticklabel']['show'],
                                                                    tick_label_spacing=self.config_dict['Category']['ideogram']['ticklabel']['spacing']
                                                                   )
+    
+
         return ideogram_coord_config
 
     ## self.ideogram_complex() and self.ring_complex() is inherited
@@ -233,16 +305,15 @@ class Figure(Complex):
         return " ".join(path_list)
 
     def get_data_array_dict(self, key):
-        # single instance key
-        # without ideogram
-        # for each category type
-        ## either returns a np.ndarray or a list of np.ndarray!
+        
         assert key in self.categories
         items = self.categories[key]
+        #print('key is {}'.format(key))
+        #print(items)
         if key == 'ideogram':
             raise ValueError('ideogram information should not be parsed in get_data_array()')
+
         else:
- 
             def single_data_array(key, item):
 
                 if 'colorcolumn' not in item.keys():
@@ -252,7 +323,8 @@ class Figure(Complex):
 
                 if item['file']['header'] in ['None', None, 'none']:
                     return coord_config.data_array(item['file']['path'], key,
-                                                self.get_chr_info(), 
+                                                #self.get_chr_info(), 
+                                                self.chr_info,
                                                 sep=item['file']['sep'],
                                                 header=None,
                                                 colorcolumn=item['colorcolumn'],
@@ -260,7 +332,8 @@ class Figure(Complex):
                                                 )
                 else:
                     return coord_config.data_array(item['file']['path'], key,
-                                                self.get_chr_info(), 
+                                                #self.get_chr_info(), 
+                                                self.chr_info,
                                                 sep=item['file']['sep'],
                                                 colorcolumn=item['colorcolumn'],
                                                 sortbycolor=item['sortbycolor']
@@ -269,21 +342,35 @@ class Figure(Complex):
             if isinstance(items, dict):
                 return single_data_array(key, items)
             elif isinstance(items, list):
-                return [*map(lambda x: single_data_array(key, x), items)]
+                try:
+                    return [*map(lambda x: single_data_array(key, x), items)]
+                except Exception:
+                    print(key)
 
     def get_data_array(self, key):
-        if not isinstance(self.get_data_array_dict(key), list):
-            return self.get_data_array_dict(key)['data_array']
+
+        #if self.get_data_array_dict(key) is None:
+        if self.get_data[key] is None:
+            pass
         else:
-            return [*map(lambda x: x['data_array'], self.get_data_array_dict(key))]
+            #if not isinstance(self.get_data_array_dict(key), list):
+            if not isinstance(self.get_data[key], list):
+                #return self.get_data_array_dict(key)['data_array']
+                return self.get_data[key]['data_array']
+            else:
+                #return [*map(lambda x: x['data_array'], self.get_data_array_dict(key))]
+                return [*map(lambda x: x['data_array'], self.get_data[key])]
 
     def get_data_array_sortindex(self, key):
         # only used when sortbycolor is True! in other cases its just range(len(data_array))
 
-        if not isinstance(self.get_data_array_dict(key), list):
-            return self.get_data_array_dict(key)['sortindex']
+        #if not isinstance(self.get_data_array_dict(key), list):
+        if not isinstance(self.get_data[key], list):
+            #return self.get_data_array_dict(key)['sortindex']
+            return self.get_data[key]['sortindex']
         else:
-            return [*map(lambda x: x['sortindex'], self.get_data_array_dict(key))]
+            #return [*map(lambda x: x['sortindex'], self.get_data_array_dict(key))]
+            return [*map(lambda x:x['sortindex'], self.get_data[key])]
 
 
     def get_data_complexes(self, key, return_path=True):
@@ -291,9 +378,12 @@ class Figure(Complex):
         data_array = self.get_data_array(key)
         items = self.categories[key]
 
+        print('key is {}'.format(key))
+        print(key)
+        #print(data_array)
+        
         def single_data_complex(data_array, key, item):
-            
-
+ 
             if key != 'highlight':
                 
                 if key == 'cytoband':
@@ -342,19 +432,28 @@ class Figure(Complex):
         if isinstance(items, dict):
             return single_data_complex(data_array, key, items)
         elif isinstance(items, list):
-            return [*map(lambda x, y: single_data_complex(x, key, y), data_array, items)]
 
-
-
+            #print('single_data_complex data array')
+            #print(data_array)
+            #print('single_data_complex items')
+            #print(items)
+            try:
+                return [*map(lambda x, y: single_data_complex(x, key, y), data_array, items)]
+            except Exception:
+                print('debugging data_array')
+                print(data_array) # got empty
+                print('debugging items')
+                print(items)
 
     def get_hovertext(self, key):
 
         assert key in ['histogram', 'line', 'area','scatter', 'tile', 'heatmap', 'link', 'ribbon', 'twistedribbon']
 
-        if not isinstance(self.categories[key], list):
+        if not isinstance(self.get_data[key], list):
             hovertextformat = self.categories[key]['hovertextformat']
 
-            a = self.get_read_data(key)
+            #a = self.get_read_data(key)
+            a = self.get_data[key]['read_data']
             hvtext = []
             if key not in ['link', 'ribbon', 'twistedribbon']:
                 assert a.shape[1] >= 3
@@ -382,7 +481,14 @@ class Figure(Complex):
                     hvtext.append(eval(hovertextformat[1]))
         else:
             hvtext = []
-            data_array_list = self.get_read_data(key)
+            try:
+                data_array_list = [*map(lambda t:t['read_data'], self.get_data[key])]
+
+            except Exception:
+                print('debugging...')
+                #print(self.get_data[key])
+                print('end of debugging...')
+
             for j in range(len(data_array_list)):
                 hovertextformat = self.categories[key][j]['hovertextformat']
                 
@@ -451,7 +557,7 @@ class Figure(Complex):
 
                 hovertext_generator = divide(hovertext, index)
 
-                if item['colorcolumn'] is None:
+                if item['colorcolumn'] in [None, 'None']:
                     for i in range(len(Complex)):
                         trace.append(go.Scatter(x=Complex[i].real,
                                                 y=Complex[i].imag,
@@ -464,8 +570,8 @@ class Figure(Complex):
 
                     chr_label = data_array[:,0]
 
-                    color = self.get_chr_info()['chr_fillcolor']
-                    
+                    #color = self.get_chr_info()['chr_fillcolor']
+                    color = self.chr_info['chr_fillcolor']
                     
                     tmp_trace = item['trace'].copy()
                     for i in range(len(Complex)):
@@ -515,7 +621,8 @@ class Figure(Complex):
                         assert isinstance(n, int)
                         color = colors.to_rgb(data_array[:,n])
                     else:
-                        assert item['colorcolumn'] is None
+                        ### ONGOING
+                        #assert item['colorcolumn'] in [None, 'None']
                         color = item['trace']['marker']['color']
 
                     trace['marker'].update(color=color)
@@ -579,7 +686,7 @@ class Figure(Complex):
                                            interval_theta_array_1=interval_theta_array_1)
 
 
-            if item['colorcolumn'] is None:
+            if item['colorcolumn'] in [None, 'None']:
 
                 path = " ".join(path_list)
                 paths_dict = dict(path=path)
@@ -595,15 +702,16 @@ class Figure(Complex):
 
                     if not key == 'area':
                         color = [*map(lambda x: self.chr_color_dict[x], data_array[:,0])]
-                    
 
                     else:
-                        color = self.get_chr_info()['chr_fillcolor']
-                        
+                        #color = self.get_chr_info()['chr_fillcolor']
+                        color = self.chr_info['chr_fillcolor']
 
                 elif isinstance(item['colorcolumn'], int):
                     n = item['colorcolumn']
                     color = data_array[:,n]
+
+
 
                 if key == 'heatmap':
                     color = maths.val2heatmap(color, palatte_dict=item['palatte'])
@@ -622,11 +730,9 @@ class Figure(Complex):
                         
                         paths_dict[i].update(item['layout'])
 
-                #ONGOING, histogram colorcolumn
 
 
                 elif key in ['heatmap', 'cytoband', 'ribbon', 'twistedribbon', 'tile', 'link', 'area', 'histogram']:
-
 
                     for i in range(len(path_list)):
                         paths_dict.append(dict(path=path_list[i]))
@@ -638,8 +744,7 @@ class Figure(Complex):
                         else:
                             paths_dict[i]['line']['color'] = color[i]
                             paths_dict[i]['fillcolor'] = color[i]
-                    
-                    
+                  
             return paths_dict
 
         if isinstance(items, dict):
@@ -769,7 +874,6 @@ class Figure(Complex):
 
         layout = go.Layout(self.layout_general)
 
-        ## ONGOING
         layout_shapes = []
         layout_annotations = []
 
@@ -789,7 +893,10 @@ class Figure(Complex):
                 ideogram_path_list = self.ideogram_path(self.get_ideogram_complex())
 
                 for i in range(len(ideogram_path_list)):
-                    layout_shapes.append(dict(path=ideogram_path_list[i], fillcolor=self.get_chr_info()['chr_fillcolor'][i]))
+                    layout_shapes.append(dict(path=ideogram_path_list[i], 
+                                              #fillcolor=self.get_chr_info()['chr_fillcolor'][i]
+                                              fillcolor=self.chr_info['chr_fillcolor'][i]
+                                              ))
                     layout_shapes[i].update(self.ideogram_patch['layout'])
                     
 
@@ -809,13 +916,29 @@ class Figure(Complex):
             chrannot_anglelimit = self.ideogram_patch['chrannotation']['textangle']['anglelimit']
                 
             if self.ideogram_patch['chrannotation']['fonttype'] == 'bold':
-                chrannot_text = [*map(lambda x: '<b>{}</b>'.format(x), self.get_chr_info()['chr_label'])]
+                chrannot_text = [*map(lambda x: '<b>{}</b>'.format(x), 
+                                        #self.get_chr_info()['chr_label']
+                                        self.chr_info['chr_label']
+                                        )]
+
             elif self.ideogram_patch['chrannotation']['fonttype'] == 'italic':
-                chrannot_text = [*map(lambda x: '<i>{}</i>'.format(x), self.get_chr_info()['chr_label'])]
+                chrannot_text = [*map(lambda x: '<i>{}</i>'.format(x), 
+                                        #self.get_chr_info()['chr_label']
+                                        self.chr_info['chr_label']
+                                        )]
+
             elif self.ideogram_patch['chrannotation']['fonttype'] in ['bold+italic', 'italic+bold']:
-                chrannot_text = [*map(lambda x: '<b><i>{}</i></b>'.format(x), self.get_chr_info()['chr_label'])]
+                chrannot_text = [*map(lambda x: '<b><i>{}</i></b>'.format(x), 
+                                        #self.get_chr_info()['chr_label']
+                                        self.chr_info['chr_label']
+                                        )]
+
             else:
-                chrannot_text = [*map(lambda x: '{}'.format(x), self.get_chr_info()['chr_label'])]
+                chrannot_text = [*map(lambda x: '{}'.format(x), 
+                                        #self.get_chr_info()['chr_label']
+                                        self.chr_info['chr_label']
+                                        )]
+
 
             textangle = self.angleconvert(chrannot_theta, angleoffset=chrannot_angleoffset, anglelimit=chrannot_anglelimit)
 
@@ -914,9 +1037,17 @@ class Figure(Complex):
                 layout_shapes.extend(self.get_paths_dict('highlight'))
 
         if 'annotation' in self.categories.keys():
-            if self.categories['annotation']['show']:
+            #print(self.categories['annotation'])
+            print('annotation df head')
+            #a = pd.read_csv(self.categories['annotation']['file']['path'])
+            
+
+
+            try:
+                if self.categories['annotation']['show']:
+                    layout_annotations.extend(self.get_annotations_dict())
+            except Exception:
                 layout_annotations.extend(self.get_annotations_dict())
-        
 
         layout['shapes'] = layout_shapes
         layout['annotations'] = layout_annotations
@@ -926,5 +1057,9 @@ class Figure(Complex):
 
 
     def fig(self):
-       
-        return go.Figure(data=self.trace(), layout=self.layout())
+        try:
+            return go.Figure(data=self.trace(), layout=self.layout())
+        except Exception:
+            # to deal with an issue like this when using dash (specifically line plot):
+            ## self.trace() => [Scatter(x0), [Scatter(x1), Scatter(x2), Scatter(x3),]]
+            return go.Figure(data=sum([*map(lambda t:[t] if not isinstance(t,list) else t, self.trace())], []), layout=self.layout())

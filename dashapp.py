@@ -681,7 +681,7 @@ def ideogram_callback(contents, fs, opacity, chrannotation,
         
 
     ideogram_dict = {
-        'ideogram':{
+        'patch':{
             'file': {
                 'path': content_string, 'sep': interp_fs(fs)
             },
@@ -723,7 +723,7 @@ def ideogram_callback(contents, fs, opacity, chrannotation,
         'ticklabel': {
             'show': ticks_enabler,
             'spacing': majortick_spacing,
-            "radius": {"R": 1.2},
+            "radius": {"R": 1.16},
             'textformat': tick_format,
             'textangle': {
                 'angleoffset': chrannotation_angleoffset,
@@ -826,11 +826,11 @@ def annotation_callback(contents, fs):
     else:
         annotation_dict = {
             'file': {
-                'path': content_string, 'header': 'infer', 'sep': sep
-            }
+                'path': content_string, 'header': 'infer', 'sep': sep,
+            },
+            'customcolor': False
         }
-    return json.dumps(annotation_dict)
-
+    return annotation_dict
 
 
 ## display or hide depending on the number of histogram user inputs
@@ -998,7 +998,9 @@ def store_histogram(number, *args):
         if args[9*i+6] == 'By Chromosome':
             di['colorcolumn'] = 'ideogram'
         elif args[9*i+6] == 'Mono':
-            di['layout']['fillcolor'] = args[9*i+7]
+            print('histogram args[9*i+7] is:')
+            print(args[9*i+7])
+            di['layout']['fillcolor'] = args[9*i+7]['hex']
         elif args[9*i+6] == 'Custom':
             di['colorcolumn'] = args[9*i+8]
         res.append(di)
@@ -1171,11 +1173,14 @@ def store_scatter(number, *args):
         if args[11*i+8] == 'By Chromosome':
             di['colorcolumn'] = 'ideogram'
         elif args[11*i+8] == 'Mono':
-            di['trace']['color'] = args[11*i+9]
+            di['colorcolumn'] = 'None'
+            print(args[11*i+9])
+            di['trace']['marker']['color'] = args[11*i+9]['hex']
         elif args[11*i+8] == 'Custom':
             di['colorcolumn'] = args[11*i+10]
         res.append(di)
-    #print(res)
+    print('original dashapp store scatter res')
+    print(res)
     return res
 
 ###
@@ -1339,14 +1344,15 @@ def store_line(number, *args):
             },
             'hovertextformat': args[12*i+2],
             'radius': {'R0': args[12*i+3], 'R1': args[12*i+4]},
-            'marker': {'size': args[12*i+6]},
-            'line': {'width': args[12*i+7], 'opacity': args[12*i+5], 'smoothing': args[12*i+8]}
+            'trace': {'line': {'width': args[12*i+7], 'smoothing': args[12*i+8]}, 'opacity': args[12*i+5], 'marker': {'size': args[12*i+6]} }
         }
         if args[12*i+9] == 'By Chromosome':
             di['colorcolumn'] = 'ideogram'
         elif args[12*i+9] == 'Mono':
-            di['marker']['color'] = args[12*i+10]
-            di['line']['color'] = args[12*i+10]
+            di['colorcolumn'] = 'None'
+            di['trace']['marker']['color'] = args[12*i+10]['hex']
+            di['trace']['line']['color'] = args[12*i+10]['hex']
+           
         elif args[12*i+9] == 'Custom':
             di['colorcolumn'] = args[12*i+11]
         res.append(di)
@@ -1517,7 +1523,10 @@ def store_area(number, *args):
         if args[9*i+6] == 'By Chromosome':
             di['colorcolumn'] = 'ideogram'
         elif args[9*i+6] == 'Mono':
-            di['layout']['fillcolor'] = args[9*i+7]
+            di['colorcolumn'] = 'None'
+            #print('store_area arg')
+            #print(args[9*i+7])
+            di['layout']['fillcolor'] = args[9*i+7]['hex']
         elif args[9*i+6] == 'Custom':
             di['colorcolumn'] = args[9*i+8]
         res.append(di)
@@ -1689,7 +1698,8 @@ def store_tile(number, *args):
         if args[10*i+7] == 'By Chromosome':
             di['colorcolumn'] = 'ideogram'
         elif args[10*i+7] == 'Mono':
-            di['layout']['line']['color'] = args[10*i+8]
+            di['layout']['fillcolor'] = args[10*i+8]['hex']
+            di['layout']['line']['color'] = args[10*i+8]['hex']
         elif args[10*i+7] == 'Custom':
             di['colorcolumn'] = args[10*i+9]
         res.append(di)
@@ -1927,7 +1937,7 @@ def store_connector(number, *args):
         if args[9*i+6] == 'By Chromosome':
             di['colorcolumn'] = 'ideogram'
         if args[9*i+6] == 'Mono':
-            di['layout']['line']['color'] = args[9*i+7]
+            di['layout']['line']['color'] = args[9*i+7]['hex']
         elif args[9*i+6] == 'Custom':
             di['colorcolumn'] = args[9*i+8]
         res.append(di)
@@ -2096,7 +2106,7 @@ def store_link(number, *args):
         }
         
         if args[11*i+8] == 'Mono':
-            di['layout']['line']['color'] = args[11*i+9]
+            di['layout']['line']['color'] = args[11*i+9]['hex']
         elif args[11*i+8] == 'Custom':
             di['colorcolumn'] = args[11*i+10]
         res.append(di)
@@ -2264,7 +2274,7 @@ def store_ribbon(number, *args):
         }
         
         if args[10*i+7] == 'Mono':
-            di['layout']['fillcolor'] = args[10*i+8]
+            di['layout']['fillcolor'] = args[10*i+8]['hex']
         elif args[10*i+7] == 'Custom':
             di['colorcolumn'] = args[10*i+9]
         res.append(di)
@@ -2432,7 +2442,7 @@ def store_twistedribbon(number, *args):
         }
         
         if args[10*i+7] == 'Mono':
-            di['layout']['fillcolor'] = args[10*i+8]
+            di['layout']['fillcolor'] = args[10*i+8]['hex']
         elif args[10*i+7] == 'Custom':
             di['colorcolumn'] = args[10*i+9]
         res.append(di)
@@ -2639,13 +2649,18 @@ def merge_all(n_clicks, *args):
                 'twistedribbon': args[14]
                 }
             }
+    
+    #print('before updating dash_dict:')
+    #print(res)
     print('updating dash_dict state')
+
+    remove_empty(res)
     convert_dict(res)
+    print('after convert_dict')
     print(res)
 
 
     return Figure(dash_dict=res).fig()   
-
 
 
 

@@ -143,7 +143,6 @@ def val2heatmap(input_val_array, palatte_dict={'palatte': 'RdBu',
     # convert input values to heatmap values
     # heatmap values must be integer from range(9) for sequential scale or range(11) for divergent scale
     
-    palatte_cl = cl.scales[str(palatte_dict['ncolor'])][palatte_dict['scale']][palatte_dict['palatte']]
 
     if not isinstance(input_val_array, np.ndarray):
         input_val_array = np.array(input_val_array, dtype='float')
@@ -152,25 +151,48 @@ def val2heatmap(input_val_array, palatte_dict={'palatte': 'RdBu',
     maximum = max(input_val_array)
     minimum = min(input_val_array)
 
-    if palatte_dict['scale'] == 'div' and palatte_dict['ncolor'] == 11:
+    if palatte_dict['scale'] == 'div':
         heatmap_val[np.where(input_val_array[:]<0)] = (-5)*input_val_array[np.where(input_val_array[:]<0)]/minimum+5
         heatmap_val[np.where(input_val_array[:]>=0)] = (5)*input_val_array[np.where(input_val_array[:]>=0)]/maximum+5 
-    elif palatte_dict['scale'] == 'seq' and palatte_dict['ncolor'] == 9:
+    elif palatte_dict['scale'] == 'seq':
         if maximum > 0 and minimum >= 0:
             heatmap_val = (9)*(input_val_array/maximum)
         elif maximum <= 0 and minimum < 0:
             heatmap_val = (-9)*(input_val_array/minimum)
         else:
             raise ValueError('Please make sure all data values either positive or negative if you choose sequential palatte')
-    else:
-        raise ValueError('heatmap scale, ncol can either be div, 11 or seq, 9')
+    
+    try:
+        #print('debugging...')
+        #print(palatte_dict)
+        palatte_cl = cl.scales[str(palatte_dict['ncolor'])][palatte_dict['scale']][palatte_dict['palatte']]
+    
+    except Exception:
+        try:
+            assert palatte_dict['ncolor'] in range(4,12)
+            if palatte_dict['ncolor'] > 9 and palatte_dict['scale'] == 'seq':
+                print('Sequential palatte {} does not have more than 9 colors, setting ncolor to 9'.format(palatte_dict['palatte']))
+                palatte_cl = cl.scales['9'][palatte_dict['scale']][palatte_dict['palatte']]
+            else:
+                if palatte_dict['scale'] == 'seq':
+                    try:
+                        palatte_cl = cl.scales[str(palatte_dict['ncolor'])]['div'][palatte_dict['palatte']]
+                    except KeyError:
+                        raise KeyError('palatte {} cannot be found in colorlover package!'.format(palatte_dict['palatte']))
+                elif palatte_dict['scale'] == 'div':
+                    try:
+                        palatte_cl = cl.scales[str(palatte_dict['ncolor'])]['seq'][palatte_dict['palatte']]
+                    except KeyError:
+                        raise KeyError('palatte {} cannot be found in colorlover package!'.format(palatte_dict['palatte']))        
+
+        except Exception:
+            palatte_cl = palatte_dict['palatte']
+ 
 
     int_heatmap_val = [*map(lambda x: int(round(x)), heatmap_val)]
     if palatte_dict['reverse'] == False:
         int_heatmap_val = [*map(lambda x: palatte_dict['ncolor']-x-1, int_heatmap_val)]
     
-  
-
     rgb_heatmap_val = [*map(lambda x: palatte_cl[x], int_heatmap_val)]
 
     return np.array(rgb_heatmap_val)

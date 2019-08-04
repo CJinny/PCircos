@@ -176,3 +176,14 @@ for i in range(20):
 
 if __name__ == '__main__':
     app.run_server(debug=True, port=8051)
+
+
+self.get_data_array_dict(key)
+self.get_read_data(key)
+
+self.get_data[key]['data_array']
+self.get_data[key]['sortindex']
+
+self.get_data[key]['read_data']
+
+{'file': {'path': <_io.StringIO object at 0x11cdbe4c8>, 'sep': '\t', 'header': 'infer'}, 'hovertextformat': ' "Chromosome: {}<br>Position: {}<br>Value: {:.2f}".format(a[i,0], a[i,1], float(a[i,2])) ', 'radius': {'R0': 0.4, 'R1': 0.5}, 'marker': {'size': 2}, 'line': {'width': 2, 'opacity': 0.9, 'smoothing': 0}, 'colorcolumn': 'ideogram', 'show': True, 'sortbycolor': False, 'trace': {'hoverinfo': 'text', 'mode': 'lines+markers', 'opacity': 0.9, 'marker': {'symbol': 0, 'size': 3, 'color': 'black'}, 'line': {'color': 'black', 'width': 2, 'shape': 'linear', 'smoothing': 0}}}

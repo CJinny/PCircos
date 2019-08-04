@@ -49,6 +49,29 @@ This code reads combined-output data and update Circos plot
                              'line': [{'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': ' "Chromosome: {}<br>Position: {}<br>Value: {:.2f}".format(a[i,0], a[i,1], float(a[i,2])) ', 'radius': {'R0': 0, 'R1': 0}, 'marker': {'size': 2, 'color': {'hex': '#56723a', 'rgb': {'r': 86, 'g': 114, 'b': 58, 'a': 1}}}, 'line': {'width': 2, 'opacity': 0.9, 'smoothing': 0, 'color': {'hex': '#56723a', 'rgb': {'r': 86, 'g': 114, 'b': 58, 'a': 1}}}}, {'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': ' "Chromosome: {}<br>Position: {}<br>Value: {:.2f}".format(a[i,0], a[i,1], float(a[i,2])) ', 'radius': {'R0': 0, 'R1': 0}, 'marker': {'size': 2}, 'line': {'width': 2, 'opacity': 0.9, 'smoothing': 0}, 'colorcolumn': 'ideogram'}], 'area': [{'file': {'content_string': None, 'sep': ' '}, 'hovertextformat': ' "Chromosome: {}<br>Position: {}<br>Value: {:.2f}".format(a[i,0], a[i,1], float(a[i,2])) ', 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.4}, 'colorcolumn': 'ideogram'}, {'file': {'content_string': None, 'sep': ','}, 'hovertextformat': ' "Chromosome: {}<br>Position: {}<br>Value: {:.2f}".format(a[i,0], a[i,1], float(a[i,2])) ', 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.4}, 'colorcolumn': 'ideogram'}], 'tile': [{'file': {'content_string': None, 'sep': ','}, 'hovertextformat': ' "Chromosome: {}<br>Start: {}<br>End: {}<br>CNV: {:.4f}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ', 'radius': {'R0': 0.1, 'R1': 0.2}, 'layout': {'opacity': 0.9, 'line': {'width': 3}}, 'colorcolumn': 'ideogram'}, {'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': ' "Chromosome: {}<br>Start: {}<br>End: {}<br>CNV: {:.4f}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ', 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.9, 'line': {'width': 3}}, 'colorcolumn': 'ideogram'}], 'heatmap': [{'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ', 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.8}, 'palatte': {'palatte': ['#fff7ec', '#feebcf', '#fddcaf', '#fdca93', '#fdb27a', '#fc8d59', '#f26d4b', '#e1482f', '#c92113', '#a80001', '#7f0000'], 'reverse': 'True', 'scale': 'True'}}, {'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ', 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.8}, 'palatte': {'palatte': ['#8e0152', '#c51b7d', '#de77ae', '#f1b6da', '#fde0ef', '#f7f7f7', '#e6f5d0', '#b8e186', '#7fbc41', '#4d9221', '#276419'], 'reverse': 'True', 'scale': 'True'}}], 'connector': [{'file': {'content_string': None, 'sep': '\t'}, 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 1, 'line': {'width': 1, 'color': {'hex': '#452f49', 'rgb': {'r': 69, 'g': 47, 'b': 73, 'a': 1}}}}}, {'file': {'content_string': None, 'sep': '\t'}, 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 1, 'line': {'width': 1}}, 'colorcolumn': 5}], 'link': [{'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': [' "Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ', ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) '], 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.8, 'line': {'width': 3, 'color': None}}}, {'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': [' "Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ', ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) '], 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.8, 'line': {'width': 3, 'color': None}}}], 'ribbon': [{'file': {'content_string': None, 'sep': ','}, 'hovertextformat': [' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,0], a[i,3], a[i,1], a[i,5], a[i,2], a[i,4]) ', ' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,3], a[i,0], a[i,5], a[i,1], a[i,4], a[i,2]) '], 'radius': {'R0': 0.1, 'R1': 0.15}, 'layout': {'opacity': 0.6, 'fillcolor': None}}, {'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': [' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,0], a[i,3], a[i,1], a[i,5], a[i,2], a[i,4]) ', ' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,3], a[i,0], a[i,5], a[i,1], a[i,4], a[i,2]) '], 'radius': {'R0': 0.1, 'R1': 0.15}, 'layout': {'opacity': 0.6, 'fillcolor': None}}, {'file': {'content_string': None, 'sep': ' '}, 'hovertextformat': [' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,0], a[i,3], a[i,1], a[i,5], a[i,2], a[i,4]) ', ' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,3], a[i,0], a[i,5], a[i,1], a[i,4], a[i,2]) '], 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.6, 'fillcolor': None}}], 'twistedribbon': [{'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': [' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,0], a[i,3], a[i,1], a[i,4], a[i,2], a[i,5]) ', ' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,3], a[i,0], a[i,4], a[i,1], a[i,5], a[i,2]) '], 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.6}, 'colorcolumn': 9}, {'file': {'content_string': None, 'sep': '\t'}, 'hovertextformat': [' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,0], a[i,3], a[i,1], a[i,4], a[i,2], a[i,5]) ', ' "Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}".format(a[i,3], a[i,0], a[i,4], a[i,1], a[i,5], a[i,2]) '], 'radius': {'R0': 0, 'R1': 0}, 'layout': {'opacity': 0.6}, 'colorcolumn': 8}]}}
 '''
 
+def remove_empty(dash_dict):
+    if dash_dict is None:
+        pass
+    else:
+        if not isinstance(dash_dict, dict):
+            pass
+        else:
+            for key in list(dash_dict.keys()):
+                if dash_dict[key] in [None, []]:
+                    del dash_dict[key] 
+
+                elif key in ['cytoband', 'annotation', 'highlight']:
+                    if 'file' not in dash_dict[key]:
+                        del dash_dict[key]
+                elif isinstance(dash_dict[key], dict):
+                    remove_empty(dash_dict[key])
+                    
+                elif isinstance(dash_dict[key], list):
+                    for i in range(len(dash_dict[key])):
+                        remove_empty(dash_dict[key][i])
+                        
+
+
 def convert_dict(dash_dict):
     if dash_dict is None:
         pass
@@ -62,7 +85,6 @@ def convert_dict(dash_dict):
                 if key == 'path':
                     if dash_dict[key] is None:
                         pass
-                    
                     else:
                         decoded = base64.b64decode(dash_dict[key])
                         path = io.StringIO(decoded.decode('utf-8'))
@@ -70,8 +92,8 @@ def convert_dict(dash_dict):
                     
                 elif dash_dict[key] in [None, []]:
                     del dash_dict[key]
+                   
                 
-
                 elif isinstance(dash_dict[key], dict):
                     convert_dict(dash_dict[key])
                     

@@ -544,7 +544,7 @@ def expand_histogram():
                         min=0.0,
                         max=1.0,
                         step=0.05,
-                        value=0.1,
+                        value=0.8,
                         style={'width': '45%'}
                     ),
                     html.P('Select color mode for histogram {}'.format(i+1)),
@@ -675,8 +675,8 @@ def expand_scatter():
                         html.P('Input color column for scatter {}'.format(i+1)),
                         dcc.Input(id='scatter-colorcolumn_{}'.format(i),
                                     type='number',
-                                    min=4,
-                                    value=4,
+                                    min=3,
+                                    value=3,
                                     step=1,
                                     style={'width': '45%'}
                                 )
@@ -793,8 +793,8 @@ def expand_line():
                         html.P('Input color column for line {}'.format(i+1)),
                         dcc.Input(id='line-colorcolumn_{}'.format(i),
                                     type='number',
-                                    min=4,
-                                    value=4,
+                                    min=3,
+                                    value=3,
                                     step=1,
                                     style={'width': '45%'}
                                 )
@@ -881,8 +881,8 @@ def expand_area():
                         html.P('Input color column for area {}'.format(i+1)),
                         dcc.Input(id='area-colorcolumn_{}'.format(i),
                                     type='number',
-                                    min=4,
-                                    value=4,
+                                    min=3,
+                                    value=3,
                                     step=1,
                                     style={'width': '45%'}
                                 )
@@ -1189,14 +1189,14 @@ def expand_link():
                     dcc.Textarea(
                         id='link-hovertext_0_{}'.format(i),
                         placeholder='Enter hovertext format...',
-                        value=' \"Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}\".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ',
+                        value=' \"Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}\".format(a[i,0], a[i,3], a[i,1], a[i,4], a[i,2], a[i,5]) ',
                         style={'width': '100%'}
                     ),
                     html.P('Input hovertext format (2nd) for link {}'.format(i+1)),
                     dcc.Textarea(
                         id='link-hovertext_1_{}'.format(i),
                         placeholder='Enter hovertext format...',
-                        value=' \"Chromosome: {}<br>Start: {}<br>End: {}<br>Value: {:.4f}\".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ',
+                        value=' \"Chromosome: {} => {}<br>From: {} => {}<br>From: {} => {}\".format(a[i,3], a[i,0], a[i,4], a[i,1], a[i,5], a[i,2]) ',
                         style={'width': '100%'}
                     ),
                     html.P('Select radius range for link {}'.format(i+1)),

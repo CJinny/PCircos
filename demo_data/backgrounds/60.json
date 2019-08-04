@@ -55,7 +55,6 @@
                 "header": "infer",
                 "sep": "\t"
             }
-
         },
         "histogram": [
             {
@@ -64,7 +63,7 @@
                     "header": "infer",
                     "sep": "\t"
                 },
-                "colorcolumn": "ideogram",
+                "colorcolumn": 4,
                 "radius": {
                     "R0": 0.945,
                     "R1": 0.99
@@ -89,9 +88,15 @@
                 "header": "infer",
                 "sep": "\t"
             },
+            "colorcolumn": 3,
             "radius": {
                 "R0": 0.69,
                 "R1": 0.78
+            },
+            "trace": {
+                "marker": {
+                    "color": "blue"
+                }
             }
             
         },
@@ -111,7 +116,8 @@
                     "size": 3
                 },
                 "line": {
-                    "width": 2
+                    "width": 2,
+                    "color": "black"
                 }
             }
         },
@@ -133,7 +139,7 @@
                 "header": "infer",
                 "sep": "\t"
             },
-            "colorcolumn": "ideogram",
+            "colorcolumn": 4,
             "radius": {
                 "R0": 0.6,
                 "R1": 0.68
@@ -150,10 +156,10 @@
                 "R1": 0.53
             },
             "palatte": {
-                "palatte": "RdBu",
+                "palatte": "RdGy",
                 "scale": "div",
-                "reverse": "False",
-                "ncolor": 11
+                "reverse": "True",
+                "ncolor": 9
             }
         },
         "link": {
@@ -162,10 +168,12 @@
                 "header": "infer",
                 "sep": "\t"
             },
+
             "radius": {
                 "R0": 0,
                 "R1": 0.45
             },
+            "colorcolumn": 6,
             "layout": {
                 "line": {
                     "color": "blue",
@@ -183,6 +191,7 @@
                 "R0": 0,
                 "R1": 0.45
             },
+            "colorcolumn": 6,
             "layout": {
                 "fillcolor": "purple"
             }
@@ -193,6 +202,7 @@
                 "header": "infer",
                 "sep": "\t"
             },
+            "colorcolumn": 6,
             "radius": {
                 "R0": 0,
                 "R1": 0.45
