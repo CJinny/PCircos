@@ -87,12 +87,10 @@ class Figure(Complex):
         self.categories = categories
 
         
-        print('self.categories')
-        print(self.categories)
-        print('self.categories.keys()')
-        
-
-        print(self.categories.keys())
+        #print('self.categories')
+        #print(self.categories)
+        #print('self.categories.keys()')
+        #print(self.categories.keys())
 
         self.ideogram = self.categories['ideogram']
 
@@ -378,8 +376,8 @@ class Figure(Complex):
         data_array = self.get_data_array(key)
         items = self.categories[key]
 
-        print('key is {}'.format(key))
-        print(key)
+        #print('key is {}'.format(key))
+        #print(key)
         #print(data_array)
         
         def single_data_complex(data_array, key, item):
@@ -1038,7 +1036,6 @@ class Figure(Complex):
 
         if 'annotation' in self.categories.keys():
             #print(self.categories['annotation'])
-            print('annotation df head')
             #a = pd.read_csv(self.categories['annotation']['file']['path'])
             
 

@@ -201,7 +201,7 @@
                 }
             }
         ],
-        "line": {
+        "line": [{
             "show": "True",
             "file": {
                 "path": "demo_data/scatter.txt",
@@ -231,8 +231,10 @@
                     "smoothing": 0
                 }
             }
-        },
-        "area": {
+        }
+    
+    ],
+        "area": [{
             "show": "False",
             "file": {
                 "path": "demo_data/scatter.txt",
@@ -264,8 +266,8 @@
                     "width": 0
                 }
             }
-        },
-        "scatter": {
+        }],
+        "scatter": [{
             "show": "True",
             "file": {
                 "path": "demo_data/scatter.txt",
@@ -289,8 +291,8 @@
                     "opacity": 1
                 }
             }
-        },
-        "tile": {
+        }],
+        "tile": [{
             "show": "True",
             "file": {
                 "path": "demo_data/tile.txt",
@@ -320,8 +322,8 @@
                     "width": 3
                 }
             }
-        },
-        "heatmap": {
+        }],
+        "heatmap": [{
             "show": "True",
             "file": {
                 "path": "demo_data/heatmap.txt",
@@ -358,8 +360,8 @@
                     "width": 0
                 }
             }
-        },
-        "link": {
+        }],
+        "link": [{
             "show": "True",
             "file": {
                 "path": "demo_data/link_test.txt",
@@ -393,8 +395,8 @@
                     "width": 1
                 }
             }
-        },
-        "ribbon": {
+        }],
+        "ribbon": [{
             "show": "False",
             "file": {
                 "path": "demo_data/ribbon_test.txt",
@@ -429,8 +431,8 @@
                     "width": 0
                 }
             }
-        },
-        "twistedribbon": {
+        }],
+        "twistedribbon": [{
             "show": "True",
             "file": {
                 "path": "demo_data/twisted_ribbon_test.txt",
@@ -465,8 +467,8 @@
                     "width": 0
                 }
             }
-        },
-        "connector": {
+        }],
+        "connector": [{
             "show": "True",
             "file": {
                 "path": "demo_data/connector.txt",
@@ -493,7 +495,7 @@
                     "width": 1
                 }
             }
-        },
+        }],
         "annotation": {
             "show": "True",
             "file": {
@@ -523,7 +525,8 @@
                     "size": 12
                 }
             }
-        },
+        }
+        ,
         "highlight": {
             "show": "True",
             "file": {
