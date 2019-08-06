@@ -1,6 +1,9 @@
 # PCircos
 PCircos is a python package based on plotly which helps generating Circos plot.
 
+## Click [here](https://colab.research.google.com/drive/1GIkZojmWbMou3wGjoSZ57YZvXtZJnY3G) for a tutorial
+
+
 ## Dependencies
 
 The following are needed for PCircos to work:
