@@ -65,3 +65,15 @@ To run an example, try:
 Note that path_to_your_custom.json should be changed to where your config.json file is.
 An html page would pop up on your browser
 
+
+## How to run the dash app:
+
+  - ```python dashapp.py```
+  - Use docker (suppose you wanna use PORT=8000):
+    ```
+    docker pull jinny92/dashcircos-docker:1.0 
+    docker run -it --rm -p 8000:8050 jinny92/dashcircos-docker:1.0
+    ```
+
+
+
