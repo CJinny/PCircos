@@ -74,8 +74,9 @@ external_css = [
         }]
 
 app = dash.Dash(__name__, external_stylesheets=external_css)
+server = app.server
 
-app.config.supress_callback_exceptions = True
+#app.config.supress_callback_exceptions = True
 
 
 #fig_instance = Figure(input_json_path=sys.argv[1])
@@ -280,19 +281,8 @@ app.layout = html.Div([
                             html.Details([
                                 html.Summary('Ring', className='summary-secondary'),
                                 html.Div([
-
-                                    html.Div([
-                                        html.P('Number of ring(s)', style=P_NELEMENT_STYLES),
-                                        daq.BooleanSwitch(
-                                            id='ring-number-lock',
-                                            on=False,
-                                            label='lock',
-                                            labelPosition='bottom',
-                                            style=SWITCH_STYLES
-                                        )
-                                    ], style={ 'display': 'inline-flex', 'marginBottom': '-0.4em'}),
-                                    dcc.Input(id='ring-number', value=0, min=0, max=200, type='number', style={'display': 'inline-block', 'height': '1.2em', 'width': '35%', 'fontSize': 'medium'}),
-                                    html.Div(id='ring-expand'),
+                                    
+                                    expand_ring(10),
                                   
                                     ], style={'paddingLeft': '0.2em', 'marginBottom': '1.2em'}
                                 ),
@@ -545,7 +535,6 @@ app.layout = html.Div([
                     dcc.Store(id='ring-output'),
                     dcc.Store(id='highlight-output'),
                     dcc.Store(id='annotation-output'),
-
                     dcc.Store(id='histogram-output'),
                     dcc.Store(id='scatter-output'),
                     dcc.Store(id='line-output'),
@@ -762,7 +751,7 @@ def cytoband_callback(contents, fs, opacity):
     #print(cytoband_dict)
     return cytoband_dict
 
-
+'''
 @app.callback(
     Output('ring-number', 'disabled'),
     [
@@ -771,9 +760,9 @@ def cytoband_callback(contents, fs, opacity):
 )
 def ring_number_lock(bool_value):
     return bool_value
+'''
 
-
-
+'''
 @app.callback(
     Output('ring-expand', 'children'),
     [
@@ -781,8 +770,42 @@ def ring_number_lock(bool_value):
     ],
 )
 
-def n_ring(number):
-    return expand_ring(number)
+ 
+#def n_ring(number):
+    #return expand_ring(10)
+'''
+
+
+# ONGOING 
+@app.callback(
+    Output('ring-output', 'data'),
+    ring_input_list(),
+    
+)
+
+def store_ring(*args):
+    res = []
+    for i in range(len(args)//4):
+        di = {
+            'radius': {
+                'R0': args[4*i],
+                'R1': args[4*i+1]
+            },
+            'layout': {
+                'opacity': args[4*i+2],
+                'fillcolor': 'rgb({},{},{})'.format(args[4*i+3]['rgb']['r'], args[4*i+3]['rgb']['g'], args[4*i+3]['rgb']['b']),
+                'layer': 'below',
+                'line': {
+                    'width': 0
+                }
+            }
+        }
+        res.append(di)
+    #print('debugging store_ring 0')
+    #print(args)
+    #print('debugging store_ring res')
+    #print(res)
+    return res
 
 
 
@@ -998,9 +1021,12 @@ def store_histogram(number, *args):
         if args[9*i+6] == 'By Chromosome':
             di['colorcolumn'] = 'ideogram'
         elif args[9*i+6] == 'Mono':
-            print('histogram args[9*i+7] is:')
-            print(args[9*i+7])
-            di['layout']['fillcolor'] = args[9*i+7]['hex']
+            #print('histogram args[9*i+7] is:')
+            #print(args[9*i+7])
+            try:
+                di['layout']['fillcolor'] = args[9*i+7]['hex']
+            except Exception:
+                di['layout']['fillcolor'] = 'rgb(241,112,19)'
         elif args[9*i+6] == 'Custom':
             di['colorcolumn'] = args[9*i+8]
         res.append(di)
@@ -1179,8 +1205,8 @@ def store_scatter(number, *args):
         elif args[11*i+8] == 'Custom':
             di['colorcolumn'] = args[11*i+10]
         res.append(di)
-    print('original dashapp store scatter res')
-    print(res)
+    #print('original dashapp store scatter res')
+    #print(res)
     return res
 
 ###
@@ -1526,7 +1552,10 @@ def store_area(number, *args):
             di['colorcolumn'] = 'None'
             #print('store_area arg')
             #print(args[9*i+7])
-            di['layout']['fillcolor'] = args[9*i+7]['hex']
+            try:
+                di['layout']['fillcolor'] = args[9*i+7]['hex']
+            except Exception:
+                di['layout']['fillcolor'] = 'rgb(241,112,19)'
         elif args[9*i+6] == 'Custom':
             di['colorcolumn'] = args[9*i+8]
         res.append(di)
@@ -1698,8 +1727,13 @@ def store_tile(number, *args):
         if args[10*i+7] == 'By Chromosome':
             di['colorcolumn'] = 'ideogram'
         elif args[10*i+7] == 'Mono':
-            di['layout']['fillcolor'] = args[10*i+8]['hex']
-            di['layout']['line']['color'] = args[10*i+8]['hex']
+            try:
+                di['layout']['fillcolor'] = args[10*i+8]['hex']
+                di['layout']['line']['color'] = args[10*i+8]['hex']
+            except Exception:
+                di['layout']['fillcolor'] = 'rgb(241,112,19)'
+                di['layout']['line']['color'] = 'rgb(241,112,19)'
+
         elif args[10*i+7] == 'Custom':
             di['colorcolumn'] = args[10*i+9]
         res.append(di)
@@ -1756,7 +1790,7 @@ def toggle_heatmap_4(number):
     heatmap_input_list()
 )
 def store_heatmap(number, *args):
-    print('triggering heatmap')
+    #print('triggering heatmap')
     res = []
     for i in range(number):
         di = {
@@ -1772,7 +1806,7 @@ def store_heatmap(number, *args):
                          }
         }
         res.append(di)
-    print(res)
+    #print(res)
     
     return res
 
@@ -1817,6 +1851,7 @@ def toggle_connector_4(number):
     if number >= 5: return {'display': 'block'}
     else: return {'display': 'none'}
 
+'''
 @app.callback(
     Output('connector-colormode-mono_0', 'style'),
     [Input('connector-colormode_0', 'value')]
@@ -1917,29 +1952,37 @@ def connector_colormode_custom_4(value):
     if value == 'Custom':
         return {'display': 'block'}
     else: return {'display': 'none'}
-
+'''
 
 @app.callback(
     Output('connector-output', 'data'),
     connector_input_list()
 )
-
+# 9 => 7
 def store_connector(number, *args):
     res = []
+    N = 7
+
     for i in range(number):
         di = {
             'file': { 
-                'path': interp_contents(args[9*i]), 'sep': interp_fs(args[9*i+1])
+                'path': interp_contents(args[N*i]), 'sep': interp_fs(args[N*i+1])
             },
-            'radius': {'R0': args[9*i+2], 'R1': args[9*i+3]},
-            'layout': {'opacity': args[9*i+4], 'line': {'width': args[9*i+5]}}
+            'radius': {'R0': args[N*i+2], 'R1': args[N*i+3]},
+            'layout': {'opacity': args[N*i+4], 'line': {'width': args[N*i+5]}}
         }
-        if args[9*i+6] == 'By Chromosome':
-            di['colorcolumn'] = 'ideogram'
-        if args[9*i+6] == 'Mono':
-            di['layout']['line']['color'] = args[9*i+7]['hex']
-        elif args[9*i+6] == 'Custom':
-            di['colorcolumn'] = args[9*i+8]
+        try:
+            di['layout']['line']['color'] = args[N*i+6]['hex']
+        except Exception:
+            di['layout']['line']['color'] = 'black'
+
+        #if args[N*i+6] == 'Mono':
+            #try:
+                #di['layout']['line']['color'] = args[N*i+7]['hex']
+            #except Exception:
+                #di['layout']['line']['color'] = 'black'
+        #elif args[9*i+6] == 'Custom':
+            #di['colorcolumn'] = args[9*i+8]
         res.append(di)
     #print(res)
     return res
@@ -2104,9 +2147,11 @@ def store_link(number, *args):
             'layout': {'opacity': args[11*i+6], 
                       'line': {'width': args[11*i+7]}}
         }
-        
         if args[11*i+8] == 'Mono':
-            di['layout']['line']['color'] = args[11*i+9]['hex']
+            try:
+                di['layout']['line']['color'] = args[11*i+9]['hex']
+            except Exception:
+                di['layout']['line']['color'] = 'rgb(241,112,19)'
         elif args[11*i+8] == 'Custom':
             di['colorcolumn'] = args[11*i+10]
         res.append(di)
@@ -2274,7 +2319,10 @@ def store_ribbon(number, *args):
         }
         
         if args[10*i+7] == 'Mono':
-            di['layout']['fillcolor'] = args[10*i+8]['hex']
+            try:
+                di['layout']['fillcolor'] = args[10*i+8]['hex']
+            except Exception:
+                di['layout']['fillcolor'] = 'rgb(241,112,19)'
         elif args[10*i+7] == 'Custom':
             di['colorcolumn'] = args[10*i+9]
         res.append(di)
@@ -2442,7 +2490,10 @@ def store_twistedribbon(number, *args):
         }
         
         if args[10*i+7] == 'Mono':
-            di['layout']['fillcolor'] = args[10*i+8]['hex']
+            try:
+                di['layout']['fillcolor'] = args[10*i+8]['hex']
+            except Exception:
+                di['layout']['fillcolor'] = 'rgb(241,112,19)'
         elif args[10*i+7] == 'Custom':
             di['colorcolumn'] = args[10*i+9]
         res.append(di)
@@ -2652,13 +2703,16 @@ def merge_all(n_clicks, *args):
     
     #print('before updating dash_dict:')
     #print(res)
-    print('updating dash_dict state')
+    #print('updating dash_dict state')
+    
 
     remove_empty(res)
     convert_dict(res)
-    print('after convert_dict')
-    print(res)
+    #print('after convert_dict')
+    #print(res)
 
+    #print('debugging ring')
+    #print(args[2])
 
     return Figure(dash_dict=res).fig()   
 
@@ -2698,7 +2752,9 @@ def update_output(_,
 
 if __name__ == '__main__':
     #print (app.layout)
-    app.run_server(debug=True)
+    try:
+        app.run_server(debug=True, host='0.0.0.0', port=sys.argv[1])
+    except Exception:
+        app.run_server(debug=True, host='0.0.0.0', port=8050)
 
-
-# python3 dashapp.py demo_data/demo_params.json
+# python3 dashapp.py 
