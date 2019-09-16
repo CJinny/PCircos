@@ -68,12 +68,13 @@ An html page would pop up on your browser
 
 ## How to run the dash app:
 
-  - ```python dashapp.py```
+  - ```python dashapp.py``` => localhost:8050 
   - Use docker (suppose you wanna use PORT=8000):
     ```
     docker pull jinny92/dashcircos-docker:1.0 
-    docker run -it --rm -p 8000:8050 jinny92/dashcircos-docker:1.0
+    docker run -it --rm -p 8000:8050 jinny92/dashcircos-docker:1.0 
     ```
+    => localhost:8000
 
 
 
