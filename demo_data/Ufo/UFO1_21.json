@@ -7,7 +7,7 @@
         "ideogram": {
             "patch": {
                 "file": {
-                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/Ufo/maize_v4_size.txt",
+                    "path": "demo_data/Ufo/maize_v4_size.txt",
                     "header": "True",
                     "sep": "\t"
                 },
@@ -118,7 +118,7 @@
             {
                 "show": "True",
                 "file": {
-                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/Ufo/CG.txt",
+                    "path": "demo_data/Ufo/CG.txt",
                     "header": "True",
                     "sep": "\t"
                 },
@@ -156,7 +156,7 @@
             {
                 "show": "True",
                 "file": {
-                    "path": "/home/jincui/anaconda3/bin/PCircos/demo_data/Ufo/CHG.txt",
+                    "path": "demo_data/Ufo/CHG.txt",
                     "header": "True",
                     "sep": "\t"
                 },
