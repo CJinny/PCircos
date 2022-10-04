@@ -1,0 +1,5 @@
+{
+    "path": "refGene.exons.txt",
+    "header": "infer",
+    "sep": "\t"
+}

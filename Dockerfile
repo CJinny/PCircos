@@ -14,13 +14,10 @@ WORKDIR /app
 ADD requirements.txt /app/
 
 RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
+#RUN pip3 install -r requirements.txt
 ADD . /app/
+RUN python3 -m pip install -e .
 
 
-ENTRYPOINT ["python3"]
-CMD ["dashapp.py"]
-
-## docker build -t dashcircos-docker .
-## docker run -it --rm -p 8000:8050 dashcircos-docker
-## http://localhost:8000
+ENTRYPOINT ["PCircos"]
+#CMD ["PCircos/dashapp.py"]

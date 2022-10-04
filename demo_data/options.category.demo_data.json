@@ -1,0 +1,70 @@
+{
+    "histogram": [
+        {
+            "show": "True",
+            "customfillcolor": "False",
+            "file": {
+                "path": "histogram_pos_chr.txt",
+                "header": "infer",
+                "sep": "\t"
+            },
+            "sortbycolor": "True",
+            "colorcolumn": "ideogram",
+            "radius": {
+                "R0": 0.89,
+                "R1": 0.93
+            },
+            "hovertextformat": " \"Chromosome: {}<br>Start: {}<br>End: {}<br>LogFC: {:.4f}\".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ",
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 0,
+                    "opacity": 0
+                }
+            },
+            "layout": {
+                "type": "path",
+                "opacity": 1,
+                "fillcolor": "red",
+                "line": {
+                    "color": "black",
+                    "width": 0
+                }
+            }
+        },
+        {
+            "show": "True",
+            "customfillcolor": "False",
+            "file": {
+                "path": "histogram_neg_chr.txt",
+                "header": "infer",
+                "sep": "\t"
+            },
+            "sortbycolor": "False",
+            "colorcolumn": "None",
+            "radius": {
+                "R0": 0.89,
+                "R1": 0.93
+            },
+            "hovertextformat": " \"Chromosome: {}<br>Start: {}<br>End: {}<br>LogFC: {:.4f}\".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ",
+            "trace": {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 0,
+                    "opacity": 0
+                }
+            },
+            "layout": {
+                "type": "path",
+                "opacity": 1,
+                "fillcolor": "blue",
+                "line": {
+                    "color": "blue",
+                    "width": 0
+                }
+            }
+        }
+    ]
+}

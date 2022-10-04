@@ -1,0 +1,184 @@
+body {
+    /*font-family: 'Times New Roman', Times, serif;*/
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+details {
+    margin: 0em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em
+}
+
+details[open] > summary {
+    background: #429ef4;
+    font-weight: bold
+}
+
+summary {
+    outline: none;
+    background: #f9f9f9;
+    font-size: 1.5em;
+    border: 0.05em solid grey;
+    padding: 0.1em;
+    margin: 0.1em;
+}
+
+summary:hover {
+    background: #f1f1f1;
+}
+
+summary.toggle {
+    background: #cdd2d6;
+    color: white;
+}
+/*
+24% reserved for sidebar tab
+temporary border color
+*/
+
+
+div.sidebar {
+    font-size: 1.2em;
+    position: absolute;
+    top: 1%;
+    left: 1%;
+    width: 24%;
+    height: 150%;
+    padding: 1%;
+    overflow-y: scroll;
+    border: 1px solid red
+}
+
+
+/*
+.sidebar {
+    font-size: 1.2em;
+    overflow-y: scroll;
+    border: 1px solid red;
+    display: table-cell;
+}
+.graph {
+    border: 1px solid blue;
+    display: table-cell;
+}
+*/
+
+
+
+/*
+
+*/
+
+div.graph {
+    position: absolute;
+    top: 1%;
+    left: 28%;
+    right: 1%;
+    border: 1px solid blue
+}
+
+/*
+div.sidebar.scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+div.sidebar.scroll::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px red; 
+    border-radius: 10px;
+}
+div.sidebar.scroll::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,.2); 
+    border-radius: 10px;
+}
+div.sidebar.scroll::-webkit-scrollbar-thum:hover {
+    background: rgba(0,0,0,.3);
+}
+*/
+
+button {
+    display: block;
+    height: 40px;
+    font-size: 1.2em;
+    margin: 0.1em;
+    margin-top: 0.8em;
+    margin-bottom: 0.8em;
+}
+
+
+button.hidden {
+    display: none
+}
+
+P {
+    margin-top: 0.4em;
+    margin-bottom: 0.4em
+}
+
+P.booleanswitch {
+    margin-top: 0.4em;
+    margin-bottom: 0em
+}
+
+
+label {
+    display: inline
+}
+
+
+summary.summary-secondary {
+    outline: none;
+    font-size: 1.3em
+}
+
+summary.summary-secondary::-webkit-details-marker {
+    display: none
+}
+
+
+
+summary.summary-secondary::after {
+    
+    border-radius: 20px;
+    content: "+";
+    color: black;
+    float: left;
+    font-size: 1em;
+    
+    font-weight: bold;
+    margin: -2px 5px 0px 0px;
+    padding: 1px 0 3px 0;
+    text-align: center;
+    width: 30px;
+    
+}
+
+details[open] > summary.summary-secondary {
+    background: #F0F8FF;
+    font-weight: normal;
+    font-style: italic;
+    color: black
+}
+details[open] > summary.summary-secondary:after {
+    content: "-"
+}
+
+div.feaHTK {
+    border: white
+}
+
+hr {
+    margin-top: 0.6em;
+    margin-bottom: 0.6em
+}
+
+div.indent {
+    padding-left: 0.2em
+}
+
+div.colorscale-block {
+    display: inline-block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: -8px
+}

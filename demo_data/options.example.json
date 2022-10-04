@@ -1,0 +1,17 @@
+{
+	"General": {
+		"title": "",
+		"width": 1000,
+		"height": 1000,
+		"plot_bgcolor": "white"
+	},
+	"Chr_list" : ["chr7", "chr13", "chr12", "chr14", "chr15", "chrX", "chr1", "chr17"],
+	"Annotations": {
+		"fields": ["chr", "pos", "ref", "alt", "NOMEN", "*"],
+		"show_none": true
+	},
+	"Cytoband": "options.cytoband.data.path.infos.json",
+	"Exons": "options.genes_exons.data.path.json",
+	"Genes": "options.genes.data.path.json",
+	"Gene_list" : ["EGFR", "BRCA1", "BRCA2", "TP53", "BBS1", "BBS2", "BBS4", "BBS5", "CAPN6","DACH1", "CAPN7", "DACH2", "IFNA14", "CAPN8", "AVL9", "CAPN9", "IFNA16", "IFNA17", "DDX11L17", "DDX11L1", "WASH7P", "CAPN6", "ARL14EPL", "DACH1", "IFNA13", "HSP90AB1", "CAPN7", "DACH2", "IFNA14", "CAPN8", "AVL9", "NEB", "CAPN9", "IFNA16", "IFNA17", "LTBP1", "ZNF550", "LTBP2", "ZNF551", "LTBP3", "ZNF552", "LTBP4", "OCEL1", "ZNF554", "EPOP", "HARS1", "PRR23A", "ZNF555", "HARS2", "PRR23B", "EPOR", "ZNF556", "PRR23C", "RFPL1", "ZNF557", "RFPL2", "ZNF558", "RFPL3", "ZNF559", "OR4L1", "SLC25A30", "SLC25A31", "KIAA0100", "SLC25A32", "LFNG", "HDAC1", "HDAC2", "SLC25A33", "CCND1", "HDAC3", "NES", "SLC25A34", "SLC25A35", "SCAF11", "CCND2", "DEFB130A", "HDAC4", "HDAC5", "DEFB130B", "CCND3", "SLC25A36", "PODN", "HDAC6", "UBE2V1", "TBC1D12", "TMEM70", "SLC25A37", "HDAC7", "TBC1D13", "LOC100509620", "TMEM71", "UBE2V2", "SMIM30", "ROPN1B", "SLC25A38", "PRAMEF33", "HDAC8", "SLC25A39", "TMEM72", "SMIM31"]
+}

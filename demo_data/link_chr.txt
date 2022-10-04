@@ -1,0 +1,3 @@
+chr1_name	chr1_start	chr1_end	chr_name	chr2_start	chr2_end	color
+chr1	82251	247199719	hs5	267343	180824846	green
+chr2	25401	200165009	hs4	100	20000000	red

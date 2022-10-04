@@ -1,0 +1,6 @@
+{
+    "path": "",
+    "header": "infer",
+    "sep": "\t",
+    "dataframe": "dataframe.cytoband.json"
+}

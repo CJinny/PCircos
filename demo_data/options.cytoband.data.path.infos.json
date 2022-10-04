@@ -1,0 +1,5 @@
+{
+    "path": "cytoband_hg19_chr_infos.txt",
+    "header": "infer",
+    "sep": "\t"
+}
