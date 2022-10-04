@@ -1,0 +1,16 @@
+plotly
+colorlover
+dash==0.39.0
+dash-daq==0.1.0
+dash_colorscales
+IPython
+PyVCF3
+Bio
+kaleido
+numpy
+pandas
+colour
+
+[dev]
+black
+pytest

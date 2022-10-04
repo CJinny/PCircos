@@ -1,0 +1,3 @@
+[console_scripts]
+vcf2circos = vcf2circos.vcf2circos:main
+

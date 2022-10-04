@@ -2,6 +2,8 @@
 
 Package vcf2circos is a python package based on Plotly which helps generating Circos plot, from a VCF file or a JSON configuration file.
 
+See documentation and code in [GitHub vcf2circos](https://github.com/bioinfo-chru-strasbourg/vcf2circos).
+
 This package is based on [PCircos](https://github.com/CJinnny/PCircos) code
 
 
@@ -14,17 +16,6 @@ Circos plot from VCF file:
 Circos plot from JSON file:
 
 [<img src="demo_data/demo_params.json.png" width="600"/>](demo_data/demo_params.json.png)
-
-# Getting Started
-
-
-```
-$ mkdir vcf2circos
-$ cd vcf2circos
-$ git clone https://github.com/bioinfo-chru-strasbourg/vcf2circos.git .
-$ docker build -t vcf2circos:latest .
-$ docker run -v $(pwd):/data vcf2circos:latest --input=demo_data/example.vcf.gz --output=/data/example.vcf.gz.html --options=demo_data/options.example.json
-```
 
 # Installation
 
@@ -43,7 +34,7 @@ $ git clone https://github.com/bioinfo-chru-strasbourg/vcf2circos.git .
 Compile source using Pip to generate binary "vcf2circos"
 
 ```
-$ python3 -m pip install -e .
+$ python -m pip install -e .
 ```
 
 ## Docker
@@ -58,7 +49,7 @@ $ docker build -t vcf2circos:latest .
 # Help
 
 ```
-usage: python PCircos.py [-h] -i INPUT -o OUTPUT [-e EXPORT] [-p OPTIONS]
+usage: python vcf2circos.py [-h] -i INPUT -o OUTPUT [-e EXPORT] [-p OPTIONS]
                          [-n NOTEBOOK_MODE]
 
 optional arguments:

@@ -1,23 +1,16 @@
-#FROM alpine:latest
-### I tried python:3.7-alpine, but no success during installation
 FROM ubuntu:latest
-MAINTAINER Jin Cui <cuijinjincui4@gmail.com>
+LABEL org.opencontainers.image.authors="antony.lebechec@chru-strasbourg.fr"
 
 
 RUN apt-get update -y
 RUN apt-get install -y python3.6 python3-pip
-
-
 
 RUN mkdir /app
 WORKDIR /app
 ADD requirements.txt /app/
 
 RUN pip3 install --upgrade pip
-#RUN pip3 install -r requirements.txt
 ADD . /app/
 RUN python3 -m pip install -e .
 
-
-ENTRYPOINT ["PCircos"]
-#CMD ["PCircos/dashapp.py"]
+ENTRYPOINT ["vcf2circos"]
