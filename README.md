@@ -13,14 +13,9 @@ This package is based on [PCircos](https://github.com/CJinnny/PCircos) code
 
 [<img src="demo_data/example.vcf.gz.png" width="600"/>](demo_data/example.vcf.gz.png)
 
-Circos plot in [HTML](demo_data/example.vcf.gz.html)
-<a href='demo_data/example.vcf.gz.html'>html</a>
-
 ## Circos plot from JSON file
 
 [<img src="demo_data/demo_params.json.png" width="600"/>](demo_data/demo_params.json.png)
-Circos plot in [HTML](demo_data/demo_params.json.html)
-<a href='demo_data/demo_params.json.html'>html</a>
 
 # Installation
 
