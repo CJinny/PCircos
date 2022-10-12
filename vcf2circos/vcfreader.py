@@ -3,16 +3,17 @@ from asyncore import file_dispatcher
 import copy
 from genericpath import isfile
 import re
+import textwrap
 import vcf
 import json
 import os
 from colour import Color
-#import numpy as np
 import random
-from html import escape, unescape
+#from html import escape, unescape
 import pandas as pd
-import numpy as np
 
+TEXTWRAP_WIDTH = 60
+TEXTWRAP_HOLDER = "..."
 
 # Fixing PyVCF bug
 # https://github.com/jamescasbon/PyVCF/pull/320
@@ -30,8 +31,9 @@ def _map(self, func, iterable, bad=[".", "", "NA", "-"]):
 
     return [_convert(x) for x in iterable]
 
-
 vcf.Reader._map = _map
+
+# End fixing
 
 
 # Read file to dict
@@ -50,6 +52,7 @@ def file_to_dict(file: str = None, path: str = ""):
         else:
             print(f"[WARN] file {file} does NOT exist")
     return result
+
 
 # explode file into dataframe
 def explode_category_file_dict_into_dataframe(file_dict: dict = {}, path: str = ""):
@@ -91,7 +94,46 @@ def explode_category_file_dict_into_dataframe(file_dict: dict = {}, path: str = 
     return result
 
 
-# End fixing
+
+def find_genes_for_record(record_data: dict = {}, genes_data: dict = {}):
+    
+    record_positions = []
+
+    if "chr1_name" in record_data:
+        record_positions.append({
+            "chr": record_data.get("chr1_name","ERROR"),
+            "start": record_data.get("chr1_start",0),
+            "end": record_data.get("chr1_end",record_data.get("chr1_start",0))
+        })
+        record_positions.append({
+            "chr": record_data.get("chr_name","ERROR"),
+            "start": record_data.get("chr2_start",0),
+            "end": record_data.get("chr2_end",record_data.get("chr2_start",0))
+        })
+    else:
+        record_positions.append({
+            "chr": record_data.get("chr_name","ERROR"),
+            "start": record_data.get("start",0),
+            "end": record_data.get("end",record_data.get("start",0))
+        })
+    
+    record_genes = {}
+
+    if len(record_data) and len(genes_data):
+        for i in range(len(genes_data["chr_name"])):
+            gene_chr = genes_data["chr_name"][i]
+            gene_start = genes_data["start"][i]
+            gene_end = genes_data["end"][i]
+            gene_gene = genes_data["gene"][i]
+            if "exon" in genes_data:
+                gene_gene += "-" + genes_data["exon"][i]
+            for record_position in record_positions:
+                if record_position.get("chr") == gene_chr and record_position.get("start")  <= gene_end and record_position.get("end")  >= gene_start:
+                    record_genes[gene_gene] = {"chr": gene_chr, "start": gene_start, "end": gene_end}
+    
+    return record_genes
+
+
 
 
 VCF_TYPE_MAPPING = {
@@ -333,6 +375,7 @@ class VcfReader():
             to be a primary key in the database.
         :rtype: <generator <dict>>
         """
+
         yield {
             "name": "chr",
             "category": "variants",
@@ -385,10 +428,6 @@ class VcfReader():
 
         # Read VCF INFO fields
         for field_name, info in vcf_reader.infos.items():
-
-            # if key == "ANN": # Parse special annotation
-            #     yield from self.parser.parse_fields(info.desc)
-            # else:
 
             yield {
                 "name": field_name.lower(),
@@ -457,8 +496,8 @@ class VcfReader():
 
 
     def get_json(self):
-        # params = {}
 
+        # default json
         default_json = {
             "General": {
                 "width": 1500,
@@ -713,86 +752,6 @@ class VcfReader():
                             }
                         }
                     }
-                    # {
-                    #     # SNV
-                    #     "radius": {
-                    #         "R0": 0.80,
-                    #         "R1": 0.89
-                    #     },
-                    #     "layout": {
-                    #         "opacity": 0.1,
-                    #         "fillcolor": "grey",
-                    #         "layer": "below",
-                    #         "line": {
-                    #             "color": "grey",
-                    #             "width": 1
-                    #         }
-                    #     }
-                    # },
-                    # {
-                    #     # INS
-                    #     "radius": {
-                    #         "R0": 0.70,
-                    #         "R1": 0.74
-                    #     },
-                    #     "layout": {
-                    #         "opacity": 0.1,
-                    #         "fillcolor": "grey",
-                    #         "layer": "below",
-                    #         "line": {
-                    #             "color": "grey",
-                    #             "width": 1
-                    #         }
-                    #     }
-                    # },
-                    # {
-                    #     # INV
-                    #     "radius": {
-                    #         "R0": 0.65,
-                    #         "R1": 0.69
-                    #     },
-                    #     "layout": {
-                    #         "opacity": 0.1,
-                    #         "fillcolor": "grey",
-                    #         "layer": "below",
-                    #         "line": {
-                    #             "color": "grey",
-                    #             "width": 1
-                    #         }
-                    #     }
-                    # },
-                    # {
-                    #     # DEL
-                    #     "radius": {
-                    #         "R0": 0.60,
-                    #         "R1": 0.64
-                    #     },
-                    #     "layout": {
-                    #         "opacity": 0.1,
-                    #         "fillcolor": "grey",
-                    #         "layer": "below",
-                    #         "line": {
-                    #             "color": "grey",
-                    #             "width": 1
-                    #         }
-                    #     }
-                    # },
-                    # {
-                    #     # DUP
-                    #     "radius": {
-                    #         "R0": 0.55,
-                    #         "R1": 0.59
-                    #     },
-                    #     "layout": {
-                    #         "opacity": 0.1,
-                    #         "fillcolor": "grey",
-                    #         "layer": "below",
-                    #         "line": {
-                    #             "color": "grey",
-                    #             "width": 1
-                    #         }
-                    #     }
-                    # }
                 ]
             }
             
@@ -800,13 +759,9 @@ class VcfReader():
         
 
         ### params from default
-
         params = copy.deepcopy(default_json)
-        params_genes_view = copy.deepcopy(default_json)
-        params_exons_view = copy.deepcopy(default_json)
         
         # General
-
         if self.options.get("General",None):
             params["General"] = self.options.get("General",None)
 
@@ -822,7 +777,6 @@ class VcfReader():
             self.options["Cytoband"] = explode_category_file_dict_into_dataframe(self.options["Cytoband"],self.options.get("File",""))
 
             # Cytoband params
-
             cytoband = {
                         "show": "True",
                         "file": self.options["Cytoband"],
@@ -854,7 +808,6 @@ class VcfReader():
             params["Category"]["cytoband"] = cytoband
 
             # Cytoband infos
-
             self.options["Cytoband_infos"] = copy.deepcopy(self.options["Cytoband"])
 
             cytoband_data = {
@@ -862,7 +815,6 @@ class VcfReader():
                         "start": self.options["Cytoband"].get("dataframe",{}).get("data",{}).get("start",[]),
                         "end": self.options["Cytoband"].get("dataframe",{}).get("data",{}).get("end",[]),
                         "val": [1] * len(self.options["Cytoband"].get("dataframe",{}).get("data",{}).get("chr_name",[])),
-                        #"band_color": self.options["Cytoband"].get("dataframe",{}).get("data",{}).get("band_color",[]),
                         "band_color": ["lightgray"] * len(self.options["Cytoband"].get("dataframe",{}).get("data",{}).get("chr_name",[])),
                         "band": self.options["Cytoband"].get("dataframe",{}).get("data",{}).get("band",[""] * len(self.options["Cytoband"].get("dataframe",{}).get("data",{}).get("chr_name",[]))),
                 }
@@ -877,7 +829,6 @@ class VcfReader():
                         "R1": 1.1
                     },
                     "hovertextformat": " \"<b>{}:{}-{}<br>{}{}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,0].replace('chr', ''), ''.join(a[i,5:]))",
-                    #"hovertextformat": " \"<b>{}</b>\".format(a[i,0])",
                     "trace": {
                         "uid": "cytoband_tile",
                         "hoverinfo": "text",
@@ -918,130 +869,6 @@ class VcfReader():
             # Store full refGene
             self.options["Genes_full"] = copy.deepcopy(self.options["Genes"])
 
-            # Gene List
-            # filter with a list of genes
-
-            if self.options.get("Gene_list",None):
-                gene_list = self.options.get("Gene_list",[]) 
-                genes_data = {
-                        "chr_name": [],
-                        "start": [],
-                        "end": [],
-                        "val": [],
-                        "color": [],
-                        "gene": [],
-                }
-                gene_i = 0
-                for gene in copy.deepcopy(self.options.get("Genes",{}).get("dataframe",{}).get("data",{})).get("gene"):
-                    if gene in gene_list:
-                        genes_data["chr_name"].append(self.options["Genes"]["dataframe"]["data"]["chr_name"][gene_i])
-                        genes_data["start"].append(self.options["Genes"]["dataframe"]["data"]["start"][gene_i])
-                        genes_data["end"].append(self.options["Genes"]["dataframe"]["data"]["end"][gene_i])
-                        genes_data["val"].append(self.options["Genes"]["dataframe"]["data"]["val"][gene_i])
-                        genes_data["color"].append(self.options["Genes"]["dataframe"]["data"]["color"][gene_i])
-                        genes_data["gene"].append(self.options["Genes"]["dataframe"]["data"]["gene"][gene_i])
-                    gene_i += 1
-                self.options["Genes"]["dataframe"]["data"] = genes_data
-
-            # Genes params
-
-            genes = {
-                    "show": "True",
-                    "file": self.options["Genes"],
-                    #"customfillcolor": "False",
-                    "colorcolumn": 4,
-                    "radius": {
-                        "R0": 0.98,
-                        "R1": 0.98
-                    },
-                    "hovertextformat": " \"<b>{}:{}-{}<br>Gene: {}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,5])",
-                    "trace": {
-                        "uid": "genes",
-                        "hoverinfo": "text",
-                        "mode": "markers",
-                        "marker": {
-                            "size": 3,
-                            "symbol": 0,
-                            "color": "gray",
-                            "opacity": 1
-                        }
-                    },
-                    "layout": {
-                        "type": "path",
-                        "layer": "above", # above below
-                        "opacity": 1,
-                        "line": {
-                            "color": self.options["Genes"]["dataframe"]["data"]["color"],
-                            "width": 3
-                        }
-                    }
-                }
-            
-            genes_category_type = "histogram"
-            if genes_category_type not in params["Category"]:
-                params["Category"][genes_category_type] = []
-            params["Category"][genes_category_type].append(copy.deepcopy(genes))    
-
-            # Genes in scatter
-
-            # genes_scatter_start = self.options["Genes"]["dataframe"]["data"].copy()
-            # genes_scatter_end = self.options["Genes"]["dataframe"]["data"].copy()
-            # genes_scatter_start.pop('end', None)
-            # genes_scatter_end.pop('end', None)
-            # genes_scatter_end["start"] = self.options["Genes"]["dataframe"]["data"]["end"]
-
-            genes_scatter_start = copy.deepcopy(self.options["Genes"]["dataframe"]["data"])
-            genes_scatter_end = copy.deepcopy(self.options["Genes"]["dataframe"]["data"])
-            genes_scatter_start.pop('end', None)
-            genes_scatter_end.pop('end', None)
-            genes_scatter_end["start"] = self.options["Genes"]["dataframe"]["data"]["end"]
-
-
-            for i in genes_scatter_end:
-                genes_scatter_start[i].extend(genes_scatter_end[i])
-
-            # #print(self.options["Genes"])
-            # print(self.options["Genes"]["dataframe"]["data"])
-            # print(len(self.options["Genes"]["dataframe"]["data"]["gene"]))
-            # exit()
-
-
-            genes_scatter = {
-                    "show": "True",
-                    "file": {
-                        "path": "",
-                        "header": "infer",
-                        "sep": "\t",
-                        "dataframe": {
-                            "orient": "columns",
-                            "data": genes_scatter_start
-                        }
-                    },
-                    "radius": {
-                        "R0": 0.98,
-                        "R1": 0.98
-                    },
-                    #"sortbycolor": "False",
-                    "colorcolumn": 3,
-                    "hovertextformat": " \"<b>{}:{}<br>Gene: {}</b>\".format(a[i,0], a[i,1], a[i,4])",
-                    "trace": {
-                        "hoverinfo": "text",
-                        "mode": "markers",
-                        "opacity": 1,
-                        "marker": {
-                            "size": 5,
-                            "symbol": 0,
-                            "opacity": 1
-                        }
-                    }
-                }
-
-            genes_scatter_category_type = "scatter"
-            if genes_scatter_category_type not in params["Category"]:
-                params["Category"][genes_scatter_category_type] = []
-            params["Category"][genes_scatter_category_type].append(copy.deepcopy(genes_scatter))
-            
-
         # Exons
 
         if self.options.get("Exons",None):
@@ -1055,121 +882,121 @@ class VcfReader():
             # Store full refGene exon
             self.options["Exons_full"] = copy.deepcopy(self.options["Exons"])
 
-            # Gene List
-            # filter with a list of exons
+            # # Gene List
+            # # filter with a list of exons
 
-            if self.options.get("Gene_list",None):
-                gene_list = self.options.get("Gene_list",[]) 
-                exons_data = {
-                        "chr_name": [],
-                        "start": [],
-                        "end": [],
-                        "val": [],
-                        "color": [],
-                        "gene": [],
-                        "exon": [],
-                }
-                gene_i = 0
-                for gene in copy.deepcopy(self.options.get("Exons",{}).get("dataframe",{}).get("data",{})).get("gene"):
-                    if gene in gene_list:
-                        exons_data["chr_name"].append(self.options["Exons"]["dataframe"]["data"]["chr_name"][gene_i])
-                        exons_data["start"].append(self.options["Exons"]["dataframe"]["data"]["start"][gene_i])
-                        exons_data["end"].append(self.options["Exons"]["dataframe"]["data"]["end"][gene_i])
-                        exons_data["val"].append(self.options["Exons"]["dataframe"]["data"]["val"][gene_i])
-                        exons_data["color"].append(self.options["Exons"]["dataframe"]["data"]["color"][gene_i])
-                        exons_data["gene"].append(self.options["Exons"]["dataframe"]["data"]["gene"][gene_i])
-                        exons_data["exon"].append(self.options["Exons"]["dataframe"]["data"]["exon"][gene_i])
-                    gene_i += 1
-                self.options["Exons"]["dataframe"]["data"] = exons_data
+            # if self.options.get("Gene_list",None):
+            #     gene_list = self.options.get("Gene_list",[]) 
+            #     exons_data = {
+            #             "chr_name": [],
+            #             "start": [],
+            #             "end": [],
+            #             "val": [],
+            #             "color": [],
+            #             "gene": [],
+            #             "exon": [],
+            #     }
+            #     gene_i = 0
+            #     for gene in copy.deepcopy(self.options.get("Exons",{}).get("dataframe",{}).get("data",{})).get("gene"):
+            #         if gene in gene_list:
+            #             exons_data["chr_name"].append(self.options["Exons"]["dataframe"]["data"]["chr_name"][gene_i])
+            #             exons_data["start"].append(self.options["Exons"]["dataframe"]["data"]["start"][gene_i])
+            #             exons_data["end"].append(self.options["Exons"]["dataframe"]["data"]["end"][gene_i])
+            #             exons_data["val"].append(self.options["Exons"]["dataframe"]["data"]["val"][gene_i])
+            #             exons_data["color"].append(self.options["Exons"]["dataframe"]["data"]["color"][gene_i])
+            #             exons_data["gene"].append(self.options["Exons"]["dataframe"]["data"]["gene"][gene_i])
+            #             exons_data["exon"].append(self.options["Exons"]["dataframe"]["data"]["exon"][gene_i])
+            #         gene_i += 1
+            #     self.options["Exons"]["dataframe"]["data"] = exons_data
 
-            # Exons params
+            # # Exons params
 
-            exons = {
-                    "show": "True",
-                    "file": self.options["Exons"],
-                    "colorcolumn": 4,
-                    "radius": {
-                        "R0": 0.96,
-                        "R1": 0.96
-                    },
-                    "hovertextformat": " \"<b>{}:{}-{}<br>Gene: {}<br>Exon: {}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,5], a[i,6])",
-                    "trace": {
-                        "uid": "exons",
-                        "hoverinfo": "text",
-                        "mode": "markers",
-                        "marker": {
-                            "size": 3,
-                            "symbol": 1, # 8
-                            "color": "gray", #self.options["Exons"]["dataframe"]["data"]["color"],
-                            "opacity": 1
-                        }
-                    },
-                    "layout": {
-                        "type": "path",
-                        "layer": "below",
-                        "opacity": 1,
-                        "line": {
-                            "color": self.options["Exons"]["dataframe"]["data"]["color"],
-                            "width": 3
-                        }
-                    }
-                }
-            
-            exons_category_type = "histogram"
-            if exons_category_type not in params["Category"]:
-                params["Category"][exons_category_type] = []
-            params["Category"][exons_category_type].append(copy.deepcopy(exons))
-
-            # Exons in scatter
-
-            # exons_scatter_start = self.options["Exons"]["dataframe"]["data"].copy()
-            # exons_scatter_end = self.options["Exons"]["dataframe"]["data"].copy()
-            # exons_scatter_start.pop('end', None)
-            # exons_scatter_end.pop('end', None)
-            # exons_scatter_end["start"] = self.options["Exons"]["dataframe"]["data"]["end"]
-
-
-            # for i in exons_scatter_end:
-            #     exons_scatter_start[i].extend(exons_scatter_end[i])
-
-
-            # exons_scatter = {
+            # exons = {
             #         "show": "True",
-            #         "file": {
-            #             "path": "",
-            #             "header": "infer",
-            #             "sep": "\t",
-            #             "dataframe": {
-            #                 "orient": "columns",
-            #                 "data": exons_scatter_start
-            #             }
-            #         },
+            #         "file": self.options["Exons"],
+            #         "colorcolumn": 4,
             #         "radius": {
-            #             "R0": 0.98,
-            #             "R1": 0.98
+            #             "R0": 0.96,
+            #             "R1": 0.96
             #         },
-            #         #"sortbycolor": "False",
-            #         "colorcolumn": 3,
-            #         "hovertextformat": " \"<b>{}:{}<br>Gene: {}</b>\".format(a[i,0], a[i,1], a[i,4])",
+            #         "hovertextformat": " \"<b>{}:{}-{}<br>Gene: {}<br>Exon: {}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,5], a[i,6])",
             #         "trace": {
+            #             "uid": "exons",
             #             "hoverinfo": "text",
             #             "mode": "markers",
-            #             "opacity": 1,
             #             "marker": {
-            #                 "size": 5,
-            #                 "symbol": 0,
+            #                 "size": 3,
+            #                 "symbol": 1, # 8
+            #                 "color": "gray", #self.options["Exons"]["dataframe"]["data"]["color"],
             #                 "opacity": 1
             #             }
             #         },
             #         "layout": {
-            #             "layer": "below"
+            #             "type": "path",
+            #             "layer": "below",
+            #             "opacity": 1,
+            #             "line": {
+            #                 "color": self.options["Exons"]["dataframe"]["data"]["color"],
+            #                 "width": 3
+            #             }
             #         }
             #     }
+            
+            # exons_category_type = "histogram"
+            # if exons_category_type not in params["Category"]:
+            #     params["Category"][exons_category_type] = []
+            # params["Category"][exons_category_type].append(copy.deepcopy(exons))
 
-            # exons_scatter_category_type = "scatter"
-            # if exons_scatter_category_type not in params["Category"]:
-            #     params["Category"][exons_scatter_category_type] = []
-            # params["Category"][exons_scatter_category_type].append(copy.deepcopy(exons_scatter))
+            # # Exons in scatter
+
+            # # exons_scatter_start = self.options["Exons"]["dataframe"]["data"].copy()
+            # # exons_scatter_end = self.options["Exons"]["dataframe"]["data"].copy()
+            # # exons_scatter_start.pop('end', None)
+            # # exons_scatter_end.pop('end', None)
+            # # exons_scatter_end["start"] = self.options["Exons"]["dataframe"]["data"]["end"]
+
+
+            # # for i in exons_scatter_end:
+            # #     exons_scatter_start[i].extend(exons_scatter_end[i])
+
+
+            # # exons_scatter = {
+            # #         "show": "True",
+            # #         "file": {
+            # #             "path": "",
+            # #             "header": "infer",
+            # #             "sep": "\t",
+            # #             "dataframe": {
+            # #                 "orient": "columns",
+            # #                 "data": exons_scatter_start
+            # #             }
+            # #         },
+            # #         "radius": {
+            # #             "R0": 0.98,
+            # #             "R1": 0.98
+            # #         },
+            # #         #"sortbycolor": "False",
+            # #         "colorcolumn": 3,
+            # #         "hovertextformat": " \"<b>{}:{}<br>Gene: {}</b>\".format(a[i,0], a[i,1], a[i,4])",
+            # #         "trace": {
+            # #             "hoverinfo": "text",
+            # #             "mode": "markers",
+            # #             "opacity": 1,
+            # #             "marker": {
+            # #                 "size": 5,
+            # #                 "symbol": 0,
+            # #                 "opacity": 1
+            # #             }
+            # #         },
+            # #         "layout": {
+            # #             "layer": "below"
+            # #         }
+            # #     }
+
+            # # exons_scatter_category_type = "scatter"
+            # # if exons_scatter_category_type not in params["Category"]:
+            # #     params["Category"][exons_scatter_category_type] = []
+            # # params["Category"][exons_scatter_category_type].append(copy.deepcopy(exons_scatter))
 
 
         # Categories
@@ -1772,29 +1599,25 @@ class VcfReader():
             }
         }
 
-        variants_data_genes_view = copy.deepcopy(variants_data)
-        variants_data_exons_view = copy.deepcopy(variants_data)
-
-        #print(self.vcf_reader.samples)
-        # print(self.parse_variants())
-        # for i, record in enumerate(self.parse_variants(add_sample=True)):
-        #     print(i)
-        #     print(record)
 
         genes_target = {}
+        genes_target_type = {
+            "BND": {},
+            "CNV": {},
+            "SNV": {}
+        }
         exons_target = {}
+        exons_target_type = {
+            "BND": {},
+            "CNV": {},
+            "SNV": {}
+        }
                 
         ### fetch variant
         if True:
-            #for i, record in enumerate(self.get_variants()):
             for i, record in enumerate(self.parse_variants(add_sample=True)):
-                # if i > 5:
-                #     continue
-                # print(i)
-                # print(record)
+
                 record_data = {}
-                record_data_genes_view = {}
-                record_data_exons_view = {}
 
                 if record.get("chr","") in self.options.get("Chr_list",[]) or not self.options.get("Chr_list",[]):
 
@@ -1808,11 +1631,9 @@ class VcfReader():
                                     annotations_fields_to_show[annotation_hovertext]=record.get(annotation_hovertext,None)
 
                     annotations_fields_to_show_text = "<br>".join('{}: {}'.format(key, value) for key, value in annotations_fields_to_show.items() if not isinstance(value, list))
-                    record_data["hovertext"] = annotations_fields_to_show_text
+                    record_data["hovertext"] = ""
 
                     record_types = []
-                    record_types_genes_view = []
-                    record_types_exons_view = []
 
                     if "svtype" in record:
 
@@ -1824,7 +1645,6 @@ class VcfReader():
 
                         # BreakPoint
                         if record.get("svtype","") in ["BND", "TRA"]:
-                            #record_data = {}
                             record_data["chr1_name"] = record.get("chr","")
                             record_data["chr1_start"] = record.get("pos",0)
                             record_data["chr1_end"] = record.get("pos",0)
@@ -1840,41 +1660,25 @@ class VcfReader():
 
                             record_data["genes"] = find_genes_for_record(record_data,self.options.get("Genes_full",{}).get("dataframe",{}).get("data",{}))
                             genes_target.update(record_data["genes"])
+                            genes_target_type["BND"].update(record_data["genes"])
 
-                            # record_data["exons"] = find_genes_for_record(record_data,self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}))
-                            # exons_target.update(record_data["exons"])
-                            record_data["exons"] = ""
+                            record_data["exons"] = find_genes_for_record(record_data,self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}))
+                            exons_target.update(record_data["exons"])
+                            exons_target_type["BND"].update(record_data["exons"])
 
+                            # Add genes and exons info on hovertext
                             if self.options.get("Genes_full",{}).get("dataframe",{}).get("data",{}):
-                                if len(record_data["genes"].keys()) and len(record_data["genes"].keys()) <= 3:
-                                    record_data["hovertext"] = "Genes: " + ", ".join(record_data["genes"].keys()) + "<br><br>" + record_data["hovertext"]
-                                else:
-                                    record_data["hovertext"] = "Genes: " + str(len(record_data["genes"].keys())) + " genes" + "<br><br>" + record_data["hovertext"]
+                                record_data["hovertext"] += "Genes (" + str(len(record_data["genes"].keys())) + "): " + textwrap.shorten(", ".join(record_data["genes"].keys()), width=TEXTWRAP_WIDTH, placeholder=TEXTWRAP_HOLDER) + "<br>"
 
-                                if False:
-                                    # print("\ncoord")
-                                    # print(record_data)
-                                    # print("{}:{}".format(record_data["chr1_name"], record_data["chr1_start"]))
-                                    for gene in record_data["genes"]:
-                                        gene_position_start = record_data["chr1_start"]-record_data["genes"][gene]["start"]
-                                        if gene_position_start < 0:
-                                            gene_position_start = 0
-                                        gene_position_end = record_data["chr1_end"]-record_data["genes"][gene]["start"]
-                                        if gene_position_end > record_data["genes"][gene]["end"]:
-                                            gene_position_end = record_data["genes"][gene]["end"]
-                                        #print(gene + ":" + str(gene_position_start)+ "-" + str(gene_position_end))
-                                    
+                            if self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}):
+                                record_data["hovertext"] += "Exons (" + str(len(record_data["exons"].keys())) + "): " + textwrap.shorten(", ".join(record_data["exons"].keys()), width=TEXTWRAP_WIDTH, placeholder=TEXTWRAP_HOLDER) + "<br>"
 
-                                    
+                            if record_data["hovertext"] != "":
+                                record_data["hovertext"] += "<br>"
 
-                            #record_data["hovertext"] = annotations_fields_to_show_text
+                            record_data["hovertext"] += annotations_fields_to_show_text
 
                             record_types.append({"breakpoint": record_data})
-                            
-                            # deprecated
-                            # for i in record_data:
-                            #     variants_data["breakpoint"]["data"][i].append(record_data[i])
-                            # variants_data["breakpoint"]["nb"] += 1
 
                         
                         # CNV: INS INV DEL DUP
@@ -1941,37 +1745,25 @@ class VcfReader():
 
                             record_data["genes"] = find_genes_for_record(record_data,self.options.get("Genes_full",{}).get("dataframe",{}).get("data",{}))
                             genes_target.update(record_data["genes"])
+                            genes_target_type["CNV"].update(record_data["genes"])
 
-                            # record_data["exons"] = find_genes_for_record(record_data,self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}))
-                            # exons_target.update(record_data["exons"])
-                            record_data["exons"] = ""
+                            record_data["exons"] = find_genes_for_record(record_data,self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}))
+                            exons_target.update(record_data["exons"])
+                            exons_target_type["CNV"].update(record_data["exons"])
 
+                            # Add genes and exons info on hovertext
                             if self.options.get("Genes_full",{}).get("dataframe",{}).get("data",{}):
-                                if len(record_data["genes"].keys()) and len(record_data["genes"].keys()) <= 3:
-                                    record_data["hovertext"] = "Genes: " + ", ".join(record_data["genes"].keys()) + "<br><br>" + record_data["hovertext"]
-                                else:
-                                    record_data["hovertext"] = "Genes: " + str(len(record_data["genes"].keys())) + " genes" + "<br><br>" + record_data["hovertext"]
+                                record_data["hovertext"] += "Genes (" + str(len(record_data["genes"].keys())) + "): " + textwrap.shorten(", ".join(record_data["genes"].keys()), width=TEXTWRAP_WIDTH, placeholder=TEXTWRAP_HOLDER) + "<br>"
 
-                                if False:
-                                    if record_data["genes"]:
-                                        print("\ncoord CNV")
-                                        print("{}:{}".format(record_data["chr_name"], record_data["start"]))
-                                        for gene in record_data["genes"]:
-                                            gene_position_start = record_data["start"]-record_data["genes"][gene]["start"]
-                                            if gene_position_start < 0:
-                                                gene_position_start = 0
-                                            gene_position_end = record_data["end"]-record_data["genes"][gene]["start"]
-                                            if gene_position_end > record_data["genes"][gene]["end"]:
-                                                gene_position_end = record_data["genes"][gene]["end"]
-                                            print(gene + ":" + str(gene_position_start)+ "-" + str(gene_position_end))
-                                            record_data_genes_view = copy.deepcopy(record_data)
-                                            record_data_genes_view["chr_name"] = gene
-                                            record_data_genes_view["start"] = gene_position_start
-                                            record_data_genes_view["end"] = gene_position_end
-                                            record_types_genes_view.append({cnv_level: record_data_genes_view})
+                            if self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}):
+                                record_data["hovertext"] += "Exons (" + str(len(record_data["exons"].keys())) + "): " + textwrap.shorten(", ".join(record_data["exons"].keys()), width=TEXTWRAP_WIDTH, placeholder=TEXTWRAP_HOLDER) + "<br>"
 
-                            #record_data["hovertext"] = annotations_fields_to_show_text
-                            
+                            if record_data["hovertext"] != "":
+                                record_data["hovertext"] += "<br>"
+
+                            record_data["hovertext"] += annotations_fields_to_show_text
+
+                            # scatter
                             record_data_scatter_start = record_data.copy()
                             record_data_scatter_end = record_data.copy()
                             record_data_scatter_start.pop('end', None)
@@ -1983,30 +1775,10 @@ class VcfReader():
                             if level >= 0:
                                 cnv_level = "cnv_level_"+str(level)
                                 cnv_scatter_level = "cnv_scatter_level_"+str(level)
-
-                                #record_types.append(cnv_level)
                                 record_types.append({cnv_level: record_data})
                                 record_types.append({cnv_scatter_level: record_data_scatter_start})
                                 record_types.append({cnv_scatter_level: record_data_scatter_end})
                                 
-                                if self.options.get("Genes_full",{}).get("dataframe",{}).get("data",{}) and record_data["genes"]:
-                                    #print("\ncoord CNV")
-                                    #print("{}:{}".format(record_data["chr_name"], record_data["start"]))
-                                    if False:
-                                        for gene in record_data["genes"]:
-                                            gene_position_start = record_data["start"]-record_data["genes"][gene]["start"]
-                                            if gene_position_start < 0:
-                                                gene_position_start = 0
-                                            gene_position_end = record_data["end"]-record_data["genes"][gene]["start"]
-                                            if gene_position_end > record_data["genes"][gene]["end"]:
-                                                gene_position_end = record_data["genes"][gene]["end"]
-                                            #print(gene + ":" + str(gene_position_start)+ "-" + str(gene_position_end))
-                                            record_data_genes_view = copy.deepcopy(record_data)
-                                            record_data_genes_view["chr_name"] = gene
-                                            record_data_genes_view["start"] = gene_position_start
-                                            record_data_genes_view["end"] = gene_position_end
-                                            record_types_genes_view.append({cnv_level: record_data_genes_view})
-
                     else:
 
                         # SNV InDel Multiallele
@@ -2046,98 +1818,54 @@ class VcfReader():
                             
                             record_data["genes"] = find_genes_for_record(record_data,self.options.get("Genes_full",{}).get("dataframe",{}).get("data",{}))
                             genes_target.update(record_data["genes"])
+                            genes_target_type["SNV"].update(record_data["genes"])
 
-                            # record_data["exons"] = find_genes_for_record(record_data,self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}))
-                            # exons_target.update(record_data["exons"])
-                            record_data["exons"] = ""
+                            record_data["exons"] = find_genes_for_record(record_data,self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}))
+                            exons_target.update(record_data["exons"])
+                            exons_target_type["SNV"].update(record_data["exons"])
 
-                            # print("--")
-                            # print("record_data exons")
-                            # print(record_data["exons"])
-
+                            # Add genes and exons info on hovertext
                             if self.options.get("Genes_full",{}).get("dataframe",{}).get("data",{}):
-                                if len(record_data["genes"].keys()) and len(record_data["genes"].keys()) <= 3:
-                                    record_data["hovertext"] = "Genes: " + ", ".join(record_data["genes"].keys()) + "<br><br>" + record_data["hovertext"]
-                                else:
-                                    record_data["hovertext"] = "Genes: " + str(len(record_data["genes"].keys())) + " genes" + "<br><br>" + record_data["hovertext"]
+                                record_data["hovertext"] += "Genes (" + str(len(record_data["genes"].keys())) + "): " + textwrap.shorten(", ".join(record_data["genes"].keys()), width=TEXTWRAP_WIDTH, placeholder=TEXTWRAP_HOLDER) + "<br>"
 
-                                if False:
-                                    if record_data["genes"]:
-                                        #print("\ncoord SNV")
-                                        #print("{}:{}".format(record_data["chr_name"], record_data["start"]))
-                                        # print("--")
-                                        # print("record_data genes2")
-                                        # print(record_data["genes"])
-                                        for gene in record_data["genes"]:
-                                            #print(gene + ":" + str(record_data["start"]-record_data["genes"][gene]["start"]))
-                                            record_data_genes_view = copy.deepcopy(record_data)
-                                            record_data_genes_view["chr_name"] = gene
-                                            record_data_genes_view["start"] = record_data["start"]-record_data["genes"][gene]["start"]
-                                            record_types_genes_view.append({"snv": record_data_genes_view})
-                            
                             if self.options.get("Exons_full",{}).get("dataframe",{}).get("data",{}):
-                                # if len(record_data["genes"].keys()) and len(record_data["genes"].keys()) <= 3:
-                                #     record_data["hovertext"] = "Genes: " + ", ".join(record_data["genes"].keys()) + "<br><br>" + annotations_fields_to_show_text
-                                # else:
-                                #     record_data["hovertext"] = "Genes: " + str(len(record_data["genes"].keys())) + " genes" + "<br><br>" + annotations_fields_to_show_text
+                                record_data["hovertext"] += "Exons (" + str(len(record_data["exons"].keys())) + "): " + textwrap.shorten(", ".join(record_data["exons"].keys()), width=TEXTWRAP_WIDTH, placeholder=TEXTWRAP_HOLDER) + "<br>"
 
-                                if False:
-                                    if record_data["exons"]:
-                                        print("\ncoord SNV")
-                                        print("{}:{}".format(record_data["chr_name"], record_data["start"]))
-                                        print("--")
-                                        print("record_data genes2")
-                                        print(record_data["exons"])
-                                        for exon in record_data["exons"]:
-                                            print(exon + ":" + str(record_data["start"]-record_data["exons"][exon]["start"]))
-                                            record_data_exons_view = copy.deepcopy(record_data)
-                                            record_data_exons_view["chr_name"] = exon
-                                            record_data_exons_view["start"] = record_data["start"]-record_data["exons"][exon]["start"]
-                                            record_types_exons_view.append({"snv": record_data_exons_view})
-                            
+                            if record_data["hovertext"] != "":
+                                record_data["hovertext"] += "<br>"
+
+                            record_data["hovertext"] += annotations_fields_to_show_text
 
                             record_types.append({"snv": record_data})
 
-                            # deprecated
-                            # for i in record_data:
-                            #     variants_data["snv"]["data"][i].append(record_data[i])
-                            # variants_data["snv"]["nb"] += 1
-
-                    # print("genes_target")
-                    # print(genes_target)
-                    # print(list(genes_target.keys()))
-                    # exit()
-
-                    #print(record_types)
-                    #print(len(record_types))
                     for record_i in record_types:
                         for record_type in record_i:
-                            # print(record_type)
-                            # print(record_i[record_type])
                             for i in record_i[record_type]:
                                 variants_data[record_type]["data"][i].append(record_i[record_type][i])
                             variants_data[record_type]["nb"] += 1
-                    
-                    if False:
-                        for record_i in record_types_genes_view:
-                            for record_type in record_i:
-                                # print(record_type)
-                                # print(record_i[record_type])
-                                for i in record_i[record_type]:
-                                    variants_data_genes_view[record_type]["data"][i].append(record_i[record_type][i])
-                                variants_data_genes_view[record_type]["nb"] += 1
-
-                        for record_i in record_types_exons_view:
-                            for record_type in record_i:
-                                # print(record_type)
-                                # print(record_i[record_type])
-                                for i in record_i[record_type]:
-                                    variants_data_exons_view[record_type]["data"][i].append(record_i[record_type][i])
-                                variants_data_exons_view[record_type]["nb"] += 1
 
 
-                    #record_genes = find_genes_for_record(record_data,self.options["Genes_full"]["dataframe"]["data"])
-                    #print(record_genes)
+        if self.options.get("Only_snv_in_cnv_genes",False):
+
+            # find genes in BND + CNV and in SNV
+            genes_to_keep_in_snv = []
+            for gene in list(set(genes_target_type["BND"])) + list(set(genes_target_type["CNV"])):
+                if gene in list(set(genes_target_type["SNV"])):
+                    genes_to_keep_in_snv.append(gene)
+
+            # reconstruct snv data
+            variant_data_snv_filtered = {} 
+            i = 0
+            for snv_genes in variants_data["snv"]["data"]["genes"]:
+                if not set(snv_genes.keys()).isdisjoint(genes_to_keep_in_snv):
+                    for field in variants_data["snv"]["data"].keys():
+                        if field in variant_data_snv_filtered:
+                            variant_data_snv_filtered[field].append(variants_data["snv"]["data"][field][i])
+                        else:
+                            variant_data_snv_filtered[field] = [variants_data["snv"]["data"][field][i]]
+                i += 1
+
+            variants_data["snv"]["data"] = variant_data_snv_filtered
 
 
         ### Contigs
@@ -2155,7 +1883,6 @@ class VcfReader():
         contig_dataframe["data"]["chr_color"]=[]
 
         # construct dataframe
-        #print(self.get_contigs())
         i=0
         for contig in self.get_contigs():
             if contig in self.options.get("Chr_list",[]) or not self.options.get("Chr_list",[]):
@@ -2169,139 +1896,220 @@ class VcfReader():
         params["Category"]["ideogram"]["patch"]["file"]["dataframe"]=contig_dataframe
 
 
-        if False:
-            # Genes as ideogram
-            # create empty dataframe
-            gene_dataframe = {}
-            gene_dataframe["orient"]="columns"
-            gene_dataframe["data"]={}
-            gene_dataframe["data"]["chr_name"]=[]
-            gene_dataframe["data"]["chr_size"]=[]
-            gene_dataframe["data"]["chr_label"]=[]
-            gene_dataframe["data"]["chr_color"]=[]
+        # Genes
 
-            # construct dataframe
-            #print("nb genes: "+str(len(self.options["Genes"]["dataframe"]["data"]["gene"])))
-            gene_list_ideogram = ["BRCA1", "BRCA2", "EGFR", "HERC1"]
-            gene_list_ideogram = ['OR4F5', 'SRSF10', 'EGFR', 'RPL21', 'BRCA2']
-            gene_list_ideogram = ['EGFR', 'RPL21', 'BRCA2']
-            gene_list_ideogram = ['OR4F5', 'SRSF10', 'EGFR', 'BRCA2']
-            gene_list_ideogram = ['EGFR', 'BRCA2']
-            # print(list(genes_target.keys())[0:10])
-            # gene_list_ideogram = list(genes_target.keys())[0:10]
-            #gene_list_ideogram = np.array(genes_target.keys())
-            gene_list_ideogram = list(set(genes_target.keys()))
-            #print(gene_list_ideogram)
-            #exit()
-            i=0
-            for gene in self.options["Genes_full"]["dataframe"]["data"]["gene"]:
-                # print(f"gene: {gene}")
-                # print(self.options["Genes"]["dataframe"]["data"]["gene"][i])
-                # print(self.options["Genes"]["dataframe"]["data"]["end"][i])
-                #if contig in self.options.get("Chr_list",[]) or not self.options.get("Chr_list",[]):
-                if gene in gene_list_ideogram:
-                    gene_dataframe["data"]["chr_name"].append(gene)
-                    gene_dataframe["data"]["chr_size"].append(self.options["Genes_full"]["dataframe"]["data"]["end"][i]-self.options["Genes_full"]["dataframe"]["data"]["start"][i])
-                    gene_dataframe["data"]["chr_label"].append(gene)
-                    gene_dataframe["data"]["chr_color"].append("gray")
-                i+=1
+        self.options["Gene_list"] = ["targets"]
 
-            # Add in params
-            params_genes_view["Category"]["ideogram"]["patch"]["file"]["dataframe"]=gene_dataframe
-            # tick
-            # params_genes_view["Category"]["ideogram"]["ticklabel"]["spacing"] = 10000000
-            # params_genes_view["Category"]["ideogram"]["ticklabel"]["textformat"] = "Mb"
-            # params_genes_view["Category"]["ideogram"]["minortick"]["spacing"] = 1000000
-            # params_genes_view["Category"]["ideogram"]["majortick"]["spacing"] = 10000000
-            #exit()
+        if self.options.get("Genes",None):
+
+            gene_list_to_show = []
+            if self.options.get("Gene_list",None):
+                gene_list_to_show = self.options.get("Gene_list",None)
+            if "targets" in gene_list_to_show:
+                gene_list_to_show.extend(list(set(genes_target.keys())))
+
+            # Gene List
+            # filter with a list of genes
+
+            if gene_list_to_show:
+                gene_list = gene_list_to_show
+                genes_data = {
+                        "chr_name": [],
+                        "start": [],
+                        "end": [],
+                        "val": [],
+                        "color": [],
+                        "gene": [],
+                }
+                gene_i = 0
+                for gene in copy.deepcopy(self.options.get("Genes",{}).get("dataframe",{}).get("data",{})).get("gene"):
+                    if gene in gene_list:
+                        genes_data["chr_name"].append(self.options["Genes"]["dataframe"]["data"]["chr_name"][gene_i])
+                        genes_data["start"].append(self.options["Genes"]["dataframe"]["data"]["start"][gene_i])
+                        genes_data["end"].append(self.options["Genes"]["dataframe"]["data"]["end"][gene_i])
+                        genes_data["val"].append(self.options["Genes"]["dataframe"]["data"]["val"][gene_i])
+                        genes_data["color"].append(self.options["Genes"]["dataframe"]["data"]["color"][gene_i])
+                        genes_data["gene"].append(self.options["Genes"]["dataframe"]["data"]["gene"][gene_i])
+                    gene_i += 1
+                self.options["Genes"]["dataframe"]["data"] = genes_data
+
+            # Genes params
+
+            genes = {
+                    "show": "True",
+                    "file": self.options["Genes"],
+                    "colorcolumn": 4,
+                    "radius": {
+                        "R0": 0.98,
+                        "R1": 0.98
+                    },
+                    "hovertextformat": " \"<b>{}:{}-{}<br>Gene: {}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,5])",
+                    "trace": {
+                        "uid": "genes",
+                        "hoverinfo": "text",
+                        "mode": "markers",
+                        "marker": {
+                            "size": 3,
+                            "symbol": 0,
+                            "color": "gray",
+                            "opacity": 1
+                        }
+                    },
+                    "layout": {
+                        "type": "path",
+                        "layer": "above", # above below
+                        "opacity": 1,
+                        "line": {
+                            "color": self.options["Genes"]["dataframe"]["data"]["color"],
+                            "width": 3
+                        }
+                    }
+                }
+            
+            genes_category_type = "histogram"
+            if genes_category_type not in params["Category"]:
+                params["Category"][genes_category_type] = []
+            params["Category"][genes_category_type].append(copy.deepcopy(genes))    
+
+            # Genes in scatter
+
+            genes_scatter_start = copy.deepcopy(self.options["Genes"]["dataframe"]["data"])
+            genes_scatter_end = copy.deepcopy(self.options["Genes"]["dataframe"]["data"])
+            genes_scatter_start.pop('end', None)
+            genes_scatter_end.pop('end', None)
+            genes_scatter_end["start"] = self.options["Genes"]["dataframe"]["data"]["end"]
+
+            for i in genes_scatter_end:
+                genes_scatter_start[i].extend(genes_scatter_end[i])
+
+            genes_scatter = {
+                    "show": "True",
+                    "file": {
+                        "path": "",
+                        "header": "infer",
+                        "sep": "\t",
+                        "dataframe": {
+                            "orient": "columns",
+                            "data": genes_scatter_start
+                        }
+                    },
+                    "radius": {
+                        "R0": 0.98,
+                        "R1": 0.98
+                    },
+                    "colorcolumn": 3,
+                    "hovertextformat": " \"<b>{}:{}<br>Gene: {}</b>\".format(a[i,0], a[i,1], a[i,4])",
+                    "trace": {
+                        "hoverinfo": "text",
+                        "mode": "markers",
+                        "opacity": 1,
+                        "marker": {
+                            "size": 5,
+                            "symbol": 0,
+                            "opacity": 1
+                        }
+                    }
+                }
+
+            genes_scatter_category_type = "scatter"
+            if genes_scatter_category_type not in params["Category"]:
+                params["Category"][genes_scatter_category_type] = []
+            params["Category"][genes_scatter_category_type].append(copy.deepcopy(genes_scatter))
+            
+
+        # Exons
+
+        if self.options.get("Exons",None) and self.options.get("Show_exons",False):
+            print("show_exons")
+            gene_list_to_show = []
+            if self.options.get("Gene_list",None):
+                gene_list_to_show = self.options.get("Gene_list",None)
+            if "targets" in gene_list_to_show:
+                gene_list_to_show.extend(list(set(genes_target.keys())))
+
+            # Gene List
+            # filter with a list of exons
+
+            if gene_list_to_show:
+                gene_list = gene_list_to_show
+                exons_data = {
+                        "chr_name": [],
+                        "start": [],
+                        "end": [],
+                        "val": [],
+                        "color": [],
+                        "gene": [],
+                        "exon": [],
+                }
+                gene_i = 0
+                for gene in copy.deepcopy(self.options.get("Exons",{}).get("dataframe",{}).get("data",{})).get("gene"):
+                    if gene in gene_list:
+                        exons_data["chr_name"].append(self.options["Exons"]["dataframe"]["data"]["chr_name"][gene_i])
+                        exons_data["start"].append(self.options["Exons"]["dataframe"]["data"]["start"][gene_i])
+                        exons_data["end"].append(self.options["Exons"]["dataframe"]["data"]["end"][gene_i])
+                        exons_data["val"].append(self.options["Exons"]["dataframe"]["data"]["val"][gene_i])
+                        exons_data["color"].append(self.options["Exons"]["dataframe"]["data"]["color"][gene_i])
+                        exons_data["gene"].append(self.options["Exons"]["dataframe"]["data"]["gene"][gene_i])
+                        exons_data["exon"].append(self.options["Exons"]["dataframe"]["data"]["exon"][gene_i])
+                    gene_i += 1
+                self.options["Exons"]["dataframe"]["data"] = exons_data
+
+            # Exons params
+
+            exons = {
+                    "show": "True",
+                    "file": self.options["Exons"],
+                    "colorcolumn": 4,
+                    "radius": {
+                        "R0": 0.96,
+                        "R1": 0.96
+                    },
+                    "hovertextformat": " \"<b>{}:{}-{}<br>Gene: {}<br>Exon: {}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,5], a[i,6])",
+                    "trace": {
+                        "uid": "exons",
+                        "hoverinfo": "text",
+                        "mode": "markers",
+                        "marker": {
+                            "size": 3,
+                            "symbol": 1, # 8
+                            "color": "gray", #self.options["Exons"]["dataframe"]["data"]["color"],
+                            "opacity": 1
+                        }
+                    },
+                    "layout": {
+                        "type": "path",
+                        "layer": "below",
+                        "opacity": 1,
+                        "line": {
+                            "color": self.options["Exons"]["dataframe"]["data"]["color"],
+                            "width": 3
+                        }
+                    }
+                }
+            
+            exons_category_type = "histogram"
+            if exons_category_type not in params["Category"]:
+                params["Category"][exons_category_type] = []
+            params["Category"][exons_category_type].append(copy.deepcopy(exons))
 
 
-        if False:
-            # Exons as ideogram
-            # create empty dataframe
-            exon_dataframe = {}
-            exon_dataframe["orient"]="columns"
-            exon_dataframe["data"]={}
-            exon_dataframe["data"]["chr_name"]=[]
-            exon_dataframe["data"]["chr_size"]=[]
-            exon_dataframe["data"]["chr_label"]=[]
-            exon_dataframe["data"]["chr_color"]=[]
 
-            # construct dataframe
-            #print("nb exons: "+str(len(self.options["Genes"]["dataframe"]["data"]["exon"])))
-            exon_list_ideogram = ["BRCA1", "BRCA2", "EGFR", "HERC1"]
-            exon_list_ideogram = ['OR4F5', 'SRSF10', 'EGFR', 'RPL21', 'BRCA2']
-            exon_list_ideogram = ['EGFR', 'RPL21', 'BRCA2']
-            exon_list_ideogram = ['OR4F5', 'SRSF10', 'EGFR', 'BRCA2']
-            exon_list_ideogram = ['EGFR', 'BRCA2']
-            # print(list(exons_target.keys())[0:10])
-            # exon_list_ideogram = list(exons_target.keys())[0:10]
-            #exon_list_ideogram = np.array(exons_target.keys())
-            exon_list_ideogram = list(set(exons_target.keys()))
-            #exon_list_ideogram = ['EGFR', 'BRCA2']
-            print(exon_list_ideogram)
-            #exit()
-            i=0
-            for exon in self.options["Exons_full"]["dataframe"]["data"]["exon"]:
-                #print("gene: {} - exon: {}".format(self.options["Exons_full"]["dataframe"]["data"]["gene"][i], exon))
-                # print(self.options["Genes"]["dataframe"]["data"]["exon"][i])
-                # print(self.options["Genes"]["dataframe"]["data"]["end"][i])
-                #if contig in self.options.get("Chr_list",[]) or not self.options.get("Chr_list",[]):
-                gene = self.options["Exons_full"]["dataframe"]["data"]["gene"][i]
-                exon_name = gene + "-" + exon
-                if exon_name in exon_list_ideogram:
-                    exon_dataframe["data"]["chr_name"].append(exon_name)
-                    exon_dataframe["data"]["chr_size"].append(self.options["Exons_full"]["dataframe"]["data"]["end"][i]-self.options["Exons_full"]["dataframe"]["data"]["start"][i])
-                    exon_dataframe["data"]["chr_label"].append(exon_name)
-                    exon_dataframe["data"]["chr_color"].append("gray")
-                i+=1
+        # Create param
 
-            # Add in params
-            params_exons_view["Category"]["ideogram"]["patch"]["file"]["dataframe"] = exon_dataframe
-            # tick
-            # params_exons_view["Category"]["ideogram"]["ticklabel"]["spacing"] = 10000000
-            # params_exons_view["Category"]["ideogram"]["ticklabel"]["textformat"] = "Mb"
-            # params_exons_view["Category"]["ideogram"]["minortick"]["spacing"] = 1000000
-            # params_exons_view["Category"]["ideogram"]["majortick"]["spacing"] = 10000000
-            print(params_exons_view["Category"]["ideogram"]["patch"]["file"]["dataframe"])
-            #exit()
-
-
-
-
-        view = "chr" # "chr", "gene", "exon"
-        if view == "chr":
-            print(f"[DEVEL] View '{view}' CHR")
-            variant_data_link = copy.deepcopy(variants_data)
-            params_link = copy.deepcopy(params)
-        elif view == "gene":
-            print(f"[DEVEL] View '{view}' GENE")
-            variant_data_link = copy.deepcopy(variants_data_genes_view)
-            params_link = copy.deepcopy(params_genes_view)
-        elif view == "exon":
-            print(f"[DEVEL] View '{view}' EXON")
-            variant_data_link = copy.deepcopy(variants_data_exons_view)
-            params_link = copy.deepcopy(params_exons_view)
-        else:
-            print(f"[ERROR] View '{view}' unknonw")
-
-        # print(json.dumps(params_genes_view["Category"]["ideogram"],indent=4))
-        # print(json.dumps(params["Category"]["ideogram"],indent=4))
-        # exit()
-        
+        params_link = copy.deepcopy(params)
+        variant_data_link = copy.deepcopy(variants_data)
 
         #for type in variants_data.keys():
         for type in variant_data_link.keys():
 
             #print(type)
 
-            if variant_data_link[type]["nb"] and True:
+            if variant_data_link[type]["nb"]:
                 category_data = {}
                 variant_data2 = copy.deepcopy(variant_data_link[type])
                 category_data = copy.deepcopy(categories[variant_data2["category"]]["pattern"])
 
                 category_data["trace"]["uid"] = type
-
 
                 category_data["file"]["dataframe"]["data"] = copy.deepcopy(variant_data2["data"])
                 category_data["trace"]["marker"]["symbol"] = copy.deepcopy(variant_data2["data"]["symbol"])
@@ -2317,73 +2125,5 @@ class VcfReader():
                     params_link["Category"][variant_data2["category"]] = []
                 params_link["Category"][variant_data2["category"]].append(copy.deepcopy(category_data))
 
-        #print(params["Category"]["scatter"][0]["file"]["dataframe"]["data"]["end"][0:10000])
-        #print(params["Category"]["scatter"][0]["file"]["dataframe"]["data"].keys())
-        #print(json.dumps(params["Category"]["scatter"][0].keys(),indent=4))
-
-        #print(json.dumps(params_link["Category"]["ideogram"],indent=4))
-
-        # for f in params["Category"]["ideogram"]:
-        #     print(f)
-        #     #print(json.dumps(params[f],indent=4))
-        #exit()
         return params_link
-
-
-def find_genes_for_record(record_data: dict = {}, genes_data: dict = {}):
-    # position
-    #print(record_data)
-    record_chr = record_data.get("chr_name","ERROR")
-    record_start = record_data.get("start",record_data.get("chr1_start",0))
-    record_end = record_data.get("end",record_data.get("chr1_end",record_start))
-    
-    record_positions = []
-
-    if "chr1_name" in record_data:
-        record_positions.append({
-            "chr": record_data.get("chr1_name","ERROR"),
-            "start": record_data.get("chr1_start",0),
-            "end": record_data.get("chr1_end",record_data.get("chr1_start",0))
-        })
-        record_positions.append({
-            "chr": record_data.get("chr_name","ERROR"),
-            "start": record_data.get("chr2_start",0),
-            "end": record_data.get("chr2_end",record_data.get("chr2_start",0))
-        })
-    else:
-        record_positions.append({
-            "chr": record_data.get("chr_name","ERROR"),
-            "start": record_data.get("start",0),
-            "end": record_data.get("end",record_data.get("start",0))
-        })
-    
-    
-    record_genes = {}
-    #print(f"{record_chr}:{record_start}-{record_end}")
-    #print(self.options["Genes_full"])
-    #for gene in self.options["Genes"]["dataframe"]["data"]["chr_name"]:
-    #print(f"{record_data}:{genes_data}")
-    #print(f"{record_data}")
-    #if len(record_data) and len(genes_data):
-    if len(record_data) and len(genes_data):
-    #if True:
-        for i in range(len(genes_data["chr_name"])):
-            gene_chr = genes_data["chr_name"][i]
-            gene_start = genes_data["start"][i]
-            gene_end = genes_data["end"][i]
-            gene_gene = genes_data["gene"][i]
-            if "exon" in genes_data:
-                gene_gene += "-" + genes_data["exon"][i]
-            #gene_gene = self.options["Genes_full"]["dataframe"]["data"]["gene"][i]
-            #print(self.options["Genes"])
-            #print(f"{record_chr} == {gene_chr} and {record_start} <= {gene_end} and {record_end} >= {gene_start}")
-            for record_position in record_positions:
-                #print(record_position)
-                if record_position.get("chr") == gene_chr and record_position.get("start")  <= gene_end and record_position.get("end")  >= gene_start:
-                    #print(f"record in {gene_gene}")
-                    record_genes[gene_gene] = {"chr": gene_chr, "start": gene_start, "end": gene_end}
-                # if i > 10000000:
-                #     exit()
-    
-    return record_genes
 
