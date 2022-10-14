@@ -5,6 +5,8 @@ aim: Epurate module and func, handle parameters of circos plot
 """
 
 import sys
+import re
+import subprocess
 import json
 import os
 from vcf2circos.vcfreader import VcfReader
@@ -51,3 +53,25 @@ class Plotconfig(VcfReader):
         last func to be called, passed to Figure class to generate circos plot (main)
         """
         pass
+
+
+def systemcall(command, log=None):
+    """
+    https://github.com/JbaptisteLam/DPNI/blob/main/src/utils/utils.py
+    """
+    print("#[SYS] " + command)
+    p = subprocess.Popen(
+        [command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+    )
+    out, err = p.communicate()
+    if not err:
+        return out.decode("utf8").strip().split("\n")
+    else:
+        issues = err.decode("utf8").strip()
+        try:
+            re.search(r"(Warning|WARNING)", issues).group()
+            print("--WARNING Systemcall--\n", err.decode("utf8").strip())
+            return out.decode("utf8").strip().split("\n")
+        except AttributeError:
+            print("--ERROR Systemcall--\n", err.decode("utf8").strip())
+            exit()
