@@ -3,13 +3,13 @@ from asyncore import file_dispatcher
 import copy
 from genericpath import isfile
 import re
+from sre_compile import isstring
 import textwrap
 import vcf
 import json
 import os
 from colour import Color
 import random
-#from html import escape, unescape
 import pandas as pd
 
 TEXTWRAP_WIDTH = 60
@@ -38,8 +38,11 @@ vcf.Reader._map = _map
 
 # Read file to dict
 def file_to_dict(file: str = None, path: str = ""):
-    result = {}
-    if file:
+    # Result is dict in input
+    result = file
+    # Result is dict from the file
+    if file and isstring(file):
+        result = {}
         file_path = None
         if os.path.isfile(file):
             file_path = file
@@ -514,18 +517,10 @@ class VcfReader():
 
 
     def get_json(self):
-
-
-        #print(self.options["Variants"])
         
         variants_position = self.options.get("Variants",{}).get("position",0.5)
         variants_ring_height = self.options.get("Variants",{}).get("ring_height",0.04)
         variants_ring_space = self.options.get("Variants",{}).get("ring_space",0.01)
-
-        # variants_position = 0.5
-        # variants_ring_height = 0.02
-        # variants_ring_space = 0.01
-
 
         # default json
         default_json = {
@@ -538,7 +533,7 @@ class VcfReader():
                 "ideogram": {
                     "patch": {
                         "file": {
-                            "path": "chr_size.txt",
+                            "path": "",
                             "header": "infer",
                             "sep": "\t",
                             "dataframe" : {
