@@ -1,19 +1,26 @@
 # enable dash only in dash module, disable dash here
 import os
 import sys
+
+from vcf2circos.plotcategories.plotconfig import Plotconfig
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "."))
+sys.path.append(os.path.abspath(os.path.join("../", "demo_data")))
+# print(sys.path)
 
 from genericpath import isfile
 from itertools import count
 import numpy as np
-#import colorlover as cl
+
+# import colorlover as cl
 
 from config import coord_config, json_config
 from IPython.display import HTML
 from plotly.graph_objs import *
 import plotly.graph_objs as go
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
-#init_notebook_mode(connected=True)
+
+# init_notebook_mode(connected=True)
 
 import argparse
 from argparse import ArgumentParser
@@ -37,13 +44,16 @@ from argparse import RawTextHelpFormatter
 
 import pandas as pd
 
-__author__ = 'Jin Cui, Antony Le Bechec'
-__version__ = '2.0.0'
-__date__ = 'September 18 2022'
+__author__ = "Jin Cui, Antony Le Bechec"
+__version__ = "2.0.0"
+__date__ = "September 18 2022"
 
-if (sys.version_info[0]!=3):
-    raise Exception('vcf2circos requires Python 3, your current Python version is {}.{}.{}'.
-                    format(sys.version_info[0],sys.version_info[1],sys.version_info[2]))
+if sys.version_info[0] != 3:
+    raise Exception(
+        "vcf2circos requires Python 3, your current Python version is {}.{}.{}".format(
+            sys.version_info[0], sys.version_info[1], sys.version_info[2]
+        )
+    )
 
 
 def run_vcf2circos():
@@ -66,7 +76,7 @@ def run_vcf2circos():
     try:
         input_file = sys.argv[1]
         if os.path.exists(input_file):
-            input_format = pathlib.Path(input_file).suffix.replace(".","")
+            input_format = pathlib.Path(input_file).suffix.replace(".", "")
         else:
             param_previous_format = False
     except IndexError:
@@ -74,7 +84,7 @@ def run_vcf2circos():
 
     try:
         output_file = sys.argv[2]
-        output_format = pathlib.Path(output_file).suffix.replace(".","")
+        output_format = pathlib.Path(output_file).suffix.replace(".", "")
     except IndexError:
         output_file = None
         output_format = None
@@ -83,7 +93,6 @@ def run_vcf2circos():
         export_file = sys.argv[3]
     except IndexError:
         export_file = ""
-
 
     if param_previous_format:
 
@@ -101,41 +110,43 @@ def run_vcf2circos():
     else:
 
         # Define args
-        parser = argparse.ArgumentParser(prog="python vcf2circos.py", formatter_class=RawTextHelpFormatter)
+        parser = argparse.ArgumentParser(
+            prog="python vcf2circos.py", formatter_class=RawTextHelpFormatter
+        )
         parser.add_argument(
             "-i",
             "--input",
-            type = str,
-            required = True,
-            help = "Input file.\nFormat will be autodetected from file path.\nSupported format:\n   'json', 'vcf'",
+            type=str,
+            required=True,
+            help="Input file.\nFormat will be autodetected from file path.\nSupported format:\n   'json', 'vcf'",
         )
         parser.add_argument(
             "-o",
             "--output",
-            type = str,
-            required = True,
-            help = """Output file.\nFormat will be autodetected from file path.\nSupported format:\n   'png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json'""",
+            type=str,
+            required=True,
+            help="""Output file.\nFormat will be autodetected from file path.\nSupported format:\n   'png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json'""",
         )
         parser.add_argument(
             "-e",
             "--export",
-            type = str,
-            required = False,
-            help = """Export file.\nFormat is 'json'.\nGenerate json file from VCF input file""",
+            type=str,
+            required=False,
+            help="""Export file.\nFormat is 'json'.\nGenerate json file from VCF input file""",
         )
         parser.add_argument(
             "-p",
             "--options",
-            type = str,
-            required = False,
-            help = """Options file or string.\nFormat is 'json', either in a file or as a string.""",
+            type=str,
+            required=False,
+            help="""Options file or string.\nFormat is 'json', either in a file or as a string.""",
         )
         parser.add_argument(
             "-n",
             "--notebook_mode",
-            type = bool,
-            required = False,
-            help = """Notebook mode.\nDefault False""",
+            type=bool,
+            required=False,
+            help="""Notebook mode.\nDefault False""",
         )
 
         # Parse args
@@ -144,7 +155,7 @@ def run_vcf2circos():
         # Input
         input_file = args.input
         if os.path.exists(input_file):
-            input_format = pathlib.Path(input_file).suffix.replace(".","")
+            input_format = pathlib.Path(input_file).suffix.replace(".", "")
             print(f"[INFO] Input file: {input_file} (format '{input_format}')")
         else:
             print(f"[ERROR] No input file '{input_file}")
@@ -152,9 +163,19 @@ def run_vcf2circos():
 
         # Output
         output_file = args.output
-        output_format = pathlib.Path(output_file).suffix.replace(".","")
-        
-        if output_format not in ['html', 'png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json']:
+        output_format = pathlib.Path(output_file).suffix.replace(".", "")
+
+        if output_format not in [
+            "html",
+            "png",
+            "jpg",
+            "jpeg",
+            "webp",
+            "svg",
+            "pdf",
+            "eps",
+            "json",
+        ]:
             print(f"[ERROR] Output file format '{output_file}' not supported")
         print(f"[INFO] Output file: {output_file} (format '{output_format}')")
 
@@ -167,7 +188,7 @@ def run_vcf2circos():
         options_input = args.options or {}
         if options_input:
             if os.path.isfile(options_input):
-                with open(options_input, 'r') as f:
+                with open(options_input, "r") as f:
                     options = json.loads(f.read())
                 f.close()
             else:
@@ -188,51 +209,58 @@ def run_vcf2circos():
         if notebook_mode:
             init_notebook_mode(connected=True)
 
+        # Input
 
-    # Input
+        if input_format in ["vcf", "gz"]:
+            config = Plotconfig(filename=input_file, options=options.copy())
+            print(config.default_options)
+            exit()
+            fig_instance = Figure(dash_dict=config.get_json())
 
-    if input_format in ["vcf", "gz"]:
+            # Export in vcf2circos JSON
+            if export_file:
+                if not os.path.exists(os.path.dirname(export_file)):
+                    os.mkdir(os.path.dirname(export_file))
+                f = open(export_file, "w")
+                f.write(json.dumps(copy.deepcopy(config.get_json()), indent=4))
+                f.close()
 
-        vcfreader = VcfReader(filename=input_file, options=options.copy())
+        elif input_format in ["json"]:
 
-        fig_instance = Figure(dash_dict=vcfreader.get_json())
+            fig_instance = Figure(input_json_path=input_file)
 
-        # Export in vcf2circos JSON
-        if export_file:
-            vcfreader_export = VcfReader(filename=input_file, options=options.copy())
-            if not os.path.exists(os.path.dirname(export_file)):
-                os.mkdir(os.path.dirname(export_file))
-            f = open(export_file, "w")
-            f.write(json.dumps(copy.deepcopy(vcfreader_export.get_json()),indent=4))
-            f.close()
-
-    elif input_format in ["json"]:
-
-        fig_instance = Figure(input_json_path=input_file)
-    
-    else:
-    
-        print("[ERROR] input format not supported")
-
-    # Fig
-    
-    fig = fig_instance.fig()
-
-    try:
-        if not output_format:
-            plot(fig)
-        elif output_format in ["html"]:
-            if not os.path.exists(os.path.dirname(output_file)):
-                os.mkdir(os.path.dirname(output_file))
-            plot(fig, filename=output_file)
-        elif output_format in ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json']:
-            if not os.path.exists(os.path.dirname(output_file)):
-                os.mkdir(os.path.dirname(output_file))
-            plotly.io.write_image(fig, output_file, format=output_format)
         else:
-            print("[ERROR] output format not supported")
-    except IndexError:
-        plot(fig)
+
+            print("[ERROR] input format not supported")
+
+        # Fig
+
+        fig = fig_instance.fig()
+
+        try:
+            if not output_format:
+                plot(fig)
+            elif output_format in ["html"]:
+                if not os.path.exists(os.path.dirname(output_file)):
+                    os.mkdir(os.path.dirname(output_file))
+                plot(fig, filename=output_file)
+            elif output_format in [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp",
+                "svg",
+                "pdf",
+                "eps",
+                "json",
+            ]:
+                if not os.path.exists(os.path.dirname(output_file)):
+                    os.mkdir(os.path.dirname(output_file))
+                plotly.io.write_image(fig, output_file, format=output_format)
+            else:
+                print("[ERROR] output format not supported")
+        except IndexError:
+            plot(fig)
 
 
 # if __name__ == "__main__":
@@ -240,13 +268,14 @@ def run_vcf2circos():
 #     run_vcf2circos()
 #     print ('[INFO] total run time:')
 #     print ('[INFO] '+str(time()-t)+' sec')
-    
-def main(): # == "__main__":
-    t=time()
+
+
+def main():  # == "__main__":
+    t = time()
     run_vcf2circos()
-    print ('[INFO] total run time:')
-    print ('[INFO] '+str(time()-t)+' sec')
-    
+    print("[INFO] total run time:")
+    print("[INFO] " + str(time() - t) + " sec")
+
 
 if __name__ == "__main__":
     main()
