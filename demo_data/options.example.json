@@ -5,7 +5,7 @@
 		"height": 1400,
 		"plot_bgcolor": "white"
 	},
-	"Chromosomes" : {
+	"Chromosomes": {
 		"cytoband": "options.cytoband.data.path.infos.json",
 		"list": ["chr7", "chr13", "chr12", "chr14", "chr15", "chrX", "chr1", "chr17"]
 	},
@@ -20,12 +20,14 @@
 	},
 	"Variants": {
 		"annotations": {
-			"fields": ["chr", "pos", "ref", "alt", "NOMEN", "*"],
+			"fields": ["chr", "pos", "ref", "alt", "nomen", "*"],
 			"show_none": true
 		},
-		"position": 0.50,
-		"ring_height": 0.04,
-		"ring_space": 0.01
+		"rings": {
+			"position": 0.50,
+			"height": 0.04,
+			"space": 0.01
+		}
 	},
-	"Additonal_annotations": ["options.category.demo_data.json"]
+	"Additonal_annotations": ["options.additional_annotations.ClinGen.json"]
 }

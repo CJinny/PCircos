@@ -208,38 +208,45 @@ class VcfReader():
 
         # Annotations
 
-        annotations_default = {
-            "fields": ["chr", "pos", "ref", "alt"],
-            "show_none": False,
-            "position": 0.50,
-            "ring_height": 0.04,
-            "ring_space": 0.01
+        variants_default = {
+            "annotations": {
+                "fields": ["chr", "pos", "ref", "alt"],
+                "show_none": False
+            },
+            "rings": {
+                "position": 0.50,
+                "height": 0.04,
+                "space": 0.01
+            }
         }
 
         # force Variants section
         if not self.options.get("Variants",{}):
-            self.options["Variants"] = {}
-        
-
-        # force Annotations section
-        if not self.options.get("Variants",{}).get("annotations",{}):
-            self.options["Variants"]["annotations"] = {}
-        
-        # annotations fields
-        if not self.options.get("Variants",{}).get("annotations",{}).get("fields", None):
-            self.options["Variants"]["annotations"]["fields"] = annotations_default["fields"]
-        if not self.options.get("Variants",{}).get("annotations",{}).get("show_none", None):
-            self.options["Variants"]["annotations"]["show_none"] = annotations_default["show_none"]
-
-        if not self.options.get("Variants",{}).get("position",None):
-            self.options["Variants"]["position"] = annotations_default["position"]
-
-        if not self.options.get("Variants",{}).get("ring_height",None):
-            self.options["Variants"]["ring_height"] = annotations_default["ring_height"]
-
-        if not self.options.get("Variants",{}).get("ring_space",None):
-            self.options["Variants"]["ring_space"] = annotations_default["ring_space"]
-		
+            self.options["Variants"] = variants_default
+        else:
+            # check Annotations section
+            if not self.options.get("Variants",{}).get("annotations",{}):
+                self.options["Variants"]["annotations"] = variants_default.get("annotations",{})
+            else:
+                # annotations fields
+                if not self.options.get("Variants",{}).get("annotations",{}).get("fields", None):
+                    self.options["Variants"]["annotations"]["fields"] = variants_default.get("annotations",{}).get("fields", [])
+                # annotations none value
+                if self.options.get("Variants",{}).get("annotations",{}).get("show_none", "None") == "None":
+                    self.options["Variants"]["annotations"]["show_none"] = variants_default.get("annotations",{}).get("show_none", False)
+            # check rings positions
+            if not self.options.get("Variants",{}).get("rings",{}):
+                self.options["Variants"]["rings"] = variants_default.get("rings",{})
+            else:
+                # rings first position
+                if not self.options.get("Variants",{}).get("rings",{}).get("position",None):
+                    self.options["Variants"]["position"] = variants_default.get("rings",{}).get("position",0.5)
+                # rings height
+                if not self.options.get("Variants",{}).get("rings",{}).get("height",None):
+                    self.options["Variants"]["height"] = variants_default.get("rings",{}).get("height",0.04)
+                # ring space
+                if not self.options.get("Variants",{}).get("rings",{}).get("space",None):
+                    self.options["Variants"]["space"] = variants_default.get("rings",{}).get("space",0.01)
 
         self.progress_every = 100
         self.total_bytes = self.vcf_reader.total_bytes()
@@ -518,9 +525,9 @@ class VcfReader():
 
     def get_json(self):
         
-        variants_position = self.options.get("Variants",{}).get("position",0.5)
-        variants_ring_height = self.options.get("Variants",{}).get("ring_height",0.04)
-        variants_ring_space = self.options.get("Variants",{}).get("ring_space",0.01)
+        variants_position = self.options.get("Variants",{}).get("rings",{}).get("position",0.5)
+        variants_ring_height = self.options.get("Variants",{}).get("rings",{}).get("height",0.04)
+        variants_ring_space = self.options.get("Variants",{}).get("rings",{}).get("space",0.01)
 
         # default json
         default_json = {
