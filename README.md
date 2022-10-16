@@ -12,6 +12,7 @@
     1. [Binary](#binary)
     1. [Docker](#docker-1)
     1. [Python](#python)
+    1. [CloudGene](#cloudgene)
 1. [Help](#help)
 1. [Input](#hinput)
 1. [Output](#output)
