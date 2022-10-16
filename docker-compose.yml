@@ -1,7 +1,7 @@
 ##############
 # vcf2circos #
 ##############
-# Usage: docker-compose up
+# Usage: docker-compose up -d
 
 version: '3'
 
@@ -43,5 +43,5 @@ networks:
         driver: "bridge"
         ipam:
             driver: default
-            # config:
-            #     - subnet: 172.42.0.3/24
+            config:
+                - subnet: 172.43.0.0/24
