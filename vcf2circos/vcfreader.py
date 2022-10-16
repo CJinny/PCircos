@@ -2018,21 +2018,23 @@ class VcfReader():
                 variant_data2 = copy.deepcopy(variant_data_link[type])
                 category_data = copy.deepcopy(categories[variant_data2["category"]]["pattern"])
 
-                category_data["trace"]["uid"] = type
+                if variant_data2["data"]:
 
-                category_data["file"]["dataframe"]["data"] = copy.deepcopy(variant_data2["data"])
-                category_data["trace"]["marker"]["symbol"] = copy.deepcopy(variant_data2["data"]["symbol"])
-                
-                if variant_data_link[type]["category"] in ["tile", "histogram"]:
-                    category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"])[0]
-                else:
-                    category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"]) #[0] #copy.deepcopy(variant_data2["data"]["color"])
+                    category_data["trace"]["uid"] = type
 
-                category_data["radius"] = copy.deepcopy(variant_data2["radius"])
-                
-                if variant_data2["category"] not in params_link["Category"]:
-                    params_link["Category"][variant_data2["category"]] = []
-                params_link["Category"][variant_data2["category"]].append(copy.deepcopy(category_data))
+                    category_data["file"]["dataframe"]["data"] = copy.deepcopy(variant_data2["data"])
+                    category_data["trace"]["marker"]["symbol"] = copy.deepcopy(variant_data2["data"]["symbol"])
+                    
+                    if variant_data_link[type]["category"] in ["tile", "histogram"]:
+                        category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"])[0]
+                    else:
+                        category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"]) #[0] #copy.deepcopy(variant_data2["data"]["color"])
+
+                    category_data["radius"] = copy.deepcopy(variant_data2["radius"])
+                    
+                    if variant_data2["category"] not in params_link["Category"]:
+                        params_link["Category"][variant_data2["category"]] = []
+                    params_link["Category"][variant_data2["category"]].append(copy.deepcopy(category_data))
 
         return params_link
 
