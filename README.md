@@ -556,9 +556,11 @@ Example of additional annotations JSON file:
 
 # Contacts
 
-Bioinformatic Platform - Strasbourg University Hospital - France
+ Medical Bioinformatics Applied to Diagnosis - Strasbourg University Hospital - France
 
-[Medical Bioinformatics Applied to Diagnosis](https://www.chru-strasbourg.fr/service/bioinformatique-medicale-appliquee-au-diagnostic-unite-de/)
+[Website](https://www.chru-strasbourg.fr/service/bioinformatique-medicale-appliquee-au-diagnostic-unite-de/)
+
+[GitHub](https://github.com/bioinfo-chru-strasbourg)
 
 [bioinfo@chru-strasbourg.fr](mailto:bioinfo@chru-strasbourg.fr)
 
