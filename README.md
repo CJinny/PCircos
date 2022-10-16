@@ -79,7 +79,7 @@ $ python -m pip install -e .
 Build docker image "vcf2circos:latest"
 
 ```
-$ docker build -t vcf2circos:latest .
+$ docker-compose build
 ```
 
 
@@ -107,6 +107,14 @@ $ docker run -v $(pwd):/data vcf2circos:latest --input=demo_data/example.vcf.gz 
 $ python vcf2circos/vcf2circos.py --input=demo_data/example.vcf.gz --output=/data/example.vcf.gz.html --options=demo_data/options.example.json
 
 ```
+
+## CloudGene 
+
+```
+$ docker-compose build -d
+
+```
+And open URL [`http://localhost:8082`](http://localhost:8082) in a browser (admin account "admin"/"admin1978", see [CloudGene wibsite](http://docs.cloudgene.io/)). Run vcf2circos Application with a VCF file.
 
 
 <br/>

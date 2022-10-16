@@ -1,0 +1,24 @@
+<div class="jumbotron jumbotron-fluid bg-primary text-white">
+  <div class="container">
+    <h1>Welcome to Cloudgene for STARK!</h1>
+    {{#is(loggedIn, true)}}
+      <p>
+        <a class="btn btn-primary btn-lg" href="http://www.cloudgene.io" target="_blank" role="button">Learn more</a>
+      </p>
+    {{else}}
+      <p>
+        <a class="btn btn-lg btn-success" href="#!pages/login">Login</a>&nbsp;
+        <a class="btn btn-lg btn-primary" href="#!pages/register">Sign up now</a>
+      </p>
+    {{/is}}
+  </div>
+</div>
+<!--
+<div class="container bd-content" style="margin-bottom: 0px;">
+
+  <h3>What's next?</h3>
+
+  <p>Run an application or find your jobs</p>
+
+</div>
+-->
