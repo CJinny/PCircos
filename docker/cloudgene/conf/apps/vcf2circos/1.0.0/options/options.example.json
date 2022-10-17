@@ -20,7 +20,7 @@
 	"Variants": {
 		"annotations": {
 			"fields": ["chr", "pos", "ref", "alt", "nomen"],
-			"show_none": true
+			"show_none": false
 		},
 		"rings": {
 			"position": 0.50,
