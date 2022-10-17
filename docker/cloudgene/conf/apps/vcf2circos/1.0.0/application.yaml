@@ -3,11 +3,11 @@ name: vcf2circos Application
 description: vcf2circos Application.<br>This application generat a Circos plot from a VCF file.
 category: VCF
 version: 1.0.0
-author: Antony Le Béchec
+author: Antony Le Bechec
 submitButton: Circos Plot
 workflow:
   steps:
-    - name: Install 
+    - name: Circos plot 
       cmd: /bin/bash application.sh "$vcf" "$plot"
       bash: true
       stdout: true
