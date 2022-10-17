@@ -1776,6 +1776,7 @@ class VcfReader():
 
         # generate colors
         colors = list(Color("gray").range_to(Color("lightgrey"),len(self.get_contigs())))
+        #colors = list(Color("#333333",).range_to(Color("#ffffff"),len(self.get_contigs())))
 
         # create empty dataframe
         contig_dataframe = {}
@@ -1801,12 +1802,6 @@ class VcfReader():
 
 
         # Genes
-
-        #self.options["Genes"]["list"] = ["targets"]
-
-        # print("self.options.get(Genes,{}).get(list,None)")
-        # print(self.options.get("Genes",{}).get("list",None))
-        # exit()
 
         if self.options.get("Genes",{}).get("data",None):
 
@@ -2028,7 +2023,7 @@ class VcfReader():
                     if variant_data_link[type]["category"] in ["tile", "histogram"]:
                         category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"])[0]
                     else:
-                        category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"]) #[0] #copy.deepcopy(variant_data2["data"]["color"])
+                        category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"]) 
 
                     category_data["radius"] = copy.deepcopy(variant_data2["radius"])
                     
