@@ -928,7 +928,7 @@ class VcfReader():
             self.options["Exons"]["data"] = explode_category_file_dict_into_dataframe(self.options.get("Exons",{}).get("data",None),self.options.get("File",""))
 
             # Store full refGene exon
-            self.options["Exons_full"] = copy.deepcopy(self.options["Exons"]["data"])
+            #self.options["Exons_full"] = copy.deepcopy(self.options["Exons"]["data"])
 
 
         # Additonal_annotations
