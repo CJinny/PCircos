@@ -3,6 +3,7 @@ from asyncore import file_dispatcher
 import copy
 from genericpath import isfile
 import re
+from sre_compile import isstring
 import textwrap
 import vcf
 import json
@@ -11,7 +12,6 @@ from colour import Color
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 
 import random
-#from html import escape, unescape
 import pandas as pd
 
 TEXTWRAP_WIDTH = 60
@@ -40,8 +40,11 @@ vcf.Reader._map = _map
 
 # Read file to dict
 def file_to_dict(file: str = None, path: str = ""):
-    result = {}
-    if file:
+    # Result is dict in input
+    result = file
+    # Result is dict from the file
+    if file and isstring(file):
+        result = {}
         file_path = None
         if os.path.isfile(file):
             file_path = file
@@ -204,37 +207,45 @@ class VcfReader:
 
         # Annotations
 
-        annotations_default = {
-            "fields": ["chr", "pos", "ref", "alt"],
-            "show_none": False,
-            "position": 0.50,
-            "ring_height": 0.04,
-            "ring_space": 0.01
+        variants_default = {
+            "annotations": {
+                "fields": ["chr", "pos", "ref", "alt"],
+                "show_none": False
+            },
+            "rings": {
+                "position": 0.50,
+                "height": 0.04,
+                "space": 0.01
+            }
         }
 
         # force Variants section
         if not self.options.get("Variants",{}):
-            self.options["Variants"] = {}
-        
-
-        # force Annotations section
-        if not self.options.get("Variants",{}).get("annotations",{}):
-            self.options["Variants"]["annotations"] = {}
-        # annotations fields
-        if not self.options.get("Variants",{}).get("annotations",{}).get("fields", None):
-            self.options["Variants"]["annotations"]["fields"] = annotations_default["fields"]
-        if not self.options.get("Variants",{}).get("annotations",{}).get("show_none", None):
-            self.options["Variants"]["annotations"]["show_none"] = annotations_default["show_none"]
-
-        if not self.options.get("Variants",{}).get("position",None):
-            self.options["Variants"]["position"] = annotations_default["position"]
-
-        if not self.options.get("Variants",{}).get("ring_height",None):
-            self.options["Variants"]["ring_height"] = annotations_default["ring_height"]
-
-        if not self.options.get("Variants",{}).get("ring_space",None):
-            self.options["Variants"]["ring_space"] = annotations_default["ring_space"]
-		
+            self.options["Variants"] = variants_default
+        else:
+            # check Annotations section
+            if not self.options.get("Variants",{}).get("annotations",{}):
+                self.options["Variants"]["annotations"] = variants_default.get("annotations",{})
+            else:
+                # annotations fields
+                if not self.options.get("Variants",{}).get("annotations",{}).get("fields", None):
+                    self.options["Variants"]["annotations"]["fields"] = variants_default.get("annotations",{}).get("fields", [])
+                # annotations none value
+                if self.options.get("Variants",{}).get("annotations",{}).get("show_none", "None") == "None":
+                    self.options["Variants"]["annotations"]["show_none"] = variants_default.get("annotations",{}).get("show_none", False)
+            # check rings positions
+            if not self.options.get("Variants",{}).get("rings",{}):
+                self.options["Variants"]["rings"] = variants_default.get("rings",{})
+            else:
+                # rings first position
+                if not self.options.get("Variants",{}).get("rings",{}).get("position",None):
+                    self.options["Variants"]["position"] = variants_default.get("rings",{}).get("position",0.5)
+                # rings height
+                if not self.options.get("Variants",{}).get("rings",{}).get("height",None):
+                    self.options["Variants"]["height"] = variants_default.get("rings",{}).get("height",0.04)
+                # ring space
+                if not self.options.get("Variants",{}).get("rings",{}).get("space",None):
+                    self.options["Variants"]["space"] = variants_default.get("rings",{}).get("space",0.01)
 
         self.progress_every = 100
         self.total_bytes = self.vcf_reader.total_bytes()
@@ -506,18 +517,10 @@ class VcfReader:
         return self.contigs
 
     def get_json(self):
-
-
-        #print(self.options["Variants"])
         
-        variants_position = self.options.get("Variants",{}).get("position",0.5)
-        variants_ring_height = self.options.get("Variants",{}).get("ring_height",0.04)
-        variants_ring_space = self.options.get("Variants",{}).get("ring_space",0.01)
-
-        # variants_position = 0.5
-        # variants_ring_height = 0.02
-        # variants_ring_space = 0.01
-
+        variants_position = self.options.get("Variants",{}).get("rings",{}).get("position",0.5)
+        variants_ring_height = self.options.get("Variants",{}).get("rings",{}).get("height",0.04)
+        variants_ring_space = self.options.get("Variants",{}).get("rings",{}).get("space",0.01)
 
         # default json
         default_json = {
@@ -526,7 +529,7 @@ class VcfReader:
                 "ideogram": {
                     "patch": {
                         "file": {
-                            "path": "chr_size.txt",
+                            "path": "",
                             "header": "infer",
                             "sep": "\t",
                             "dataframe": {
@@ -866,7 +869,7 @@ class VcfReader:
             self.options["Exons"]["data"] = explode_category_file_dict_into_dataframe(self.options.get("Exons",{}).get("data",None),self.options.get("File",""))
 
             # Store full refGene exon
-            self.options["Exons_full"] = copy.deepcopy(self.options["Exons"]["data"])
+            #self.options["Exons_full"] = copy.deepcopy(self.options["Exons"]["data"])
 
 
 
@@ -1470,8 +1473,6 @@ class VcfReader:
                         
                         # CNV: INS INV DEL DUP
                         elif record.get("svtype","") in ["CNV", "INS", "INV", "DEL", "DUP"]:
-
->>>>>>> devel
                             # for svtype = CNV, try to find correct CNV with ALT
                             if record.get("svtype", "") in ["CNV"]:
                                 CNV_type = re.sub(
@@ -1680,6 +1681,7 @@ class VcfReader:
 
         # generate colors
         colors = list(Color("gray").range_to(Color("lightgrey"),len(self.get_contigs())))
+        #colors = list(Color("#333333",).range_to(Color("#ffffff"),len(self.get_contigs())))
 
         # create empty dataframe
         contig_dataframe = {}
@@ -1705,12 +1707,6 @@ class VcfReader:
 
 
         # Genes
-
-        #self.options["Genes"]["list"] = ["targets"]
-
-        # print("self.options.get(Genes,{}).get(list,None)")
-        # print(self.options.get("Genes",{}).get("list",None))
-        # exit()
 
         if self.options.get("Genes",{}).get("data",None):
 
@@ -1923,23 +1919,21 @@ class VcfReader:
                 variant_data2 = copy.deepcopy(variant_data_link[type])
                 category_data = copy.deepcopy(categories[variant_data2["category"]]["pattern"])
 
-                category_data["trace"]["uid"] = type
+                if variant_data2["data"]:
+                    category_data["trace"]["uid"] = type
 
-                category_data["file"]["dataframe"]["data"] = copy.deepcopy(variant_data2["data"])
-                category_data["trace"]["marker"]["symbol"] = copy.deepcopy(variant_data2["data"]["symbol"])
-                
-                if variant_data_link[type]["category"] in ["tile", "histogram"]:
-                    category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"])[0]
+                    category_data["file"]["dataframe"]["data"] = copy.deepcopy(variant_data2["data"])
+                    category_data["trace"]["marker"]["symbol"] = copy.deepcopy(variant_data2["data"]["symbol"])
+                    
+                    if variant_data_link[type]["category"] in ["tile", "histogram"]:
+                        category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"])[0]
+                    else:
+                        category_data["trace"]["marker"]["color"] = copy.deepcopy(variant_data2["data"]["color"]) 
 
-                else:
-                    category_data["trace"]["marker"]["color"] = copy.deepcopy(
-                        variant_data2["data"]["color"]
-                    )  # [0] #copy.deepcopy(variant_data2["data"]["color"])
-
-                category_data["radius"] = copy.deepcopy(variant_data2["radius"])
-
-                if variant_data2["category"] not in params_link["Category"]:
-                    params_link["Category"][variant_data2["category"]] = []
-                params_link["Category"][variant_data2["category"]].append(copy.deepcopy(category_data))
+                    category_data["radius"] = copy.deepcopy(variant_data2["radius"])
+                    
+                    if variant_data2["category"] not in params_link["Category"]:
+                        params_link["Category"][variant_data2["category"]] = []
+                    params_link["Category"][variant_data2["category"]].append(copy.deepcopy(category_data))
 
         return params_link
