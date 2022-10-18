@@ -104,8 +104,8 @@ def to_arc(interval_theta_array, arc_radius, ideogram_theta_list):
         print ('[WARN]        '+str(np.where(interval_theta_array >= 2*np.pi)))
         print ('[WARN]     interval_theta_array shape:')
         print ('[WARN]        '+str(interval_theta_array.shape))
-        print ('[WARN]     arc_radius is:')
-        print ('[WARN]        '+str(arc_radius[0:min(max_values_to_show,len(arc_radius))]))
+        #print ('[WARN]     arc_radius is:')
+        #print ('[WARN]        '+str(arc_radius[0:min(max_values_to_show,len(arc_radius))]))
 
     if not isinstance(arc_radius, (float, int)):
         assert len(interval_theta_array) == len(arc_radius)
