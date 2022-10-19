@@ -1898,10 +1898,21 @@ class VcfReader():
                     for info in infos.split(";"):
                         hovertext += "<br>" + str(info)
                     
-                self.options["Genes"]["data"]["dataframe"]["data"]["infos_dict"].append(infos_dict)
-                self.options["Genes"]["data"]["dataframe"]["data"]["hovertext"].append(str(hovertext))
+                
+                try:
+                    infos_dict_test = self.options["Genes"]["data"]["dataframe"]["data"]["infos_dict"][gene_i]
+                except IndexError:
+                    self.options["Genes"]["data"]["dataframe"]["data"]["infos_dict"].append(infos_dict)
+                #self.options["Genes"]["data"]["dataframe"]["data"]["infos_dict"].append(infos_dict)
+
+                try:
+                    hovertext_test = self.options["Genes"]["data"]["dataframe"]["data"]["hovertext"][gene_i]
+                except IndexError:
+                    self.options["Genes"]["data"]["dataframe"]["data"]["hovertext"].append(str(hovertext))
+                #self.options["Genes"]["data"]["dataframe"]["data"]["hovertext"].append(str(hovertext))
+
                 gene_i += 1
- 
+
             # Genes params
 
             genes = {
