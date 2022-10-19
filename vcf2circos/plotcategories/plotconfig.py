@@ -38,7 +38,7 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open("/maison/lamouche/dev_vcf2circos/demo_data/options.general.json", "r")
+            open("../demo_data/options.general.json", "r",)
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(

@@ -235,7 +235,8 @@ def run_vcf2circos():
 
             js = {}
             js["General"] = config.options["General"]
-            js["Category"] = {"ideogram": config.merge_options()}
+            dico, ringval = config.merge_options()
+            js["Category"] = {"ideogram": dico, "ring": ringval}
             print(js)
             fig_instance = Figure(dash_dict=js)
 
