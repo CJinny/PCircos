@@ -1,5 +1,4 @@
 # Standard imports
-from asyncore import file_dispatcher
 import copy
 from genericpath import isfile
 import re
