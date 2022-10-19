@@ -385,22 +385,29 @@ Data contains 6 mandatory columns:
 - val: fixed value as 1 (not used)
 - color: color of the Circos dot (see [Plotly documentation](https://plotly.com/) for authorized colors)
 - gene: name of the gene
+- infos: infos for the gene (optional), in multiple formats:
+    - json: `{"name": "Calpain 6", "OMIM": 300146}`
+    - VCF INFO field: `name=Calpain 7;OMIM=606400`
+    - text: `Dachshund Family Transcription Factor 1`
+    - multitext: `Interferon Alpha 14; OMIM 147579`
 
 Genes' positions can overlap. Genes will be plot on a unique line.
+
+Infos will be split into "infos_dict" JSON field. Hover text will be construct from the infos column.
 
 See UCSC databases ("refGene.txt.gz") for [hg38](https://hgdownload.cse.ucsc.edu/goldenPath/hg38/database/) and [hg19](https://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/) to generate the data file. See [refGene Genes hg19 data file example](demo_data/refGene.txt)
 
 Exemple of a data tab-delimited refGenes Genes file:
 ```
-chr_name  start      end        val  color   gene
-chrX      110488326  110513711  1    gray    CAPN6
-chr5      115368168  115395186  1    gray    ARL14EPL
-chr13     72012097   72441342   1    red     DACH1
+chr_name  start      end        val  color   gene      infos
+chrX      110488326  110513711  1    gray    CAPN6     {"name": "Calpain 6", "OMIM": 300146}
+chr5      115368168  115395186  1    gray    ARL14EPL  
+chr13     72012097   72441342   1    red     DACH1     Dachshund Family Transcription Factor 1
 chr9      21367370   21368056   1    red     IFNA13
 chr6      44213902   44221625   1    green   HSP90AB1
-chr3      15247752   15294423   1    purple  CAPN7
+chr3      15247752   15294423   1    purple  CAPN7     name=Calpain 7;OMIM=606400
 chrX      85403454   86087605   1    gray    DACH2
-chr9      21239000   21240004   1    gray    IFNA14
+chr9      21239000   21240004   1    gray    IFNA14    Interferon Alpha 14; OMIM 147579
 chr1      223714978  223853403  1    gray    CAPN8
 ```
 
