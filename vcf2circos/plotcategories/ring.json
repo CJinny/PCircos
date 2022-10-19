@@ -1,0 +1,144 @@
+{
+    [
+        {
+        # SNV
+        "radius": {
+                "R0": variants_position
+            + (7 * variants_ring_space)
+            + (6 * variants_ring_height),
+                "R1": variants_position
+            + (7 * variants_ring_space)
+            + (7 * variants_ring_height),
+            },
+            "layout": {
+                "opacity": 0.1,
+                "fillcolor": "gray",
+                "layer": "below",
+                "line": {
+                    "color": "gray",
+                    "width": 1
+                },
+            },
+        },
+        {
+        # level 5
+        "radius": {
+                "R0": variants_position
+            + (6 * variants_ring_space)
+            + (5 * variants_ring_height),
+                "R1": variants_position
+            + (6 * variants_ring_space)
+            + (6 * variants_ring_height),
+            },
+            "layout": {
+                "opacity": 0.1,
+                "fillcolor": "lightgrey",
+                "layer": "below",
+                "line": {
+                    "color": "lightgrey",
+                    "width": 1
+                },
+            },
+        },
+        {
+        # level 4
+        "radius": {
+                "R0": variants_position
+            + (5 * variants_ring_space)
+            + (4 * variants_ring_height),
+                "R1": variants_position
+            + (5 * variants_ring_space)
+            + (5 * variants_ring_height),
+            },
+            "layout": {
+                "opacity": 0.1,
+                "fillcolor": "lightgrey",
+                "layer": "below",
+                "line": {
+                    "color": "lightgrey",
+                    "width": 1
+                },
+            },
+        },
+        {
+        # level 3
+        "radius": {
+                "R0": variants_position
+            + (4 * variants_ring_space)
+            + (3 * variants_ring_height),
+                "R1": variants_position
+            + (4 * variants_ring_space)
+            + (4 * variants_ring_height),
+            },
+            "layout": {
+                "opacity": 0.1,
+                "fillcolor": "lightgrey",
+                "layer": "below",
+                "line": {
+                    "color": "lightgrey",
+                    "width": 1
+                },
+            },
+        },
+        {
+        # level 2
+        "radius": {
+                "R0": variants_position
+            + (3 * variants_ring_space)
+            + (2 * variants_ring_height),
+                "R1": variants_position
+            + (3 * variants_ring_space)
+            + (3 * variants_ring_height),
+            },
+            "layout": {
+                "opacity": 0.1,
+                "fillcolor": "white",
+                "layer": "below",
+                "line": {
+                    "color": "white",
+                    "width": 1
+                },
+            },
+        },
+        {
+        # level 1
+        "radius": {
+                "R0": variants_position
+            + (2 * variants_ring_space)
+            + (1 * variants_ring_height),
+                "R1": variants_position
+            + (2 * variants_ring_space)
+            + (2 * variants_ring_height),
+            },
+            "layout": {
+                "opacity": 0.1,
+                "fillcolor": "lightgrey",
+                "layer": "below",
+                "line": {
+                    "color": "lightgrey",
+                    "width": 1
+                },
+            },
+        },
+        {
+        # level 0
+        "radius": {
+                "R0": variants_position
+            + (1 * variants_ring_space)
+            + (0 * variants_ring_height),
+                "R1": variants_position
+            + (1 * variants_ring_space)
+            + (1 * variants_ring_height),
+            },
+            "layout": {
+                "opacity": 0.1,
+                "fillcolor": "lightgrey",
+                "layer": "below",
+                "line": {
+                    "color": "lightgrey",
+                    "width": 1
+                },
+            },
+        },
+    ],
+}
