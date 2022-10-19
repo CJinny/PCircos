@@ -1,8 +1,9 @@
 # enable dash only in dash module, disable dash here
 import os
 import sys
-
+import inspect
 from vcf2circos.plotcategories.plotconfig import Plotconfig
+from vcf2circos.plotcategories.ideogram import Ideogram
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "."))
 sys.path.append(os.path.abspath(os.path.join("../", "demo_data")))
@@ -44,7 +45,7 @@ from argparse import RawTextHelpFormatter
 
 import pandas as pd
 
-__author__ = "Jin Cui, Antony Le Bechec"
+__author__ = "Jin Cui, Antony Le Bechec, Jean-Baptiste Lamouche"
 __version__ = "2.0.0"
 __date__ = "September 18 2022"
 
@@ -212,10 +213,31 @@ def run_vcf2circos():
         # Input
 
         if input_format in ["vcf", "gz"]:
-            config = Plotconfig(filename=input_file, options=options.copy())
-            print(config.default_options)
-            exit()
-            fig_instance = Figure(dash_dict=config.get_json())
+            config = Ideogram(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=True,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                config_ring=options["Variants"]["rings"],
+            )
+            # for items in inspect.getmembers(
+            #     config, lambda a: not (inspect.isroutine(a))
+            # ):
+            #     if not items[0].startswith("__"):
+            #         self.options
+            print(config.options)
+
+            js = {}
+            js["General"] = config.options["General"]
+            js["Category"] = {"ideogram": config.merge_options()}
+            print(js)
+            fig_instance = Figure(dash_dict=js)
 
             # Export in vcf2circos JSON
             if export_file:
