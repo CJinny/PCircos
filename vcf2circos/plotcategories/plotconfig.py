@@ -11,6 +11,7 @@ import json
 import os
 
 from vcf2circos.vcfreader import VcfReader
+from os.path import join as osj
 
 
 # TODO commons file with utils function maybe one more for globals
@@ -25,7 +26,7 @@ class Plotconfig(VcfReader):
 
     def __init__(
         self,
-        filename:  str,
+        filename: str,
         options: dict,
         show: bool,
         file: dict,
@@ -39,7 +40,10 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open("../demo_data/options.general.json", "r",)
+            open(
+                "../demo_data/options.general.json",
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -87,6 +91,34 @@ class Plotconfig(VcfReader):
         )
 
         pass
+
+    def process_vcf(self) -> dict:
+        """
+        From vcfreader antony explode_category_file_dict_into_dataframe
+        """
+        # assert isinstance(
+        #    self.options["Chromosomes"]["cytoband"], str
+        # ) and os.path.exists(
+        #        osj(
+        #            self.options["Static"],
+        #            "Assembly",
+        #            self.options["Assembly"],
+        #            "cytoband_hg19_chr_infos.txt.gz",
+        #        )
+        # )
+
+        # VCF parsed file from PyVCF3
+        chroms_list = []
+        for val in self.vcf_reader:
+            chroms_list.append(val.CHROM)
+        return list(set(chroms_list))
+
+
+##############
+# Commons func #TODO put in commons.py
+def json_to_dict(jsonpath):
+    with open(jsonpath) as json_file:
+        return json.load(json_file)
 
 
 def systemcall(command, log=None):
