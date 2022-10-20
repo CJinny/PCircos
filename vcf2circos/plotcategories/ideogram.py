@@ -5,6 +5,13 @@ import inspect
 # height hauteur du ring
 # positon position from center
 
+# just for test
+data = {
+    "chr_name": ["chr1", "chr2", "chr3"],
+    "chr_size": [249250621, 243199373, 198022430],
+    "chr_label": ["chr1", "chr2", "chr3"],
+    "chr_color": ["pink", "rosybrown", "firebrick"],
+}
 
 list_graph_type = ["majortick", "minortick", "ticklabel"]
 
@@ -63,7 +70,11 @@ class Ideogram(Plotconfig):
             },
         )
         self.customoptions = (
-            {"customlabel": "True", "customspacing": "False", "customcolor": 3,},
+            {
+                "customlabel": "True",
+                "customspacing": "False",
+                "customcolor": 3,
+            },
         )
         self.npoints = (1000,)
         self.radius = {"R0": 1.0, "R1": 1.1}
@@ -104,7 +115,11 @@ class Ideogram(Plotconfig):
                 "xref": "x",
                 "yref": "y",
                 "showarrow": False,
-                "font": {"family": "Times New Roman", "size": 8, "color": "black",},
+                "font": {
+                    "family": "Times New Roman",
+                    "size": 8,
+                    "color": "black",
+                },
             },
         }
 
@@ -116,15 +131,7 @@ class Ideogram(Plotconfig):
             "path": "",
             "header": "infer",
             "sep": "\t",
-            "dataframe": {
-                "orient": "columns",
-                "data": {
-                    "chr_name": ["chr1", "chr2", "chr3"],
-                    "chr_size": [249250621, 243199373, 198022430],
-                    "chr_label": ["chr1", "chr2", "chr3"],
-                    "chr_color": ["pink", "rosybrown", "firebrick"],
-                },
-            },
+            "dataframe": {"orient": "columns", "data": data},
         }
         dico["patch"]["show"] = self.show
         dico["patch"]["degreerange"] = self.degreerange
@@ -154,4 +161,3 @@ class Ideogram(Plotconfig):
         dico["ticklabel"] = self.ticklabel
         return dico
         # Loopable as fuck
-
