@@ -60,9 +60,41 @@ class Ring(Plotconfig):
         self.variants_ring_space = self.config_ring["space"]
         self.variants_ring_height = self.config_ring["height"]
 
-        coeff = np.linspace(self.min_l, self.max_l, num=self.nrings)
-        for coeff in range_scale
-            self.ringval = [
+        range_scale = np.linspace(self.min_l, self.max_l + 1, num=self.nrings)
+        print("#[INFO] Rnage scale ", range_scale)
+        self.ringval = []
+        color_ = [
+            "lightgray",
+            "lightgray",
+            "lightgray",
+            "white",
+            "lightgray",
+            "lightgray",
+        ]
+
+        self.ringval.append(
+            {
+                "radius": {
+                    "R0": self.variants_position
+                    + (max(range_scale) * self.variants_ring_space)
+                    + ((max(range_scale) + 1) * self.variants_ring_height),
+                    "R1": self.variants_position
+                    + (max(range_scale) * self.variants_ring_space)
+                    + ((max(range_scale) + 2) * self.variants_ring_height),
+                },
+                "layout": {
+                    "opacity": 0.1,
+                    # TODO
+                    "fillcolor": "gray",
+                    "layer": "below",
+                    "line": {"color": "gray", "width": 1},
+                },
+            },
+        )
+
+        # Copy number level
+        for i, coeff in enumerate(range_scale):
+            self.ringval.append(
                 {
                     "radius": {
                         "R0": self.variants_position
@@ -79,7 +111,7 @@ class Ring(Plotconfig):
                         "line": {"color": "gray", "width": 1},
                     },
                 },
-            ]
+            )
 
         # self.ringval = [
         #    {
