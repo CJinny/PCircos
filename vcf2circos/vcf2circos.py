@@ -247,16 +247,16 @@ def run_vcf2circos():
                 data=None,
                 layout=None,
                 config_ring=options["Variants"]["rings"],
-                min_l=2,
-                max_l=7,
-                nrings=5
+                min_l=0,
+                max_l=5,
+                nrings=6
                 # config_ring=options["Variants"]["rings"],
             )
 
             js = {}
             js["General"] = ideo.options["General"]
             dico = ideo.merge_options()
-            js["Category"] = {"ideogram": dico, "ring": ringg}
+            js["Category"] = {"ideogram": dico, "ring": getattr(ringg, "ringval")}
             print(js)
             fig_instance = Figure(dash_dict=js)
 
