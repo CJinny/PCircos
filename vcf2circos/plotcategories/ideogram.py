@@ -31,7 +31,7 @@ class Ideogram(Plotconfig):
         hovertextformat,
         trace_car,
         data,
-        config_ring=None,
+        layout,
     ):
         super().__init__(
             filename,
@@ -44,6 +44,7 @@ class Ideogram(Plotconfig):
             hovertextformat,
             trace_car,
             data,
+            layout,
         )
         self.degreerange = [0, 360]
         self.showfillcolor = self.cast_bool(True)
@@ -107,133 +108,6 @@ class Ideogram(Plotconfig):
             },
         }
 
-        self.ring = config_ring
-        self.variants_position = self.ring["position"]
-        self.variants_ring_space = self.ring["space"]
-        self.variants_ring_height = self.ring["height"]
-
-        self.ringval = [
-            {
-                # SNV
-                "radius": {
-                    "R0": self.variants_position
-                    + (7 * self.variants_ring_space)
-                    + (6 * self.variants_ring_height),
-                    "R1": self.variants_position
-                    + (7 * self.variants_ring_space)
-                    + (7 * self.variants_ring_height),
-                },
-                "layout": {
-                    "opacity": 0.1,
-                    "fillcolor": "gray",
-                    "layer": "below",
-                    "line": {"color": "gray", "width": 1},
-                },
-            },
-            {
-                # level 5
-                "radius": {
-                    "R0": self.variants_position
-                    + (6 * self.variants_ring_space)
-                    + (5 * self.variants_ring_height),
-                    "R1": self.variants_position
-                    + (6 * self.variants_ring_space)
-                    + (6 * self.variants_ring_height),
-                },
-                "layout": {
-                    "opacity": 0.1,
-                    "fillcolor": "lightgrey",
-                    "layer": "below",
-                    "line": {"color": "lightgrey", "width": 1},
-                },
-            },
-            {
-                # level 4
-                "radius": {
-                    "R0": self.variants_position
-                    + (5 * self.variants_ring_space)
-                    + (4 * self.variants_ring_height),
-                    "R1": self.variants_position
-                    + (5 * self.variants_ring_space)
-                    + (5 * self.variants_ring_height),
-                },
-                "layout": {
-                    "opacity": 0.1,
-                    "fillcolor": "lightgrey",
-                    "layer": "below",
-                    "line": {"color": "lightgrey", "width": 1},
-                },
-            },
-            {
-                # level 3
-                "radius": {
-                    "R0": self.variants_position
-                    + (4 * self.variants_ring_space)
-                    + (3 * self.variants_ring_height),
-                    "R1": self.variants_position
-                    + (4 * self.variants_ring_space)
-                    + (4 * self.variants_ring_height),
-                },
-                "layout": {
-                    "opacity": 0.1,
-                    "fillcolor": "lightgrey",
-                    "layer": "below",
-                    "line": {"color": "lightgrey", "width": 1},
-                },
-            },
-            {
-                # level 2
-                "radius": {
-                    "R0": self.variants_position
-                    + (3 * self.variants_ring_space)
-                    + (2 * self.variants_ring_height),
-                    "R1": self.variants_position
-                    + (3 * self.variants_ring_space)
-                    + (3 * self.variants_ring_height),
-                },
-                "layout": {
-                    "opacity": 0.1,
-                    "fillcolor": "white",
-                    "layer": "below",
-                    "line": {"color": "white", "width": 1},
-                },
-            },
-            {
-                # level 1
-                "radius": {
-                    "R0": self.variants_position
-                    + (2 * self.variants_ring_space)
-                    + (1 * self.variants_ring_height),
-                    "R1": self.variants_position
-                    + (2 * self.variants_ring_space)
-                    + (2 * self.variants_ring_height),
-                },
-                "layout": {
-                    "opacity": 0.1,
-                    "fillcolor": "lightgrey",
-                    "layer": "below",
-                    "line": {"color": "lightgrey", "width": 1},
-                },
-            },
-            {
-                # level 0
-                "radius": {
-                    "R0": self.variants_position
-                    + (1 * self.variants_ring_space)
-                    + (0 * self.variants_ring_height),
-                    "R1": self.variants_position
-                    + (1 * self.variants_ring_space)
-                    + (1 * self.variants_ring_height),
-                },
-                "layout": {
-                    "opacity": 0.1,
-                    "fillcolor": "lightgrey",
-                    "layer": "below",
-                    "line": {"color": "lightgrey", "width": 1},
-                },
-            },
-        ]
-
     def merge_options(self):
         dico = {}
         dico["patch"] = {}
@@ -278,9 +152,6 @@ class Ideogram(Plotconfig):
         dico["majortick"] = self.majortick
         dico["minortick"] = self.minortick
         dico["ticklabel"] = self.ticklabel
-        # dico["ring"] = self.ringval
-
-        #  self.options[attr] = self.attr
-        return dico, self.ringval
+        return dico
         # Loopable as fuck
 
