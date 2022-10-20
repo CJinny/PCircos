@@ -4,6 +4,8 @@ import sys
 import inspect
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from vcf2circos.plotcategories.ideogram import Ideogram
+from vcf2circos.plotcategories.ring import Ring
+
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "."))
 sys.path.append(os.path.abspath(os.path.join("../", "demo_data")))
@@ -213,30 +215,48 @@ def run_vcf2circos():
         # Input
 
         if input_format in ["vcf", "gz"]:
-            config = Ideogram(
+            ideo = Ideogram(
                 filename=input_file,
                 options=options.copy(),
                 show=True,
                 file=None,
                 radius=None,
-                sortbycolor=True,
+                sortbycolor=None,
                 colorcolumn=6,
                 hovertextformat=None,
                 trace_car=None,
                 data=None,
-                config_ring=options["Variants"]["rings"],
+                layout=None
+                # config_ring=options["Variants"]["rings"],
             )
             # for items in inspect.getmembers(
             #     config, lambda a: not (inspect.isroutine(a))
             # ):
             #     if not items[0].startswith("__"):
             #         self.options
-            print(config.options)
+            ringg = Ring(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+                config_ring=options["Variants"]["rings"],
+                min_l=2,
+                max_l=7,
+                nrings=5
+                # config_ring=options["Variants"]["rings"],
+            )
 
             js = {}
-            js["General"] = config.options["General"]
-            dico, ringval = config.merge_options()
-            js["Category"] = {"ideogram": dico, "ring": ringval}
+            js["General"] = ideo.options["General"]
+            dico = ideo.merge_options()
+            js["Category"] = {"ideogram": dico, "ring": ringg}
             print(js)
             fig_instance = Figure(dash_dict=js)
 
@@ -245,7 +265,7 @@ def run_vcf2circos():
                 if not os.path.exists(os.path.dirname(export_file)):
                     os.mkdir(os.path.dirname(export_file))
                 f = open(export_file, "w")
-                f.write(json.dumps(copy.deepcopy(config.get_json()), indent=4))
+                f.write(json.dumps(copy.deepcopy(ideo.get_json()), indent=4))
                 f.close()
 
         elif input_format in ["json"]:
