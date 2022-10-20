@@ -1,10 +1,13 @@
 # enable dash only in dash module, disable dash here
+from enum import unique
 import os
 import sys
 import inspect
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from vcf2circos.plotcategories.ideogram import Ideogram
 from vcf2circos.plotcategories.ring import Ring
+from vcf2circos.plotcategories.cytoband import Cytoband
+from pprint import pprint
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "."))
@@ -215,7 +218,7 @@ def run_vcf2circos():
         # Input
 
         if input_format in ["vcf", "gz"]:
-            ideo = Ideogram(
+            plotconfig = Plotconfig(
                 filename=input_file,
                 options=options.copy(),
                 show=True,
@@ -226,15 +229,24 @@ def run_vcf2circos():
                 hovertextformat=None,
                 trace_car=None,
                 data=None,
-                layout=None
-                # config_ring=options["Variants"]["rings"],
+                layout=None,
             )
-            # for items in inspect.getmembers(
-            #     config, lambda a: not (inspect.isroutine(a))
-            # ):
-            #     if not items[0].startswith("__"):
-            #         self.options
-            ringg = Ring(
+            print(plotconfig.process_chromosomes())
+            exit()
+            ideogram = Ideogram(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+            )
+            ring = Ring(
                 filename=input_file,
                 options=options.copy(),
                 show=True,
@@ -252,12 +264,31 @@ def run_vcf2circos():
                 nrings=6
                 # config_ring=options["Variants"]["rings"],
             )
+            cytoband = Cytoband(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+            )
 
             js = {}
-            js["General"] = ideo.options["General"]
-            dico = ideo.merge_options()
-            js["Category"] = {"ideogram": dico, "ring": getattr(ringg, "ringval")}
-            print(js)
+            js["General"] = ideogram.options["General"]
+
+            js["Category"] = {
+                "ideogram": ideogram.merge_options(),
+                "cytoband": cytoband.merge_options(),
+                # "ring": getattr(ring, "ringval"),
+            }
+            pprint(js)
+            print("\n")
+            print(type(js["Category"]["cytoband"]))
             fig_instance = Figure(dash_dict=js)
 
             # Export in vcf2circos JSON
