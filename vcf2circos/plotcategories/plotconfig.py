@@ -25,7 +25,7 @@ class Plotconfig(VcfReader):
 
     def __init__(
         self,
-        filename,
+        filename:  str,
         options: dict,
         show: bool,
         file: dict,
@@ -35,6 +35,7 @@ class Plotconfig(VcfReader):
         hovertextformat: dict,
         trace_car: dict,
         data: list,
+        layout: dict,
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
@@ -52,6 +53,7 @@ class Plotconfig(VcfReader):
         self.hovertextformat = hovertextformat
         self.trace_car = trace_car
         self.data = data
+        self.layout = layout
 
     @staticmethod
     def cast_bool(value: bool) -> str:
