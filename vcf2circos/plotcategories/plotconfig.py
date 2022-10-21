@@ -14,6 +14,7 @@ import pandas as pd
 from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
 from tqdm import tqdm
+import gzip
 
 
 # TODO commons file with utils function maybe one more for globals
@@ -123,8 +124,8 @@ class Plotconfig(VcfReader):
         Took refgene raw file from ucsc curated and create proper exon refgene, WITHOUT UTR(default choice)
         """
         df = pd.read_csv(refgene, sep="\t", header=None, compression="infer")
-        output_genes = osj(os.path.dirname(refgene), "genes." + assembly + ".txt")
-        output_exons = osj(os.path.dirname(refgene), "exons." + assembly + ".txt")
+        output_genes = osj(os.path.dirname(refgene), "genes." + assembly + ".txt.gz")
+        output_exons = osj(os.path.dirname(refgene), "exons." + assembly + ".txt.gz")
         df.columns = [
             "bin",
             "name",
@@ -143,36 +144,42 @@ class Plotconfig(VcfReader):
             "cdsEndStat",
             "exonFrames",
         ]
-        with open(output_genes, "w+") as out_g:
-            with open(output_exons, "w+") as out_e:
+        with gzip.open(output_genes, "wb+") as out_g:
+            with gzip.open(output_exons, "wb+") as out_e:
                 out_g.write(
-                    "\t".join(
-                        [
-                            "chr_name",
-                            "start",
-                            "end",
-                            "val",
-                            "color",
-                            "gene",
-                            "transcript",
-                        ]
+                    bytes(
+                        "\t".join(
+                            [
+                                "chr_name",
+                                "start",
+                                "end",
+                                "val",
+                                "color",
+                                "gene",
+                                "transcript",
+                            ]
+                        )
+                        + "\n",
+                        "UTF-8",
                     )
-                    + "\n"
                 )
                 out_e.write(
-                    "\t".join(
-                        [
-                            "chr_name",
-                            "start",
-                            "end",
-                            "val",
-                            "color",
-                            "gene",
-                            "exons",
-                            "transcript",
-                        ]
+                    bytes(
+                        "\t".join(
+                            [
+                                "chr_name",
+                                "start",
+                                "end",
+                                "val",
+                                "color",
+                                "gene",
+                                "exons",
+                                "transcript",
+                            ]
+                        )
+                        + "\n",
+                        "UTF-8",
                     )
-                    + "\n"
                 )
                 for i, row in tqdm(
                     df.iterrows(),
@@ -182,36 +189,42 @@ class Plotconfig(VcfReader):
                 ):
                     if row["name"].startswith("NM_"):
                         out_g.write(
-                            "\t".join(
-                                [
-                                    row["chrom"],
-                                    str(row["txStart"]),
-                                    str(row["txEnd"]),
-                                    "1",
-                                    "lightgray",
-                                    row["name2"],
-                                    row["name"],
-                                ]
+                            bytes(
+                                "\t".join(
+                                    [
+                                        row["chrom"],
+                                        str(row["txStart"]),
+                                        str(row["txEnd"]),
+                                        "1",
+                                        "lightgray",
+                                        row["name2"],
+                                        row["name"],
+                                    ]
+                                )
+                                + "\n",
+                                "UTF-8",
                             )
-                            + "\n"
                         )
                         for i in range(len(row["exonStarts"].split(",")[:-1])):
                             exons_start = row["exonStarts"].split(",")
                             exons_end = row["exonEnds"].split(",")
                             out_e.write(
-                                "\t".join(
-                                    [
-                                        row["chrom"],
-                                        str(exons_start[i]),
-                                        str(exons_end[i]),
-                                        "1",
-                                        "lightgray",
-                                        row["name2"],
-                                        "exon" + str(i + 1),
-                                        row["name"],
-                                    ]
+                                bytes(
+                                    "\t".join(
+                                        [
+                                            row["chrom"],
+                                            str(exons_start[i]),
+                                            str(exons_end[i]),
+                                            "1",
+                                            "lightgray",
+                                            row["name2"],
+                                            "exon" + str(i + 1),
+                                            row["name"],
+                                        ]
+                                    )
+                                    + "\n",
+                                    "UTF-8",
                                 )
-                                + "\n"
                             )
         return df
 
