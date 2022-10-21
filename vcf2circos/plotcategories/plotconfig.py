@@ -58,6 +58,18 @@ class Plotconfig(VcfReader):
         self.trace_car = trace_car
         self.data = data
         self.layout = layout
+        self.refgene_genes = osj(
+            self.options["Static"],
+            "Assembly",
+            self.options["Assembly"],
+            "genes." + self.options["Assembly"] + ".txt.gz",
+        )
+        self.refgene_exons = osj(
+            self.options["Static"],
+            "Assembly",
+            self.options["Assembly"],
+            "exons." + self.options["Assembly"] + ".txt.gz",
+        )
 
     @staticmethod
     def cast_bool(value: bool) -> str:
@@ -109,15 +121,37 @@ class Plotconfig(VcfReader):
         data = {"Chromosomes": [], "Genes": [], "Exons": [], "Variants": []}
         # VCF parsed file from PyVCF3
         for val in self.vcf_reader:
-            data["Chromosomes"].append(val.CHROM)
-            print(val.INFO)
+            # data["Chromosomes"].append(val.CHROM)
+            # print(val.INFO)
+
+            # print(val.INFO["SV"])
+            data["Chromosomes"].append("chr" + val.CHROM)
+            data["Genes"].extend(self.get_genes_var(val))
         return data
 
-    def get_genes_var(self, info_record):
-        genes_list = info_record.get("Gene_name")
-        if genes_list is None:
+    def find_record_gene(self, coord: list) -> list:
+        """
+        Greedy, for now need good info in vcf annotations
+        """
+        gene_list = []
+        # Keep only first transcript per gene should be main
+        refgene_genes = pd.read_csv(
+            self.refgene_genes, sep="\t", header=0, compression="infer"
+        ).drop_duplicates(subset=["gene"], keep="first")
+        refgene_genes.loc[refgene_genes["chr_name"] == coord[0]]
+        return refgene_genes
 
-            pass
+    def get_genes_var(self, record: object) -> list:
+        gene_name = record.INFO.get("Gene_name")
+        if isinstance(gene_name, str):
+            gene_name = [gene_name]
+        print(record.INFO)
+        if gene_name is None:
+            assert "SVLEN" in record.INFO
+            gene_name = self.find_record_gene(
+                [record.CHROM, record.POS, record.POS + record.INFO["SVLEN"]]
+            )
+        return gene_name
 
     def formatted_refgene(self, refgene: str, assembly: str) -> str:
         """
