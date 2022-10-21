@@ -1,6 +1,7 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 import pandas as pd
 from os.path import join as osj
+import os
 
 # space, space between ring in option.example.json
 # height hauteur du ring
@@ -54,10 +55,10 @@ class Ideogram(Plotconfig):
             data,
             layout,
         )
+        assert os.path.exists(osj(self.options["Static"], "chr_size.txt"))
         self.chr_conf = pd.read_csv(
             osj(self.options["Static"], "chr_size.txt"), sep="\t", header=0
         )
-        self.data = self.process_vcf()
         self.degreerange = [0, 360]
         self.showfillcolor = self.cast_bool(True)
         self.chrannotation = (
@@ -75,7 +76,11 @@ class Ideogram(Plotconfig):
             },
         )
         self.customoptions = (
-            {"customlabel": "True", "customspacing": "False", "customcolor": 3,},
+            {
+                "customlabel": "True",
+                "customspacing": "False",
+                "customcolor": 3,
+            },
         )
         self.npoints = (1000,)
         self.radius = {"R0": 1.0, "R1": 1.1}
@@ -116,20 +121,23 @@ class Ideogram(Plotconfig):
                 "xref": "x",
                 "yref": "y",
                 "showarrow": False,
-                "font": {"family": "Times New Roman", "size": 8, "color": "black",},
+                "font": {
+                    "family": "Times New Roman",
+                    "size": 8,
+                    "color": "black",
+                },
             },
         }
 
     def data_ideogram(self):
+        tmp = self.chr_conf.loc[
+            self.chr_conf["chr_label"].isin(self.data["Chromosomes"])
+        ]
         data = {
-            "chr_name": self.data["Chromosomes"],
-            "chr_size": self.chr_conf.loc[
-                self.chr_conf["chr_label"].isin(self.data["Chromosomes"])
-            ]["chr_size"],
+            "chr_name": tmp["chr_label"],
+            "chr_size": tmp["chr_size"].tolist(),
             "chr_label": self.data["Chromosomes"],
-            "chr_color": self.chr_conf.loc[
-                self.chr_conf["chr_label"].isin(self.data["Chromosomes"])
-            ]["chr_color"],
+            "chr_color": tmp["chr_label"].tolist(),
         }
         return data
 
