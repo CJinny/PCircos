@@ -43,7 +43,10 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open("../demo_data/options.general.json", "r",)
+            open(
+                "../demo_data/options.general.json",
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -56,7 +59,7 @@ class Plotconfig(VcfReader):
         self.colorcolumn = colorcolumn
         self.hovertextformat = hovertextformat
         self.trace_car = trace_car
-        self.data = data
+        self.data = self.process_vcf()
         self.layout = layout
         self.refgene_genes = osj(
             self.options["Static"],
@@ -290,4 +293,3 @@ def systemcall(command, log=None):
         except AttributeError:
             print("--ERROR Systemcall--\n", err.decode("utf8").strip())
             exit()
-
