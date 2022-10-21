@@ -219,33 +219,21 @@ def run_vcf2circos():
         # Input
 
         if input_format in ["vcf", "gz"]:
-            plotconfig = Plotconfig(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-            )
-            print(options)
-            print(
-                plotconfig.formatted_refgene(
-                    osj(
-                        options["Static"],
-                        "Assembly",
-                        options["Assembly"],
-                        "ncbiRefSeqCurated.hg19.txt.gz",
-                    ),
-                    False,
-                    options["Assembly"],
-                )
-            )
-            exit()
+            # plotconfig = Plotconfig(
+            #    filename=input_file,
+            #    options=options.copy(),
+            #    show=True,
+            #    file=None,
+            #    radius=None,
+            #    sortbycolor=None,
+            #    colorcolumn=6,
+            #    hovertextformat=None,
+            #    trace_car=None,
+            #    data=None,
+            #    layout=None,
+            # )
+            # print(options)
+            # print(plotconfig.process_vcf())
             ideogram = Ideogram(
                 filename=input_file,
                 options=options.copy(),
@@ -259,44 +247,48 @@ def run_vcf2circos():
                 data=None,
                 layout=None,
             )
-            ring = Ring(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-                config_ring=options["Variants"]["rings"],
-                min_l=0,
-                max_l=5,
-                nrings=6
-                # config_ring=options["Variants"]["rings"],
-            )
-            cytoband = Cytoband(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-            )
-
+            # ring = Ring(
+            #    filename=input_file,
+            #    options=options.copy(),
+            #    show=True,
+            #    file=None,
+            #    radius=None,
+            #    sortbycolor=None,
+            #    colorcolumn=6,
+            #    hovertextformat=None,
+            #    trace_car=None,
+            #    data=None,
+            #    layout=None,
+            #    config_ring=options["Variants"]["rings"],
+            #    min_l=0,
+            #    max_l=5,
+            #    nrings=6
+            #    # config_ring=options["Variants"]["rings"],
+            # )
+            # cytoband = Cytoband(
+            #    filename=input_file,
+            #    options=options.copy(),
+            #    show=True,
+            #    file=None,
+            #    radius=None,
+            #    sortbycolor=None,
+            #    colorcolumn=6,
+            #    hovertextformat=None,
+            #    trace_car=None,
+            #    data=None,
+            #    layout=None,
+            # )
+            for items in inspect.getmembers(ideogram):
+                if items[0] == "data":
+                    print(items)
+            print(ideogram.data)
+            exit()
             js = {}
             js["General"] = ideogram.options["General"]
 
             js["Category"] = {
                 "ideogram": ideogram.merge_options(),
-                "cytoband": cytoband.merge_options(),
+                # "cytoband": cytoband.merge_options(),
                 # "ring": getattr(ring, "ringval"),
             }
             pprint(js)
