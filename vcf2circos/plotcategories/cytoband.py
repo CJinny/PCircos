@@ -1,6 +1,7 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from os.path import join as osj
 import pandas as pd
+import os
 
 
 class Cytoband(Plotconfig):
@@ -43,6 +44,14 @@ class Cytoband(Plotconfig):
 
         # Cytoband params
         # Need creation of dict in options attribute, regarding data input
+        assert os.path.exists(
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "cytoband_" + self.options["Assembly"] + "_chr_infos.txt.gz",
+            )
+        )
         self.cytoband_conf = pd.read_csv(
             osj(
                 self.options["Static"],
@@ -52,15 +61,21 @@ class Cytoband(Plotconfig):
             ),
             sep="\t",
             header=0,
+            compression="infer",
         )
         self.file = file
-        self.colorcolumn = (3,)
-        self.hovertextformat = (' "<b>{}</b>".format(a[i,0])',)
+        self.colorcolumn = 3
+        self.hovertextformat = ' "<b>{}</b>".format(a[i,0])'
         self.trace = {
             "uid": "cytoband",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {"size": 1, "symbol": 0, "color": "black", "opacity": 1,},  # 8
+            "marker": {
+                "size": 1,
+                "symbol": 0,
+                "color": "black",
+                "opacity": 1,
+            },  # 8
         }
         self.layout = {
             "type": "path",
@@ -74,11 +89,11 @@ class Cytoband(Plotconfig):
             self.cytoband_conf["chr_name"].isin(self.data["Chromosomes"])
         ]
         data = {
-            "chr_name": self.data["Chromosomes"],
-            "start": tmp["start"],
-            "end": tmp["end"],
-            "band_color": tmp["band_color"],
-            "band": tmp["band"],
+            "chr_name": tmp["chr_name"].to_list(),
+            "start": tmp["start"].tolist(),
+            "end": tmp["end"].tolist(),
+            "band_color": tmp["band_color"].tolist(),
+            "band": tmp["band"].tolist(),
         }
         return data
 
@@ -90,7 +105,12 @@ class Cytoband(Plotconfig):
         dico = {}
         dico
         dico["show"] = self.show
-        dico["file"] = {}
+        dico["file"] = {
+            "path": "",
+            "header": "infer",
+            "sep": "\t",
+            "dataframe": {"orient": "columns", "data": self.data_cytoband()},
+        }
         dico["sortbycolor"] = self.sortbycolor
         dico["colorcolumn"] = self.colorcolumn
         dico["hovertextformat"] = self.hovertextformat
@@ -100,7 +120,12 @@ class Cytoband(Plotconfig):
         histo = []
         Cytoband_infos = {
             "show": "True",
-            "file": {"dataframe": {"orient": "columns", "data": self.data_cytoband()}},
+            "file": {
+                "path": "",
+                "header": "infer",
+                "sep": "\t",
+                "dataframe": {"orient": "columns", "data": self.data_cytoband()},
+            },
             "colorcolumn": 4,
             "radius": {"R0": 1, "R1": 1.1},
             "hovertextformat": " \"<b>{}:{}-{}<br>{}{}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,0].replace('chr', ''), ''.join(a[i,5:]))",
@@ -112,7 +137,7 @@ class Cytoband(Plotconfig):
                 "marker": {
                     "size": 0,
                     "symbol": 0,  # 8
-                    "color": self.data_cytoband["band_color"],
+                    "color": self.data_cytoband()["band_color"],
                     "opacity": 0,
                 },
                 "hovertextformat": " \"<b>{}:{}-{}<br>{}{}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,0].replace('chr', ''), ''.join(a[i,5:]))",
@@ -123,15 +148,12 @@ class Cytoband(Plotconfig):
                     "marker": {
                         "size": 0,
                         "symbol": 0,  # 8
-                        "color": self.options["Cytoband_infos"]["dataframe"]["data"][
-                            "band_color"
-                        ],
+                        "color": self.data_cytoband()["band_color"],
                         "opacity": 0,
                     },
                 },
             },
         }
 
-        histo = [{Cytoband_infos}]
-        return (dico, histo)
-
+        histo = [Cytoband_infos]
+        return (dico, Cytoband_infos)
