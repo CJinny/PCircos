@@ -9,9 +9,11 @@ import re
 import subprocess
 import json
 import os
+import pandas as pd
 
 from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
+from tqdm import tqdm
 
 
 # TODO commons file with utils function maybe one more for globals
@@ -40,10 +42,7 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open(
-                "../demo_data/options.general.json",
-                "r",
-            )
+            open("../demo_data/options.general.json", "r",)
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -106,12 +105,115 @@ class Plotconfig(VcfReader):
         #            "cytoband_hg19_chr_infos.txt.gz",
         #        )
         # )
-
+        data = {"Chromosomes": [], "Genes": [], "Exons": [], "Variants": []}
         # VCF parsed file from PyVCF3
-        chroms_list = []
         for val in self.vcf_reader:
-            chroms_list.append(val.CHROM)
-        return list(set(chroms_list))
+            data["Chromosomes"].append(val.CHROM)
+            print(val.INFO)
+        return data
+
+    def get_genes_var(self, info_record):
+        genes_list = info_record.get("Gene_name")
+        if genes_list is None:
+
+            pass
+
+    def formatted_refgene(self, refgene: str, utr: bool, assembly: str) -> str:
+        """
+        Took refgene raw file from ucsc curated and create proper exon refgene, WITHOUT UTR(default choice)
+        """
+        df = pd.read_csv(refgene, sep="\t", header=None, compression="infer")
+        output_genes = osj(os.path.dirname(refgene), "genes." + assembly + ".txt")
+        output_exons = osj(os.path.dirname(refgene), "exons." + assembly + ".txt")
+        df.columns = [
+            "bin",
+            "name",
+            "chrom",
+            "strand",
+            "txStart",
+            "txEnd",
+            "cdsStart",
+            "cdsEnd",
+            "exonCount",
+            "exonStarts",
+            "exonEnds",
+            "score",
+            "name2",
+            "cdsStartStat",
+            "cdsEndStat",
+            "exonFrames",
+        ]
+        with open(output_genes, "w+") as out_g:
+            with open(output_exons, "w+") as out_e:
+                out_g.write(
+                    "\t".join(
+                        [
+                            "chr_name",
+                            "start",
+                            "end",
+                            "val",
+                            "color",
+                            "gene",
+                            "transcript",
+                        ]
+                    )
+                    + "\n"
+                )
+                out_e.write(
+                    "\t".join(
+                        [
+                            "chr_name",
+                            "start",
+                            "end",
+                            "val",
+                            "color",
+                            "gene",
+                            "exons",
+                            "transcript",
+                        ]
+                    )
+                    + "\n"
+                )
+                for i, row in tqdm(
+                    df.iterrows(),
+                    total=len(df.index),
+                    desc="Formatting refgene file UCSC",
+                    leave=False,
+                ):
+                    if row["name"].startswith("NM_"):
+                        out_g.write(
+                            "\t".join(
+                                [
+                                    row["chrom"],
+                                    str(row["txStart"]),
+                                    str(row["txEnd"]),
+                                    "1",
+                                    "lightgray",
+                                    row["name2"],
+                                    row["name"],
+                                ]
+                            )
+                            + "\n"
+                        )
+                        for i in range(len(row["exonStarts"].split(",")[:-1])):
+                            exons_start = row["exonStarts"].split(",")
+                            exons_end = row["exonEnds"].split(",")
+                            out_e.write(
+                                "\t".join(
+                                    [
+                                        row["chrom"],
+                                        str(exons_start[i]),
+                                        str(exons_end[i]),
+                                        "1",
+                                        "lightgray",
+                                        row["name2"],
+                                        "exon" + str(i + 1),
+                                        row["name"],
+                                    ]
+                                )
+                                + "\n"
+                            )
+        return df
 
 
 ##############
@@ -141,3 +243,4 @@ def systemcall(command, log=None):
         except AttributeError:
             print("--ERROR Systemcall--\n", err.decode("utf8").strip())
             exit()
+
