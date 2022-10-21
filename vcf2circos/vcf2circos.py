@@ -38,6 +38,7 @@ import colors
 from time import time
 
 from vcfreader import VcfReader
+from os.path import join as osj
 
 import vcf
 import plotly
@@ -231,7 +232,19 @@ def run_vcf2circos():
                 data=None,
                 layout=None,
             )
-            print(plotconfig.process_chromosomes())
+            print(options)
+            print(
+                plotconfig.formatted_refgene(
+                    osj(
+                        options["Static"],
+                        "Assembly",
+                        options["Assembly"],
+                        "ncbiRefSeqCurated.hg19.txt.gz",
+                    ),
+                    False,
+                    options["Assembly"],
+                )
+            )
             exit()
             ideogram = Ideogram(
                 filename=input_file,
