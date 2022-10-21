@@ -119,7 +119,7 @@ class Plotconfig(VcfReader):
 
             pass
 
-    def formatted_refgene(self, refgene: str, utr: bool, assembly: str) -> str:
+    def formatted_refgene(self, refgene: str, assembly: str) -> str:
         """
         Took refgene raw file from ucsc curated and create proper exon refgene, WITHOUT UTR(default choice)
         """
