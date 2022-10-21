@@ -120,18 +120,17 @@ class Ideogram(Plotconfig):
             },
         }
 
-    def adapt_data(self):
+    def data_ideogram(self):
         data = {
             "chr_name": self.data["Chromosomes"],
             "chr_size": self.chr_conf.loc[
-                self.chr_conf["chr_label"] == self.data["Chromosomes"]["chr_size"]
-            ].to_list(),
+                self.chr_conf["chr_label"].isin(self.data["Chromosomes"])
+            ]["chr_size"],
             "chr_label": self.data["Chromosomes"],
             "chr_color": self.chr_conf.loc[
-                self.chr_conf["chr_label"] == self.data["Chromosomes"]["chr_color"]
-            ].to_list(),
+                self.chr_conf["chr_label"].isin(self.data["Chromosomes"])
+            ]["chr_color"],
         }
-        data = self.data["Chromosomes"]
         return data
 
     def merge_options(self):
@@ -142,7 +141,7 @@ class Ideogram(Plotconfig):
             "path": "",
             "header": "infer",
             "sep": "\t",
-            "dataframe": {"orient": "columns", "data": self.adapt_data()},
+            "dataframe": {"orient": "columns", "data": self.data_ideogram()},
         }
         dico["patch"]["show"] = self.show
         dico["patch"]["degreerange"] = self.degreerange
