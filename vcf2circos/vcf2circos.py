@@ -265,31 +265,31 @@ def run_vcf2circos():
             #    nrings=6
             #    # config_ring=options["Variants"]["rings"],
             # )
-            # cytoband = Cytoband(
-            #    filename=input_file,
-            #    options=options.copy(),
-            #    show=True,
-            #    file=None,
-            #    radius=None,
-            #    sortbycolor=None,
-            #    colorcolumn=6,
-            #    hovertextformat=None,
-            #    trace_car=None,
-            #    data=None,
-            #    layout=None,
-            # )
+            cytoband = Cytoband(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+            )
             for items in inspect.getmembers(ideogram):
                 if items[0] == "data":
                     print(items)
-            print(ideogram.data)
-            exit()
+
             js = {}
             js["General"] = ideogram.options["General"]
 
             js["Category"] = {
                 "ideogram": ideogram.merge_options(),
-                # "cytoband": cytoband.merge_options(),
-                # "ring": getattr(ring, "ringval"),
+                "cytoband": cytoband.merge_options()[0],
+                # "histogram": cytoband.merge_options()[1]
+                # "ring": ring.,
             }
             pprint(js)
             print("\n")
