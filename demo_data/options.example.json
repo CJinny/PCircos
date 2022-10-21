@@ -5,22 +5,48 @@
 		"height": 1400,
 		"plot_bgcolor": "white"
 	},
+	"Static": "../demo_data",
+	"Assembly": "hg19",
 	"Chromosomes": {
-		"cytoband": "options.cytoband.data.path.infos.json",
-		"list": ["chr7", "chr13", "chr12", "chr14", "chr15", "chrX", "chr1", "chr17"]
+		"cytoband": "True",
+		"list": [
+			"chr7",
+			"chr13",
+			"chr12",
+			"chr14",
+			"chr15",
+			"chrX",
+			"chr1",
+			"chr17"
+		]
 	},
 	"Genes": {
-		"data": "options.genes.data.path.json",
-		"list" : ["targets", "EGFR", "BRCA1", "BRCA2", "TP53", "BBS1", "BBS2", "BBS4", "BBS5"],
+		"list": [
+			"targets",
+			"EGFR",
+			"BRCA1",
+			"BRCA2",
+			"TP53",
+			"BBS1",
+			"BBS2",
+			"BBS4",
+			"BBS5"
+		],
 		"only_snv_in_sv_genes": true
 	},
 	"Exons": {
-		"data": "options.genes_exons.data.path.json",
 		"show": false
 	},
 	"Variants": {
 		"annotations": {
-			"fields": ["chr", "pos", "ref", "alt", "nomen", "*"],
+			"fields": [
+				"chr",
+				"pos",
+				"ref",
+				"alt",
+				"nomen",
+				"*"
+			],
 			"show_none": true
 		},
 		"rings": {
@@ -29,5 +55,7 @@
 			"space": 0.01
 		}
 	},
-	"Additonal_annotations": ["options.additional_annotations.ClinGen.json"]
+	"Additonal_annotations": [
+		"options.additional_annotations.ClinGen.json"
+	]
 }
