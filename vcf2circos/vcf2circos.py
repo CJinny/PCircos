@@ -1,12 +1,14 @@
 # enable dash only in dash module, disable dash here
-from enum import unique
 import os
 import sys
 import inspect
+from vcf2circos.plotcategories import plotconfig
+from vcf2circos.plotcategories import ideogram
 from vcf2circos.plotcategories.histogram import Histogram_
 from vcf2circos.plotcategories.ideogram import Ideogram
 from vcf2circos.plotcategories.ring import Ring
 from vcf2circos.plotcategories.cytoband import Cytoband
+from vcf2circos.plotcategories.plotconfig import Plotconfig
 from pprint import pprint
 
 
@@ -14,7 +16,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "."))
 sys.path.append(os.path.abspath(os.path.join("../", "demo_data")))
 # print(sys.path)
 
-from genericpath import isfile
 from itertools import count
 import numpy as np
 
@@ -125,7 +126,7 @@ def run_vcf2circos():
             "--input",
             type=str,
             required=True,
-            help="Input file.\nFormat will be autodetected from file path.\nSupported format:\n   'json', 'vcf'",
+            help="Input vcf File\nVCF SHOULD be multiallelic split to avoid trouble in vcf2circos\nexample: bcftools -m -any <vcf>\nFormat will be autodetected from file path.\nSupported format:\n   'vcf.gz', 'vcf'",
         )
         parser.add_argument(
             "-o",
@@ -219,7 +220,26 @@ def run_vcf2circos():
         # Input
 
         if input_format in ["vcf", "gz"]:
-            # plotconfig = Plotconfig(
+            plotconfig = Plotconfig(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+            )
+            rangescale = np.linspace(
+                options["Variants"]["rings"]["min"],
+                options["Variants"]["rings"]["max"] + 1,
+                num=options["Variants"]["rings"]["nrings"],
+            )
+            print(plotconfig.process_vcf())
+            # ideogram = Ideogram(
             #    filename=input_file,
             #    options=options.copy(),
             #    show=True,
@@ -232,69 +252,49 @@ def run_vcf2circos():
             #    data=None,
             #    layout=None,
             # )
-            # print(options)
-            # print(plotconfig.process_vcf())
-            rangescale = np.linspace(
-                options["Variants"]["rings"]["min"],
-                options["Variants"]["rings"]["max"] + 1,
-                num=options["Variants"]["rings"]["nrings"],
-            )
-            ideogram = Ideogram(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-            )
-            ring = Ring(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-                config_ring=options["Variants"]["rings"],
-                rangescale=rangescale
-                # config_ring=options["Variants"]["rings"],
-            )
-            cytoband = Cytoband(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-            )
-            histogram = Histogram_(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-                rangescale=rangescale,
-            )
+            # ring = Ring(
+            #    filename=input_file,
+            #    options=options.copy(),
+            #    show=True,
+            #    file=None,
+            #    radius=None,
+            #    sortbycolor=None,
+            #    colorcolumn=6,
+            #    hovertextformat=None,
+            #    trace_car=None,
+            #    data=None,
+            #    layout=None,
+            #    config_ring=options["Variants"]["rings"],
+            #    rangescale=rangescale
+            #    # config_ring=options["Variants"]["rings"],
+            # )
+            # cytoband = Cytoband(
+            #    filename=input_file,
+            #    options=options.copy(),
+            #    show=True,
+            #    file=None,
+            #    radius=None,
+            #    sortbycolor=None,
+            #    colorcolumn=6,
+            #    hovertextformat=None,
+            #    trace_car=None,
+            #    data=None,
+            #    layout=None,
+            # )
+            # histogram = Histogram_(
+            #    filename=input_file,
+            #    options=options.copy(),
+            #    show=True,
+            #    file=None,
+            #    radius=None,
+            #    sortbycolor=None,
+            #    colorcolumn=6,
+            #    hovertextformat=None,
+            #    trace_car=None,
+            #    data=None,
+            #    layout=None,
+            #    rangescale=rangescale,
+            # )
             # histogram.data_histogram_variants()
 
             for items in inspect.getmembers(ideogram):
@@ -360,13 +360,6 @@ def run_vcf2circos():
                 print("[ERROR] output format not supported")
         except IndexError:
             plot(fig)
-
-
-# if __name__ == "__main__":
-#     t=time()
-#     run_vcf2circos()
-#     print ('[INFO] total run time:')
-#     print ('[INFO] '+str(time()-t)+' sec')
 
 
 def main():  # == "__main__":
