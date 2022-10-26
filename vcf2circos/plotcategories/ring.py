@@ -33,9 +33,7 @@ class Ring(Plotconfig):
         data,
         layout,
         config_ring,
-        min_l,
-        max_l,
-        nrings,
+        rangescale,
     ):
         super().__init__(
             filename,
@@ -52,16 +50,16 @@ class Ring(Plotconfig):
         )
         # In order to auto generate rings
         # number of ring, min, max
-        self.min_l = min_l
-        self.max_l = max_l
-        self.nrings = nrings
+        # self.min_l = min_l
+        # self.max_l = max_l
+        # self.nrings = nrings
+        self.rangescale = rangescale
         self.config_ring = config_ring
         self.variants_position = self.config_ring["position"]
         self.variants_ring_space = self.config_ring["space"]
         self.variants_ring_height = self.config_ring["height"]
 
-        range_scale = np.linspace(self.min_l, self.max_l + 1, num=self.nrings)
-        print("#[INFO] Rnage scale ", range_scale)
+        # rangescale = np.linspace(self.min_l, self.max_l + 1, num=self.nrings)
         self.ringval = []
         color_ = [
             "lightgray",
@@ -76,11 +74,11 @@ class Ring(Plotconfig):
             {
                 "radius": {
                     "R0": self.variants_position
-                    + (max(range_scale) * self.variants_ring_space)
-                    + ((max(range_scale) + 1) * self.variants_ring_height),
+                    + (max(self.rangescale) * self.variants_ring_space)
+                    + ((max(self.rangescale) + 1) * self.variants_ring_height),
                     "R1": self.variants_position
-                    + (max(range_scale) * self.variants_ring_space)
-                    + ((max(range_scale) + 2) * self.variants_ring_height),
+                    + (max(self.rangescale) * self.variants_ring_space)
+                    + ((max(self.rangescale) + 2) * self.variants_ring_height),
                 },
                 "layout": {
                     "opacity": 0.1,
@@ -93,7 +91,7 @@ class Ring(Plotconfig):
         )
 
         # Copy number level
-        for i, coeff in enumerate(range_scale):
+        for i, coeff in enumerate(self.rangescale):
             self.ringval.append(
                 {
                     "radius": {
