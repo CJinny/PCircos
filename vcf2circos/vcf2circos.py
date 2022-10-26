@@ -3,7 +3,7 @@ from enum import unique
 import os
 import sys
 import inspect
-from vcf2circos.plotcategories.plotconfig import Plotconfig
+from vcf2circos.plotcategories.histogram import Histogram_
 from vcf2circos.plotcategories.ideogram import Ideogram
 from vcf2circos.plotcategories.ring import Ring
 from vcf2circos.plotcategories.cytoband import Cytoband
@@ -234,6 +234,11 @@ def run_vcf2circos():
             # )
             # print(options)
             # print(plotconfig.process_vcf())
+            rangescale = np.linspace(
+                options["Variants"]["rings"]["min"],
+                options["Variants"]["rings"]["max"] + 1,
+                num=options["Variants"]["rings"]["nrings"],
+            )
             ideogram = Ideogram(
                 filename=input_file,
                 options=options.copy(),
@@ -247,24 +252,22 @@ def run_vcf2circos():
                 data=None,
                 layout=None,
             )
-            # ring = Ring(
-            #    filename=input_file,
-            #    options=options.copy(),
-            #    show=True,
-            #    file=None,
-            #    radius=None,
-            #    sortbycolor=None,
-            #    colorcolumn=6,
-            #    hovertextformat=None,
-            #    trace_car=None,
-            #    data=None,
-            #    layout=None,
-            #    config_ring=options["Variants"]["rings"],
-            #    min_l=0,
-            #    max_l=5,
-            #    nrings=6
-            #    # config_ring=options["Variants"]["rings"],
-            # )
+            ring = Ring(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+                config_ring=options["Variants"]["rings"],
+                rangescale=rangescale
+                # config_ring=options["Variants"]["rings"],
+            )
             cytoband = Cytoband(
                 filename=input_file,
                 options=options.copy(),
@@ -278,6 +281,22 @@ def run_vcf2circos():
                 data=None,
                 layout=None,
             )
+            histogram = Histogram_(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+                rangescale=rangescale,
+            )
+            # histogram.data_histogram_variants()
+
             for items in inspect.getmembers(ideogram):
                 if items[0] == "data":
                     print(items)
@@ -287,13 +306,14 @@ def run_vcf2circos():
 
             js["Category"] = {
                 "ideogram": ideogram.merge_options(),
+                "ring": ring.ringval,
                 "cytoband": cytoband.merge_options()[0],
-                # "histogram": cytoband.merge_options()[1]
-                # "ring": ring.,
+                "histogram": histogram.merge_options(),
             }
+            # js["Category"]["histogram"].append(histogram.merge_options())
             pprint(js)
             print("\n")
-            print(type(js["Category"]["cytoband"]))
+            # print(type(js["Category"]["cytoband"]))
             fig_instance = Figure(dash_dict=js)
 
             # Export in vcf2circos JSON
