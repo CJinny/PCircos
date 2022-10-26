@@ -191,10 +191,9 @@ class VcfReader:
         self.filename = filename
         self.options = options
 
-        self.vcf_reader = vcf.VCFReader(
+        self.vcf_reader = vcf.Reader(
             filename=filename, strict_whitespace=True, encoding="utf-8"
         )
-        # Fields descriptions
         self.fields = None
         self.get_fields()
         self.samples = None
