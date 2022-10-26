@@ -4,9 +4,7 @@
 aim: Epurate module and func, handle parameters of circos plot
 """
 
-import sys
 import re
-import subprocess
 import json
 import os
 import pandas as pd
@@ -14,10 +12,7 @@ import pandas as pd
 from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
 from tqdm import tqdm
-import gzip
-
-
-# TODO commons file with utils function maybe one more for globals
+from vcf2circos.utils import variants_color
 
 
 class Plotconfig(VcfReader):
@@ -43,7 +38,10 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open("../demo_data/options.general.json", "r",)
+            open(
+                "../demo_data/options.general.json",
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -106,43 +104,105 @@ class Plotconfig(VcfReader):
 
     def process_vcf(self) -> dict:
         """
+        Process Just one time vcf variants in a dict which contains all required informations for all type of var used after,
+        Act as a plotconfig main\n
         From vcfreader antony explode_category_file_dict_into_dataframe
         """
-        # assert isinstance(
-        #    self.options["Chromosomes"]["cytoband"], str
-        # ) and os.path.exists(
-        #        osj(
-        #            self.options["Static"],
-        #            "Assembly",
-        #            self.options["Assembly"],
-        #            "cytoband_hg19_chr_infos.txt.gz",
-        #        )
-        # )
         data = {
             "Chromosomes": [],
             "Genes": [],
             "Exons": [],
             "Variants": [],
+            "Variants_type": [],
             "CopyNumber": [],
+            "Color": [],
+            "Translocation": {},
         }
         # VCF parsed file from PyVCF3
-        for val in self.vcf_reader:
-            # data["Chromosomes"].append(val.CHROM)
-            # print(val.INFO)
+        for record in self.vcf_reader:
+            # particular process for breakend
+            if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
+                self.compute_breakend()
+            else:
+                # print(record.INFO["SV"])
+                data["Chromosomes"].append("chr" + record.CHROM)
+                data["Genes"].extend(self.get_genes_var(record))
+                # TODO exons time consumming
+                data["Variants"].append(record.INFO)
+                svtype, copynumber = self.get_copynumber_type(record)
+                data["Variants_type"].append(svtype)
+                data["CopyNumber"].append(copynumber)
+                data["Color"].append(variants_color[svtype])
 
-            # print(val.INFO["SV"])
-            data["Chromosomes"].append("chr" + val.CHROM)
-            data["Genes"].extend(self.get_genes_var(val))
-            # TODO exons time consumming
-            data["Variants"].append(val.INFO)
-            data["CopyNumber"].append(self.get_copynumber_var())
         return data
 
-    def get_copynumber_var(self, record: object) -> int:
-        """
-        take VCF variant object and return copy number for this variant as an integer
-        """
+    def compute_breakend(self):
+        # TODO
         pass
+
+    def get_copynumber_type(self, record: object) -> tuple:
+        """
+        take VCF variant object and return variant type and number of copy in tuple
+        REQUIRED monosample vcf
+        """
+        # checking if CopyNumber annotation in info field
+        if record.INFO.get("SVTYPE", ""):
+            svtype = record.INFO.get("SVTYPE", "")
+            return (svtype, self.get_copynumber_values(svtype, record))
+        elif record.INFO.get("SV_type", ""):
+            svtype = record.INFO.get("SV_type", "")
+            return (svtype, self.get_copynumber_values(svtype, record))
+        # It's SV in ALT field
+        elif re.match(r"[^a-zA-Z]", record.ALT) is None:
+            # is not breakend
+            if record.ALT.startswith("<"):
+                rep = {"<": "", ">": ""}
+                svtype = record.ALT
+                for key, val in rep.items():
+                    svtype = svtype.replace(key, val)
+                # in case of copy number in alt
+                if re.search(r"$[0-9]+", svtype).group():
+                    copynumber = re.search(r"$[0-9]+", svtype).group()
+                    return (svtype, copynumber)
+                else:
+                    svtype = svtype.split(":")[0]
+                    if len(svtype) > 1:
+                        copynumber = svtype[1]
+                        return (svtype, copynumber)
+                    else:
+                        return (svtype, self.get_copynumber_values(svtype, record))
+
+    def get_copynumber_values(self, svtype: str, record: object) -> int:
+        """
+        take VCF variant object (type of variant could help)and return copynumber as integer from 0 to 5 (which mean 5 or more but in general it 's super rare)\n
+        REQUIRED monosample vcf
+        """
+        if record.INFO.get("CN") is not None:
+            return int(record.INFO.get("CN"))
+        # list of sample TODO working only if vcf monosample
+        else:
+            # Need verificatons TODO
+            genotype = record.samples[0].data.GT
+            if genotype == "1/0" or "0/1":
+                gt = 1
+            elif genotype == "1/1":
+                gt = 2
+            else:
+                gt = "0/0"
+
+            if svtype in [
+                "CNV",
+                "INS",
+                # "INV",
+                # "DEL",
+                "DUP",
+            ]:
+                # CNV or INS
+                return gt + 1
+            elif svtype == "INV":
+                return 2
+            elif svtype == "DEL":
+                return 2 - gt
 
     def find_record_gene(self, coord: list) -> list:
         """
@@ -167,141 +227,3 @@ class Plotconfig(VcfReader):
                 [record.CHROM, record.POS, record.POS + record.INFO["SVLEN"]]
             )
         return gene_name
-
-    def formatted_refgene(self, refgene: str, assembly: str) -> str:
-        """
-        Took refgene raw file from ucsc curated and create proper exon refgene, WITHOUT UTR(default choice)
-        """
-        df = pd.read_csv(refgene, sep="\t", header=None, compression="infer")
-        output_genes = osj(os.path.dirname(refgene), "genes." + assembly + ".txt.gz")
-        output_exons = osj(os.path.dirname(refgene), "exons." + assembly + ".txt.gz")
-        df.columns = [
-            "bin",
-            "name",
-            "chrom",
-            "strand",
-            "txStart",
-            "txEnd",
-            "cdsStart",
-            "cdsEnd",
-            "exonCount",
-            "exonStarts",
-            "exonEnds",
-            "score",
-            "name2",
-            "cdsStartStat",
-            "cdsEndStat",
-            "exonFrames",
-        ]
-        with gzip.open(output_genes, "wb+") as out_g:
-            with gzip.open(output_exons, "wb+") as out_e:
-                out_g.write(
-                    bytes(
-                        "\t".join(
-                            [
-                                "chr_name",
-                                "start",
-                                "end",
-                                "val",
-                                "color",
-                                "gene",
-                                "transcript",
-                            ]
-                        )
-                        + "\n",
-                        "UTF-8",
-                    )
-                )
-                out_e.write(
-                    bytes(
-                        "\t".join(
-                            [
-                                "chr_name",
-                                "start",
-                                "end",
-                                "val",
-                                "color",
-                                "gene",
-                                "exons",
-                                "transcript",
-                            ]
-                        )
-                        + "\n",
-                        "UTF-8",
-                    )
-                )
-                for i, row in tqdm(
-                    df.iterrows(),
-                    total=len(df.index),
-                    desc="Formatting refgene file UCSC",
-                    leave=False,
-                ):
-                    if row["name"].startswith("NM_"):
-                        out_g.write(
-                            bytes(
-                                "\t".join(
-                                    [
-                                        row["chrom"],
-                                        str(row["txStart"]),
-                                        str(row["txEnd"]),
-                                        "1",
-                                        "lightgray",
-                                        row["name2"],
-                                        row["name"],
-                                    ]
-                                )
-                                + "\n",
-                                "UTF-8",
-                            )
-                        )
-                        for i in range(len(row["exonStarts"].split(",")[:-1])):
-                            exons_start = row["exonStarts"].split(",")
-                            exons_end = row["exonEnds"].split(",")
-                            out_e.write(
-                                bytes(
-                                    "\t".join(
-                                        [
-                                            row["chrom"],
-                                            str(exons_start[i]),
-                                            str(exons_end[i]),
-                                            "1",
-                                            "lightgray",
-                                            row["name2"],
-                                            "exon" + str(i + 1),
-                                            row["name"],
-                                        ]
-                                    )
-                                    + "\n",
-                                    "UTF-8",
-                                )
-                            )
-        return df
-
-
-##############
-# Commons func #TODO put in commons.py
-def json_to_dict(jsonpath):
-    with open(jsonpath) as json_file:
-        return json.load(json_file)
-
-
-def systemcall(command, log=None):
-    """
-    https://github.com/JbaptisteLam/DPNI/blob/main/src/utils/utils.py
-    """
-    print("#[SYS] " + command)
-    p = subprocess.Popen(
-        [command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-    )
-    out, err = p.communicate()
-    if not err:
-        return out.decode("utf8").strip().split("\n")
-    else:
-        issues = err.decode("utf8").strip()
-        try:
-            re.search(r"(Warning|WARNING)", issues).group()
-            print("--WARNING Systemcall--\n", err.decode("utf8").strip())
-            return out.decode("utf8").strip().split("\n")
-        except AttributeError:
-            print("--ERROR Systemcall--\n", err.decode("utf8").strip())
-            exit()
