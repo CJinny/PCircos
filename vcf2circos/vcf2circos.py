@@ -307,7 +307,8 @@ def run_vcf2circos():
                 config_ring=options["Variants"]["rings"],
                 rangescale=rangescale,
             )
-
+            print(histogram.__call__())
+            exit()
             for items in inspect.getmembers(ideogram):
                 if items[0] == "data":
                     print(items)
