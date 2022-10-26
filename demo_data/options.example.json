@@ -52,7 +52,10 @@
 		"rings": {
 			"position": 0.50,
 			"height": 0.04,
-			"space": 0.01
+			"space": 0.01,
+			"min": 0,
+			"max": 5,
+			"nrings": 6
 		}
 	},
 	"Additonal_annotations": [
