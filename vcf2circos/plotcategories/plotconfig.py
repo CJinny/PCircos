@@ -116,7 +116,6 @@ class Plotconfig(VcfReader):
             "Variants_type": [],
             "CopyNumber": [],
             "Color": [],
-            "Translocation": {},
         }
         # VCF parsed file from PyVCF3
         for record in self.vcf_reader:
@@ -127,6 +126,7 @@ class Plotconfig(VcfReader):
                 # print(record.INFO["SV"])
                 data["Chromosomes"].append("chr" + record.CHROM)
                 data["Genes"].extend(self.get_genes_var(record))
+                data["Exons"].append(None)
                 # TODO exons time consumming
                 data["Variants"].append(record.INFO)
                 svtype, copynumber = self.get_copynumber_type(record)
