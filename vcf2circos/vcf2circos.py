@@ -220,7 +220,37 @@ def run_vcf2circos():
         # Input
 
         if input_format in ["vcf", "gz"]:
-            plotconfig = Plotconfig(
+            # plotconfig = Plotconfig(
+            #    filename=input_file,
+            #    options=options.copy(),
+            #    show=True,
+            #    file=None,
+            #    radius=None,
+            #    sortbycolor=None,
+            #    colorcolumn=6,
+            #    hovertextformat=None,
+            #    trace_car=None,
+            #    data=None,
+            #    layout=None,
+            # )
+            # rangescale = np.linspace(
+            #    options["Variants"]["rings"]["min"],
+            #    options["Variants"]["rings"]["max"] + 1,
+            #    num=options["Variants"]["rings"]["nrings"],
+            # )
+            rangescale = []
+            val = (
+                options["Variants"]["rings"]["position"]
+                + options["Variants"]["rings"]["space"]
+            )
+            rangescale.append(val)
+            for i in range(options["Variants"]["rings"]["nrings"]):
+                val += (
+                    options["Variants"]["rings"]["height"]
+                    + options["Variants"]["rings"]["space"]
+                )
+                rangescale.append(val)
+            ideogram = Ideogram(
                 filename=input_file,
                 options=options.copy(),
                 show=True,
@@ -233,69 +263,50 @@ def run_vcf2circos():
                 data=None,
                 layout=None,
             )
-            rangescale = np.linspace(
-                options["Variants"]["rings"]["min"],
-                options["Variants"]["rings"]["max"] + 1,
-                num=options["Variants"]["rings"]["nrings"],
+            ring = Ring(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+                config_ring=options["Variants"]["rings"],
+                rangescale=rangescale
+                # config_ring=options["Variants"]["rings"],
             )
-            print(plotconfig.process_vcf())
-            # ideogram = Ideogram(
-            #    filename=input_file,
-            #    options=options.copy(),
-            #    show=True,
-            #    file=None,
-            #    radius=None,
-            #    sortbycolor=None,
-            #    colorcolumn=6,
-            #    hovertextformat=None,
-            #    trace_car=None,
-            #    data=None,
-            #    layout=None,
-            # )
-            # ring = Ring(
-            #    filename=input_file,
-            #    options=options.copy(),
-            #    show=True,
-            #    file=None,
-            #    radius=None,
-            #    sortbycolor=None,
-            #    colorcolumn=6,
-            #    hovertextformat=None,
-            #    trace_car=None,
-            #    data=None,
-            #    layout=None,
-            #    config_ring=options["Variants"]["rings"],
-            #    rangescale=rangescale
-            #    # config_ring=options["Variants"]["rings"],
-            # )
-            # cytoband = Cytoband(
-            #    filename=input_file,
-            #    options=options.copy(),
-            #    show=True,
-            #    file=None,
-            #    radius=None,
-            #    sortbycolor=None,
-            #    colorcolumn=6,
-            #    hovertextformat=None,
-            #    trace_car=None,
-            #    data=None,
-            #    layout=None,
-            # )
-            # histogram = Histogram_(
-            #    filename=input_file,
-            #    options=options.copy(),
-            #    show=True,
-            #    file=None,
-            #    radius=None,
-            #    sortbycolor=None,
-            #    colorcolumn=6,
-            #    hovertextformat=None,
-            #    trace_car=None,
-            #    data=None,
-            #    layout=None,
-            #    rangescale=rangescale,
-            # )
-            # histogram.data_histogram_variants()
+            cytoband = Cytoband(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+            )
+            histogram = Histogram_(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+                config_ring=options["Variants"]["rings"],
+                rangescale=rangescale,
+            )
 
             for items in inspect.getmembers(ideogram):
                 if items[0] == "data":
@@ -306,7 +317,7 @@ def run_vcf2circos():
 
             js["Category"] = {
                 "ideogram": ideogram.merge_options(),
-                "ring": ring.ringval,
+                "ring": ring.create_ring(),
                 "cytoband": cytoband.merge_options()[0],
                 "histogram": histogram.merge_options(),
             }
