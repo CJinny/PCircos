@@ -49,186 +49,33 @@ class Ring(Plotconfig):
             layout,
         )
         # In order to auto generate rings
-        # number of ring, min, max
-        # self.min_l = min_l
-        # self.max_l = max_l
-        # self.nrings = nrings
         self.rangescale = rangescale
         self.config_ring = config_ring
         self.variants_position = self.config_ring["position"]
         self.variants_ring_space = self.config_ring["space"]
         self.variants_ring_height = self.config_ring["height"]
 
-        # rangescale = np.linspace(self.min_l, self.max_l + 1, num=self.nrings)
-        self.ringval = []
-        color_ = [
-            "lightgray",
-            "lightgray",
-            "lightgray",
-            "white",
-            "lightgray",
-            "lightgray",
-        ]
-
-        self.ringval.append(
-            {
-                "radius": {
-                    "R0": self.variants_position
-                    + (max(self.rangescale) * self.variants_ring_space)
-                    + ((max(self.rangescale) + 1) * self.variants_ring_height),
-                    "R1": self.variants_position
-                    + (max(self.rangescale) * self.variants_ring_space)
-                    + ((max(self.rangescale) + 2) * self.variants_ring_height),
-                },
-                "layout": {
-                    "opacity": 0.1,
-                    # TODO
-                    "fillcolor": "gray",
-                    "layer": "below",
-                    "line": {"color": "gray", "width": 1},
-                },
-            },
-        )
-
+    def create_ring(self):
+        rings_list = []
         # Copy number level
         for i, coeff in enumerate(self.rangescale):
-            self.ringval.append(
+            rings_list.append(
                 {
                     "radius": {
-                        "R0": self.variants_position
-                        + (coeff * self.variants_ring_space)
-                        + ((coeff - 1) * self.variants_ring_height),
-                        "R1": self.variants_position
-                        + (coeff * self.variants_ring_space)
-                        + (coeff * self.variants_ring_height),
+                        "R0": coeff,
+                        "R1": coeff + self.config_ring["height"],
                     },
                     "layout": {
                         "opacity": 0.1,
-                        "fillcolor": "gray",
+                        "fillcolor": "lightgray",
                         "layer": "below",
-                        "line": {"color": "gray", "width": 1},
+                        "line": {"color": "lightgray", "width": 1},
                     },
                 },
             )
+        rings_list[1]["layout"]["fillcolor"] = "white"
+        rings_list[1]["layout"]["line"]["color"] = "white"
 
-        # self.ringval = [
-        #    {
-        #        # SNV
-        #        "radius": {
-        #            "R0": self.variants_position
-        #            + (7 * self.variants_ring_space)
-        #            + (6 * self.variants_ring_height),
-        #            "R1": self.variants_position
-        #            + (7 * self.variants_ring_space)
-        #            + (7 * self.variants_ring_height),
-        #        },
-        #        "layout": {
-        #            "opacity": 0.1,
-        #            "fillcolor": "gray",
-        #            "layer": "below",
-        #            "line": {"color": "gray", "width": 1},
-        #        },
-        #    },
-        #    {
-        #        # level 5
-        #        "radius": {
-        #            "R0": self.variants_position
-        #            + (6 * self.variants_ring_space)
-        #            + (5 * self.variants_ring_height),
-        #            "R1": self.variants_position
-        #            + (6 * self.variants_ring_space)
-        #            + (6 * self.variants_ring_height),
-        #        },
-        #        "layout": {
-        #            "opacity": 0.1,
-        #            "fillcolor": "lightgrey",
-        #            "layer": "below",
-        #            "line": {"color": "lightgrey", "width": 1},
-        #        },
-        #    },
-        #    {
-        #        # level 4
-        #        "radius": {
-        #            "R0": self.variants_position
-        #            + (5 * self.variants_ring_space)
-        #            + (4 * self.variants_ring_height),
-        #            "R1": self.variants_position
-        #            + (5 * self.variants_ring_space)
-        #            + (5 * self.variants_ring_height),
-        #        },
-        #        "layout": {
-        #            "opacity": 0.1,
-        #            "fillcolor": "lightgrey",
-        #            "layer": "below",
-        #            "line": {"color": "lightgrey", "width": 1},
-        #        },
-        #    },
-        #    {
-        #        # level 3
-        #        "radius": {
-        #            "R0": self.variants_position
-        #            + (4 * self.variants_ring_space)
-        #            + (3 * self.variants_ring_height),
-        #            "R1": self.variants_position
-        #            + (4 * self.variants_ring_space)
-        #            + (4 * self.variants_ring_height),
-        #        },
-        #        "layout": {
-        #            "opacity": 0.1,
-        #            "fillcolor": "lightgrey",
-        #            "layer": "below",
-        #            "line": {"color": "lightgrey", "width": 1},
-        #        },
-        #    },
-        #    {
-        #        # level 2
-        #        "radius": {
-        #            "R0": self.variants_position
-        #            + (3 * self.variants_ring_space)
-        #            + (2 * self.variants_ring_height),
-        #            "R1": self.variants_position
-        #            + (3 * self.variants_ring_space)
-        #            + (3 * self.variants_ring_height),
-        #        },
-        #        "layout": {
-        #            "opacity": 0.1,
-        #            "fillcolor": "white",
-        #            "layer": "below",
-        #            "line": {"color": "white", "width": 1},
-        #        },
-        #    },
-        #    {
-        #        # level 1
-        #        "radius": {
-        #            "R0": self.variants_position
-        #            + (2 * self.variants_ring_space)
-        #            + (1 * self.variants_ring_height),
-        #            "R1": self.variants_position
-        #            + (2 * self.variants_ring_space)
-        #            + (2 * self.variants_ring_height),
-        #        },
-        #        "layout": {
-        #            "opacity": 0.1,
-        #            "fillcolor": "lightgrey",
-        #            "layer": "below",
-        #            "line": {"color": "lightgrey", "width": 1},
-        #        },
-        #    },
-        #    {
-        #        # level 0
-        #        "radius": {
-        #            "R0": self.variants_position
-        #            + (1 * self.variants_ring_space)
-        #            + (0 * self.variants_ring_height),
-        #            "R1": self.variants_position
-        #            + (1 * self.variants_ring_space)
-        #            + (1 * self.variants_ring_height),
-        #        },
-        #        "layout": {
-        #            "opacity": 0.1,
-        #            "fillcolor": "lightgrey",
-        #            "layer": "below",
-        #            "line": {"color": "lightgrey", "width": 1},
-        #        },
-        #    },
-        # ]
+        rings_list[6]["layout"]["fillcolor"] = "grey"
+        rings_list[6]["layout"]["line"]["color"] = "grey"
+        return rings_list
