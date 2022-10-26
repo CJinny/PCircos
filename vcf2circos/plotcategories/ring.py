@@ -73,8 +73,8 @@ class Ring(Plotconfig):
                     },
                 },
             )
-        rings_list[1]["layout"]["fillcolor"] = "white"
-        rings_list[1]["layout"]["line"]["color"] = "white"
+        rings_list[2]["layout"]["fillcolor"] = "white"
+        rings_list[2]["layout"]["line"]["color"] = "white"
 
         rings_list[6]["layout"]["fillcolor"] = "grey"
         rings_list[6]["layout"]["line"]["color"] = "grey"
