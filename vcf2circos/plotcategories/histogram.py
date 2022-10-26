@@ -73,8 +73,15 @@ class Histogram_(Plotconfig):
             "line": {"color": "gray", "width": 5},
         }
 
-    def data_histogram_variants(self) -> dict:
+    def cytoband_histogram(self):
+        pass
+
+    def genes_histogram(self):
+        pass
+
+    def data_histogram_variants(self, cn) -> dict:
         # for each sv event regarding copy number
+        # TODO get information in data as DATAFRAME
         file = self.file
         data = {
             "chr_name": [],
@@ -97,25 +104,14 @@ class Histogram_(Plotconfig):
         return file
 
     def merge_options(self) -> list:
-        for cn in self.rangescale:
+        for cn in list(set(self.data["CopyNumber"])):
             data = {}
             data["show"] = self.show
             data["customfillcolor"] = "False"
             data["file"] = self.data_histogram_variants()
             data["sortbycolor"] = "False"
             data["colorcolumn"] = 4
-            radius = (
-                (
-                    self.variants_position
-                    + (cn * self.variants_ring_space)
-                    + ((cn - 1) * self.variants_ring_height)
-                )
-                + (
-                    self.variants_position
-                    + (cn * self.variants_ring_space)
-                    + (cn * self.variants_ring_height)
-                )
-            ) / 2
+            radius = (cn + cn + self.options["Variants"]["rings"]["height"]) / 2
             data["radius"] = {
                 "R0": radius,
                 "R1": radius,
@@ -124,3 +120,7 @@ class Histogram_(Plotconfig):
             data["trace"] = self.trace
             data["layout"] = self.layout
         return data
+
+    def __call__(self):
+        print(self.data)
+        return pd.DataFrame.from_dict(self.data)
