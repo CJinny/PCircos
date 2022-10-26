@@ -43,10 +43,7 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open(
-                "../demo_data/options.general.json",
-                "r",
-            )
+            open("../demo_data/options.general.json", "r",)
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -121,7 +118,13 @@ class Plotconfig(VcfReader):
         #            "cytoband_hg19_chr_infos.txt.gz",
         #        )
         # )
-        data = {"Chromosomes": [], "Genes": [], "Exons": [], "Variants": []}
+        data = {
+            "Chromosomes": [],
+            "Genes": [],
+            "Exons": [],
+            "Variants": [],
+            "CopyNumber": [],
+        }
         # VCF parsed file from PyVCF3
         for val in self.vcf_reader:
             # data["Chromosomes"].append(val.CHROM)
@@ -130,7 +133,16 @@ class Plotconfig(VcfReader):
             # print(val.INFO["SV"])
             data["Chromosomes"].append("chr" + val.CHROM)
             data["Genes"].extend(self.get_genes_var(val))
+            # TODO exons time consumming
+            data["Variants"].append(val.INFO)
+            data["CopyNumber"].append(self.get_copynumber_var())
         return data
+
+    def get_copynumber_var(self, record: object) -> int:
+        """
+        take VCF variant object and return copy number for this variant as an integer
+        """
+        pass
 
     def find_record_gene(self, coord: list) -> list:
         """
