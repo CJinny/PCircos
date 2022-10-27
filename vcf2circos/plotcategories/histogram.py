@@ -1,7 +1,9 @@
+from typing import Generator
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from os.path import join as osj
 import pandas as pd
 import os
+import itertools
 
 
 class Histogram_(Plotconfig):
@@ -91,27 +93,98 @@ class Histogram_(Plotconfig):
             "color": [],
             "info": [],
         }
-        for val in self.data["Variants"]:
-            [data["chr_name"].append(chroms) for chroms in self.data["Chromosomes"]]
-            data["start"].append(int(val["SV_start"]))
-            data["end"].append(int(val["SV_end"]))
-            data["val"].append(1)
-            data["color"].append("grey")
-            data["info"].append(
-                ";".join([str(key) + "=" + str(value) for key, value in val.items()])
+        df_ = pd.DataFrame.from_dict(self.data).astype(
+            {
+                "Chromosomes": str,
+                "Genes": str,
+                "Exons": str,
+                "Variants": object,
+                "Variants_type": str,
+                "CopyNumber": int,
+                "Color": str,
+            }
+        )
+        df_data = df_.loc[df_["CopyNumber"] == cn]
+        # for val in df_data.loc[df_data["CopyNumber"] == cn]["Variants"]:
+        #    [
+        #        data["chr_name"].append(chroms)
+        #        for chroms in df_data["Chromosomes"].to_list()
+        #    ]
+        #    data["start"].append(int(val["SV_start"]))
+        #    data["end"].append(int(val["SV_end"]))
+        #    data["val"].append(1)
+        #    data["color"].append("grey")
+        #    data["info"].append(
+        #        ";".join([str(key) + "=" + str(value) for key, value in #val.items()])
+        #    )
+        # file["dataframe"]["data"] = data
+        start = []
+        stop = []
+        for items in list(
+            self.extract_start_stop(
+                df_data["Record"].to_list(),
+                df_data["Variants"].to_list(),
+                df_data["Variants_type"].to_list(),
             )
+        ):
+            start.append(items[0])
+            stop.append(items[1])
+        data["chr_name"].extend(df_data["Chromosomes"].to_list())
+        data["start"].extend(start)
+        data["end"].extend(stop)
+        data["val"].extend(list(itertools.repeat(1, len(df_data.index))))
+        data["color"].extend(list(itertools.repeat("grey", len(df_data.index))))
+        data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
         file["dataframe"]["data"] = data
         return file
 
+    def dict_to_str(self, info_field: list) -> Generator:
+        for info_dict in info_field:
+            yield ";".join(
+                [str(key) + "=" + str(value) for key, value in info_dict.items()]
+            )
+
+    def extract_start_stop(
+        self, record: list, info_field: list, variant_type: list
+    ) -> Generator:
+        # infer type of var could be done before
+        for i, info_dict in enumerate(info_field):
+            if variant_type[i] != "OTHER":
+                if "SV_start" in record[i].INFO and "SV_end" in record[i].INFO:
+                    yield (int(info_dict.get("SV_start")), int(info_dict.get("SV_end")))
+                elif "END" in record[i].INFO:
+                    yield (
+                        int(record[i].POS),
+                        int(record[i].INFO["END"]),
+                    )
+                elif "SVLEN" in record[i].INFO:
+                    yield (
+                        int(record[i].POS),
+                        int(abs(record[i].INFO["SVLEN"][0])) + int(record[i].POS),
+                    )
+
+                else:
+                    print("Can't establish SV length, annotations missing EXIT")
+                    exit()
+            # SNVINDEL
+            else:
+                alternate = int(str(max([len(alt) for alt in record[i].ALT])))
+                yield (int(str(record[i].POS)), int(str(record[i].POS)) + alternate)
+
     def merge_options(self) -> list:
-        for cn in list(set(self.data["CopyNumber"])):
+        histo_data = []
+        for i, cn in enumerate(list(set(self.data["CopyNumber"]))):
             data = {}
             data["show"] = self.show
             data["customfillcolor"] = "False"
-            data["file"] = self.data_histogram_variants()
+            data["file"] = self.data_histogram_variants(cn)
             data["sortbycolor"] = "False"
             data["colorcolumn"] = 4
-            radius = (cn + cn + self.options["Variants"]["rings"]["height"]) / 2
+            radius = (
+                self.rangescale[cn]
+                + self.rangescale[cn]
+                + self.options["Variants"]["rings"]["height"]
+            ) / 2
             data["radius"] = {
                 "R0": radius,
                 "R1": radius,
@@ -119,7 +192,11 @@ class Histogram_(Plotconfig):
             data["hovertextformat"] = self.hovertextformat
             data["trace"] = self.trace
             data["layout"] = self.layout
-        return data
+            print("\n\n")
+            print(data)
+            histo_data.append(data)
+        histo_data.append()
+        return histo_data
 
     def __call__(self):
         print(self.data)
