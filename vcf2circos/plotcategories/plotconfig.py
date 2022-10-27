@@ -4,6 +4,7 @@
 aim: Epurate module and func, handle parameters of circos plot
 """
 
+from functools import lru_cache
 import re
 import json
 import os
@@ -38,10 +39,7 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open(
-                "../demo_data/options.general.json",
-                "r",
-            )
+            open("../demo_data/options.general.json", "r",)
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -112,6 +110,7 @@ class Plotconfig(VcfReader):
             "Chromosomes": [],
             "Genes": [],
             "Exons": [],
+            "Record": [],
             "Variants": [],
             "Variants_type": [],
             "CopyNumber": [],
@@ -121,13 +120,15 @@ class Plotconfig(VcfReader):
         for record in self.vcf_reader:
             # particular process for breakend
             if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
-                self.compute_breakend()
+                pass
+                # self.compute_breakend()
             else:
                 # print(record.INFO["SV"])
-                data["Chromosomes"].append("chr" + record.CHROM)
-                data["Genes"].extend(self.get_genes_var(record))
+                data["Chromosomes"].append(self.chr_adapt(record))
+                data["Genes"].append(self.get_genes_var(record))
                 data["Exons"].append(None)
                 # TODO exons time consumming
+                data["Record"].append(record)
                 data["Variants"].append(record.INFO)
                 svtype, copynumber = self.get_copynumber_type(record)
                 data["Variants_type"].append(svtype)
@@ -135,6 +136,13 @@ class Plotconfig(VcfReader):
                 data["Color"].append(variants_color[svtype])
 
         return data
+
+    def chr_adapt(self, record: object) -> str:
+        try:
+            re.match(r"[0-9]", record.CHROM).group()
+            return "chr" + record.CHROM
+        except AttributeError:
+            return record.CHROM
 
     def compute_breakend(self):
         # TODO
@@ -145,6 +153,7 @@ class Plotconfig(VcfReader):
         take VCF variant object and return variant type and number of copy in tuple
         REQUIRED monosample vcf
         """
+        alt = str(record.ALT[0])
         # checking if CopyNumber annotation in info field
         if record.INFO.get("SVTYPE", ""):
             svtype = record.INFO.get("SVTYPE", "")
@@ -153,24 +162,24 @@ class Plotconfig(VcfReader):
             svtype = record.INFO.get("SV_type", "")
             return (svtype, self.get_copynumber_values(svtype, record))
         # It's SV in ALT field
-        elif re.match(r"[^a-zA-Z]", record.ALT) is None:
-            # is not breakend
-            if record.ALT.startswith("<"):
-                rep = {"<": "", ">": ""}
-                svtype = record.ALT
-                for key, val in rep.items():
-                    svtype = svtype.replace(key, val)
-                # in case of copy number in alt
-                if re.search(r"$[0-9]+", svtype).group():
-                    copynumber = re.search(r"$[0-9]+", svtype).group()
+        elif alt.startswith("<"):
+            rep = {"<": "", ">": ""}
+            svtype = alt
+            for key, val in rep.items():
+                svtype = svtype.replace(key, val)
+            # in case of copy number in alt
+            if re.search(r"$[0-9]+", svtype).group():
+                copynumber = re.search(r"$[0-9]+", svtype).group()
+                return (svtype, copynumber)
+            else:
+                svtype = svtype.split(":")[0]
+                if len(svtype) > 1:
+                    copynumber = svtype[1]
                     return (svtype, copynumber)
                 else:
-                    svtype = svtype.split(":")[0]
-                    if len(svtype) > 1:
-                        copynumber = svtype[1]
-                        return (svtype, copynumber)
-                    else:
-                        return (svtype, self.get_copynumber_values(svtype, record))
+                    return (svtype, self.get_copynumber_values(svtype, record))
+        else:
+            return ("OTHER", 6)
 
     def get_copynumber_values(self, svtype: str, record: object) -> int:
         """
@@ -204,26 +213,56 @@ class Plotconfig(VcfReader):
             elif svtype == "DEL":
                 return 2 - gt
 
-    def find_record_gene(self, coord: list) -> list:
+    def find_record_gene(self, coord: list, refgene_genes) -> list:
         """
         Greedy, for now need good info in vcf annotations
         """
         gene_list = []
-        # Keep only first transcript per gene should be main
-        refgene_genes = pd.read_csv(
-            self.refgene_genes, sep="\t", header=0, compression="infer"
-        ).drop_duplicates(subset=["gene"], keep="first")
-        refgene_genes.loc[refgene_genes["chr_name"] == coord[0]]
-        return refgene_genes
+        # only chr for this variants
+        refgene_chr = refgene_genes.loc[refgene_genes["chr_name"] == coord[0]]
+        for j, rows in refgene_chr.iterrows():
+            if coord[1] <= rows["start"] and (
+                coord[2] in range(rows["start"], rows["end"]) or coord[2] >= rows["end"]
+            ):
+                gene_list.append(rows["gene"])
+            if coord[1] <= rows["start"] and coord[2] <= rows["end"]:
+                break
 
-    def get_genes_var(self, record: object) -> list:
+        return list(set(gene_list))
+
+    def get_genes_var(self, record: object) -> str:
+        refgene_genes = pd.read_csv(
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "genes." + self.options["Assembly"] + ".txt.gz",
+            ),
+            sep="\t",
+            header=0,
+            compression="infer",
+        ).drop_duplicates(subset=["gene"], keep="first")
+
         gene_name = record.INFO.get("Gene_name")
         if isinstance(gene_name, str):
-            gene_name = [gene_name]
-        print(record.INFO)
+            return gene_name
+        # No Gene_name annotation need to find overlapping gene in sv
         if gene_name is None:
-            assert "SVLEN" in record.INFO
-            gene_name = self.find_record_gene(
-                [record.CHROM, record.POS, record.POS + record.INFO["SVLEN"]]
-            )
-        return gene_name
+            if record.INFO.get("SVTYPE") not in [
+                "BND, TRA",
+                "INV",
+                None,
+            ] or record.INFO.get("SV_type") not in ["BND, TRA", "INV", None]:
+                # assert "SVLEN" in record.INFO
+                # print(record.INFO["SVLEN"])
+                gene_name = self.find_record_gene(
+                    [
+                        record.CHROM,
+                        record.POS,
+                        int(record.POS) + int(record.INFO["SVLEN"][0]),
+                    ],
+                    refgene_genes,
+                )
+            else:
+                gene_name = []
+            return ",".join(gene_name)
