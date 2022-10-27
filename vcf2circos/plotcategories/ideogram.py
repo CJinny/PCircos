@@ -76,11 +76,7 @@ class Ideogram(Plotconfig):
             },
         )
         self.customoptions = (
-            {
-                "customlabel": "True",
-                "customspacing": "False",
-                "customcolor": 3,
-            },
+            {"customlabel": "True", "customspacing": "False", "customcolor": 3,},
         )
         self.npoints = (1000,)
         self.radius = {"R0": 1.0, "R1": 1.1}
@@ -121,11 +117,7 @@ class Ideogram(Plotconfig):
                 "xref": "x",
                 "yref": "y",
                 "showarrow": False,
-                "font": {
-                    "family": "Times New Roman",
-                    "size": 8,
-                    "color": "black",
-                },
+                "font": {"family": "Times New Roman", "size": 8, "color": "black",},
             },
         }
 
@@ -134,10 +126,10 @@ class Ideogram(Plotconfig):
             self.chr_conf["chr_label"].isin(self.data["Chromosomes"])
         ]
         data = {
-            "chr_name": tmp["chr_label"],
-            "chr_size": tmp["chr_size"].tolist(),
-            "chr_label": self.data["Chromosomes"],
-            "chr_color": tmp["chr_label"].tolist(),
+            "chr_name": tmp["chr_label"].to_list(),
+            "chr_size": tmp["chr_size"].to_list(),
+            "chr_label": tmp["chr_label"].to_list(),
+            "chr_color": tmp["chr_color"].tolist(),
         }
         return data
 
