@@ -65,17 +65,13 @@ class Cytoband(Plotconfig):
         )
         self.file = file
         self.colorcolumn = 3
+        self.sortbycolor = "True"
         self.hovertextformat = ' "<b>{}</b>".format(a[i,0])'
         self.trace = {
             "uid": "cytoband",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {
-                "size": 1,
-                "symbol": 0,
-                "color": "black",
-                "opacity": 1,
-            },  # 8
+            "marker": {"size": 1, "symbol": 0, "color": "black", "opacity": 1,},  # 8
         }
         self.layout = {
             "type": "path",
