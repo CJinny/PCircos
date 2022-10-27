@@ -308,7 +308,7 @@ def run_vcf2circos():
                 rangescale=rangescale,
             )
             print(histogram.__call__())
-            exit()
+
             for items in inspect.getmembers(ideogram):
                 if items[0] == "data":
                     print(items)
@@ -320,7 +320,7 @@ def run_vcf2circos():
                 "ideogram": ideogram.merge_options(),
                 "ring": ring.create_ring(),
                 "cytoband": cytoband.merge_options()[0],
-                "histogram": histogram.merge_options(),
+                # "histogram": histogram.merge_options(),
             }
             # js["Category"]["histogram"].append(histogram.merge_options())
             pprint(js)
