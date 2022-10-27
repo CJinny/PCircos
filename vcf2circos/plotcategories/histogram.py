@@ -74,6 +74,18 @@ class Histogram_(Plotconfig):
             "fillcolor": "gray",
             "line": {"color": "gray", "width": 5},
         }
+        # TODO tile same as cytobandinfo in vfreader
+        self.cytoband_conf = pd.read_csv(
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "cytoband_" + self.options["Assembly"] + "_chr_infos.txt.gz",
+            ),
+            sep="\t",
+            header=0,
+            compression="infer",
+        )
 
     def cytoband_histogram(self):
         pass
