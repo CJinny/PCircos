@@ -57,8 +57,5 @@
 			"max": 5,
 			"nrings": 6
 		}
-	},
-	"Additonal_annotations": [
-		"options.additional_annotations.ClinGen.json"
-	]
+	}
 }
