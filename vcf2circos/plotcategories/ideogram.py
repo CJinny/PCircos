@@ -75,10 +75,12 @@ class Ideogram(Plotconfig):
                 },
             },
         )
-        self.customoptions = (
-            {"customlabel": "True", "customspacing": "False", "customcolor": 3,},
-        )
-        self.npoints = (1000,)
+        self.customoptions = {
+            "customlabel": "True",
+            "customspacing": "False",
+            "customcolor": 3,
+        }
+        self.npoints = 1000
         self.radius = {"R0": 1.0, "R1": 1.1}
         self.layout = {
             "type": "path",
