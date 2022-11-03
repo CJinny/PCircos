@@ -5,6 +5,8 @@ import pandas as pd
 from os.path import join as osj
 import os
 import gzip
+from tqdm import tqdm
+from natsort import natsort_keygen
 
 # Globals
 variants_color = {
@@ -50,14 +52,14 @@ def systemcall(command: str) -> list:
             exit()
 
 
-def formatted_refgene(self, refgene: str, assembly: str) -> str:
+def formatted_refgene(refgene: str, assembly: str, ts: str) -> str:
     """
     In case of new version of refgene or new assembly\n
+    transcripts: list in string format either 'NM_' or 'NR_ 'or both 'NM_,NR_'
     Took refgene raw file from ucsc curated and create proper exon refgene, WITHOUT UTR(default choice)
     """
+    transcripts = ts.split(",")
     df = pd.read_csv(refgene, sep="\t", header=None, compression="infer")
-    output_genes = osj(os.path.dirname(refgene), "genes." + assembly + ".txt.gz")
-    output_exons = osj(os.path.dirname(refgene), "exons." + assembly + ".txt.gz")
     df.columns = [
         "bin",
         "name",
@@ -76,6 +78,12 @@ def formatted_refgene(self, refgene: str, assembly: str) -> str:
         "cdsEndStat",
         "exonFrames",
     ]
+    output_genes = os.path.dirname(refgene) + "/genes." + assembly + ".txt.gz.tmp"
+    output_exons = os.path.dirname(refgene) + "/exons." + assembly + ".txt.gz.tmp"
+
+    og = os.path.dirname(refgene) + "/genes." + assembly + ".txt.gz"
+    oe = os.path.dirname(refgene) + "/exons." + assembly + ".txt.gz"
+
     with gzip.open(output_genes, "wb+") as out_g:
         with gzip.open(output_exons, "wb+") as out_e:
             out_g.write(
@@ -119,7 +127,7 @@ def formatted_refgene(self, refgene: str, assembly: str) -> str:
                 desc="Formatting refgene file UCSC",
                 leave=False,
             ):
-                if row["name"].startswith("NM_"):
+                if [row["name"].startswith(ts) for ts in transcripts]:
                     out_g.write(
                         bytes(
                             "\t".join(
@@ -158,4 +166,37 @@ def formatted_refgene(self, refgene: str, assembly: str) -> str:
                                 "UTF-8",
                             )
                         )
+    # systemcall(
+    #    "zcat "
+    #    + output_genes
+    #    + " | grep 'chr_name' > "
+    #    + og
+    #    + " && zcat "
+    #    + output_genes
+    #    + " | grep -v 'chr_name' "
+    #    + output_genes
+    #    + " | sort -k1,1V -k2,2n > "
+    #    + og
+    # )
+    # systemcall(
+    #    "grep chr_name "
+    #    + output_genes
+    #    + " > "
+    #    + og
+    #    + " && grep -v chr_name "
+    #    + output_genes
+    #    + " | sort -k1,1V -k2,2n > "
+    #    + og
+    # )
+    #
+    # systemcall(
+    #    "grep chr_name "
+    #    + output_exons
+    #    + " > "
+    #    + oe
+    #    + " && grep -v chr_name "
+    #    + output_exons
+    #    + " | sort -k1,1V -k2,2n > "
+    #    + oe
+    # )
     return df
