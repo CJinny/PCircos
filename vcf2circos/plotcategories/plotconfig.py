@@ -14,6 +14,7 @@ from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
 from tqdm import tqdm
 from vcf2circos.utils import variants_color
+from pprint import pprint
 
 
 class Plotconfig(VcfReader):
@@ -58,7 +59,7 @@ class Plotconfig(VcfReader):
             self.options["Static"],
             "Assembly",
             self.options["Assembly"],
-            "genes." + self.options["Assembly"] + ".txt.gz",
+            "genes." + self.options["Assembly"] + "sorted.txt",
         )
         self.refgene_exons = osj(
             self.options["Static"],
@@ -126,7 +127,7 @@ class Plotconfig(VcfReader):
                 # print(record.INFO["SV"])
                 data["Chromosomes"].append(self.chr_adapt(record))
                 data["Genes"].append(self.get_genes_var(record))
-                data["Exons"].append(None)
+                data["Exons"].append("")
                 # TODO exons time consumming
                 data["Record"].append(record)
                 data["Variants"].append(record.INFO)
@@ -134,7 +135,13 @@ class Plotconfig(VcfReader):
                 data["Variants_type"].append(svtype)
                 data["CopyNumber"].append(copynumber)
                 data["Color"].append(variants_color[svtype])
-
+        # pprint(data)
+        # test
+        # def replace_(dico):
+        #    rep = ""
+        #    excl = ["None", None]
+        #    for
+        #
         return data
 
     def chr_adapt(self, record: object) -> str:
@@ -221,10 +228,15 @@ class Plotconfig(VcfReader):
         # only chr for this variants
         refgene_chr = refgene_genes.loc[refgene_genes["chr_name"] == coord[0]]
         for j, rows in refgene_chr.iterrows():
+            # variant start begin before a gene and stop inside or after
             if coord[1] <= rows["start"] and (
                 coord[2] in range(rows["start"], rows["end"]) or coord[2] >= rows["end"]
             ):
                 gene_list.append(rows["gene"])
+            # sv only inside one gene
+            if coord[1] >= rows["start"] and coord[2] <= rows["end"]:
+                gene_list.append(rows["gene"])
+            # SV all size done
             if coord[1] <= rows["start"] and coord[2] <= rows["end"]:
                 break
 
@@ -236,12 +248,14 @@ class Plotconfig(VcfReader):
                 self.options["Static"],
                 "Assembly",
                 self.options["Assembly"],
-                "genes." + self.options["Assembly"] + ".txt.gz",
+                "genes." + self.options["Assembly"] + ".sorted.txt",
             ),
             sep="\t",
             header=0,
-            compression="infer",
-        ).drop_duplicates(subset=["gene"], keep="first")
+            # compression="infer",
+        )
+        # print(*refgene_genes.columns)
+        # .drop_duplicates(subset=["gene"], keep="first")
 
         gene_name = record.INFO.get("Gene_name")
         if isinstance(gene_name, str):
@@ -263,6 +277,18 @@ class Plotconfig(VcfReader):
                     ],
                     refgene_genes,
                 )
+            # SNV indel
             else:
-                gene_name = []
+                alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
+                gene_name = self.find_record_gene(
+                    [record.CHROM, record.POS, (int(record.POS) + alternate),],
+                    refgene_genes,
+                )
+                if record.INFO.get("SVTYPE") is None:
+                    print(record)
+                    print(
+                        record.CHROM, record.POS, (int(record.POS) + alternate),
+                    )
+                    if not gene_name:
+                        gene_name = [""]
             return ",".join(gene_name)
