@@ -113,43 +113,4 @@ class Cytoband(Plotconfig):
         dico["trace"] = self.trace
         dico["layout"] = self.layout
 
-        histo = []
-        Cytoband_infos = {
-            "show": "True",
-            "file": {
-                "path": "",
-                "header": "infer",
-                "sep": "\t",
-                "dataframe": {"orient": "columns", "data": self.data_cytoband()},
-            },
-            "colorcolumn": 4,
-            "radius": {"R0": 1, "R1": 1.1},
-            "hovertextformat": " \"<b>{}:{}-{}<br>{}{}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,0].replace('chr', ''), ''.join(a[i,5:]))",
-            # "hovertextformat": " \"<b>{}</b>\".format(a[i,0])",
-            "trace": {
-                "uid": "cytoband_tile",
-                "hoverinfo": "text",
-                "mode": "markers",
-                "marker": {
-                    "size": 0,
-                    "symbol": 0,  # 8
-                    "color": self.data_cytoband()["band_color"],
-                    "opacity": 0,
-                },
-                "hovertextformat": " \"<b>{}:{}-{}<br>{}{}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,0].replace('chr', ''), ''.join(a[i,5:]))",
-                "trace": {
-                    "uid": "cytoband_tile",
-                    "hoverinfo": "text",
-                    "mode": "markers",
-                    "marker": {
-                        "size": 0,
-                        "symbol": 0,  # 8
-                        "color": self.data_cytoband()["band_color"],
-                        "opacity": 0,
-                    },
-                },
-            },
-        }
-
-        histo = [Cytoband_infos]
-        return (dico, Cytoband_infos)
+        return dico
