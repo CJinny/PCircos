@@ -129,8 +129,14 @@ class Histogram_(Plotconfig):
             "start": [],
             "end": [],
             "val": [],
+            "ref": [],
+            "alt": [],
+            "type": [],
             "color": [],
-            "info": [],
+            "hovertext": [],
+            "symbol": [],
+            "genes": [],
+            "exons": [],
         }
         df_ = pd.DataFrame.from_dict(self.data).astype(
             {
@@ -159,8 +165,10 @@ class Histogram_(Plotconfig):
         # file["dataframe"]["data"] = data
         start = []
         stop = []
+        ref = []
+        alt = []
         for items in list(
-            self.extract_start_stop(
+            self.extract_start_stop_ref_alt(
                 df_data["Record"].to_list(),
                 df_data["Variants"].to_list(),
                 df_data["Variants_type"].to_list(),
@@ -168,12 +176,21 @@ class Histogram_(Plotconfig):
         ):
             start.append(items[0])
             stop.append(items[1])
+            ref.append(items[2])
+            alt.extend(items[3])
         data["chr_name"].extend(df_data["Chromosomes"].to_list())
         data["start"].extend(start)
         data["end"].extend(stop)
         data["val"].extend(list(itertools.repeat(1, len(df_data.index))))
+        data["ref"].extend(ref)
+        data["alt"].extend(alt)
+        data["type"].extend(df_data["Variants_type"].to_list())
         data["color"].extend(list(itertools.repeat("grey", len(df_data.index))))
-        data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
+        data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
+        data["symbol"].extend(list(itertools.repeat(0, len(df_data.index))))
+        data["genes"].extend(df_data["Genes"].to_list())
+        data["exons"].extend(list(itertools.repeat("", len(df_data.index))))
+        # data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
         file["dataframe"]["data"] = data
         return file
 
@@ -183,7 +200,7 @@ class Histogram_(Plotconfig):
                 [str(key) + "=" + str(value) for key, value in info_dict.items()]
             )
 
-    def extract_start_stop(
+    def extract_start_stop_ref_alt(
         self, record: list, info_field: list, variant_type: list
     ) -> Generator:
         # infer type of var could be done before
@@ -195,11 +212,15 @@ class Histogram_(Plotconfig):
                     yield (
                         int(record[i].POS),
                         int(record[i].INFO["END"]),
+                        record[i].REF,
+                        record[i].ALT,
                     )
                 elif "SVLEN" in record[i].INFO:
                     yield (
                         int(record[i].POS),
                         int(abs(record[i].INFO["SVLEN"][0])) + int(record[i].POS),
+                        record[i].REF,
+                        record[i].ALT,
                     )
 
                 else:
@@ -208,9 +229,14 @@ class Histogram_(Plotconfig):
             # SNVINDEL
             else:
                 alternate = int(str(max([len(alt) for alt in record[i].ALT])))
-                yield (int(str(record[i].POS)), int(str(record[i].POS)) + alternate)
+                yield (
+                    int(str(record[i].POS)),
+                    int(str(record[i].POS)) + alternate,
+                    record[i].REF,
+                    record[i].ALT,
+                )
 
-    def merge_options(self, cytoband_data) -> list:
+    def merge_options(self, cytoband_data: dict) -> list:
         """
         func handle math and geometry need to take data in specific order
         chr start stop val OTHERWIS TROUBLE
@@ -234,12 +260,13 @@ class Histogram_(Plotconfig):
         self.cytoband_data["trace"]["marker"]["color"] = cyto["band_color"]
 
         for i, cn in enumerate(list(set(self.data["CopyNumber"]))):
+            global_d = self.data_histogram_variants(cn)
             data = {}
             data["show"] = self.show
             data["customfillcolor"] = "False"
-            data["file"] = self.data_histogram_variants(cn)
+            data["file"] = global_d
             data["sortbycolor"] = "False"
-            data["colorcolumn"] = 4
+            data["colorcolumn"] = 7
             radius = (
                 self.rangescale[cn]
                 + self.rangescale[cn]
@@ -250,7 +277,17 @@ class Histogram_(Plotconfig):
                 "R1": radius,
             }
             data["hovertextformat"] = self.hovertextformat
-            data["trace"] = self.trace
+            data["trace"] = {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 5,
+                    "symbol": global_d["dataframe"]["data"]["symbol"],
+                    "color": "gray",
+                    "opacity": 0.1,
+                },
+                "uid": "cnv_level_" + str(cn),
+            }
             data["layout"] = self.layout
             histo_data.append(data)
 
@@ -259,6 +296,9 @@ class Histogram_(Plotconfig):
         # ]
         histo_data.append(self.cytoband_data)
 
+        print("\n\n")
+        pprint(histo_data[1])
+        exit()
         return histo_data
 
     def __call__(self):
