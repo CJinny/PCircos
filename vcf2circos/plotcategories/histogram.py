@@ -1,9 +1,11 @@
+from pprint import pprint
 from typing import Generator
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from os.path import join as osj
 import pandas as pd
 import os
 import itertools
+from collections import OrderedDict
 
 
 class Histogram_(Plotconfig):
@@ -86,6 +88,31 @@ class Histogram_(Plotconfig):
             header=0,
             compression="infer",
         )
+        self.cytoband_data = {
+            "show": "True",
+            "file": {
+                "path": "",
+                "header": "infer",
+                "sep": "\t",
+                "dataframe": {"orient": "columns", "data": None},
+            },
+            "colorcolumn": 4,
+            "radius": {"R0": 1, "R1": 1.1},
+            "hovertextformat": " \"<b>{}:{}-{}<br>{}{}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,0].replace('chr', ''), ''.join(a[i,5:]))",
+            # "hovertextformat": " \"<b>{}</b>\".format(a[i,0])",
+            "trace": {
+                "uid": "cytoband_tile",
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
+            },
+            "layout": {
+                "type": "path",
+                "layer": "above",
+                "opacity": 0,
+                "line": {"color": None, "width": 0},
+            },
+        }
 
     def cytoband_histogram(self):
         pass
@@ -183,8 +210,29 @@ class Histogram_(Plotconfig):
                 alternate = int(str(max([len(alt) for alt in record[i].ALT])))
                 yield (int(str(record[i].POS)), int(str(record[i].POS)) + alternate)
 
-    def merge_options(self) -> list:
+    def merge_options(self, cytoband_data) -> list:
+        """
+        func handle math and geometry need to take data in specific order
+        chr start stop val OTHERWIS TROUBLE
+        """
         histo_data = []
+
+        cyto = OrderedDict()
+        cyto["chr_name"] = cytoband_data["chr_name"]
+        cyto["start"] = cytoband_data["start"]
+        cyto["end"] = cytoband_data["end"]
+        # Remember to have val column in data otherwise it leads to crash]
+        cyto["val"] = list(itertools.repeat(1, len(cytoband_data["chr_name"])))
+        cyto["band_color"] = list(
+            itertools.repeat("lightgray", len(cytoband_data["chr_name"]))
+        )
+        cyto["band"] = cytoband_data["band"]
+        # Cytoband tiles 3  need fill data
+        self.cytoband_data["file"]["dataframe"]["data"] = cyto
+
+        self.cytoband_data["layout"]["line"]["color"] = cyto["band_color"]
+        self.cytoband_data["trace"]["marker"]["color"] = cyto["band_color"]
+
         for i, cn in enumerate(list(set(self.data["CopyNumber"]))):
             data = {}
             data["show"] = self.show
@@ -204,12 +252,14 @@ class Histogram_(Plotconfig):
             data["hovertextformat"] = self.hovertextformat
             data["trace"] = self.trace
             data["layout"] = self.layout
-            print("\n\n")
-            print(data)
             histo_data.append(data)
-        histo_data.append()
+
+        # self.cytoband_data["trace"]["trace"]["marker"]["color"] = cytoband_data[
+        #    "band_color"
+        # ]
+        histo_data.append(self.cytoband_data)
+
         return histo_data
 
     def __call__(self):
-        print(self.data)
         return pd.DataFrame.from_dict(self.data)
