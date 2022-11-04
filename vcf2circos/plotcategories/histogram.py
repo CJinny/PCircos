@@ -64,11 +64,11 @@ class Histogram_(Plotconfig):
             "sep": "\t",
             "dataframe": {"orient": "columns", "data": data},
         }
-        self.hovertextformat = " \"<b>{}:{}-{}</b><br>ClinGen informations:<br>{}\".format(a[i,0], a[i,1], a[i,2], a[i,5].replace(';', '<br>').replace('%2C', '<br>   ')) "
+        self.hovertextformat = ' "<b>{}:{}-{}</b><br>{}<br><br>{}".format(a[i,0], a[i,1], a[i,2], a[i,6], a[i,8])'
         self.trace = {
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {"size": 5, "symbol": 0, "color": "gray", "opacity": 1},
+            "marker": {"size": 5, "symbol": 0, "color": "gray", "opacity": 0.1},
         }
         self.layout = {
             "type": "path",
@@ -104,7 +104,12 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
+                "marker": {
+                    "size": 0,
+                    "symbol": 0,
+                    "color": None,
+                    "opacity": 0,
+                },  # 8
             },
             "layout": {
                 "type": "path",
@@ -123,7 +128,7 @@ class Histogram_(Plotconfig):
     def data_histogram_variants(self, cn) -> dict:
         # for each sv event regarding copy number
         # TODO get information in data as DATAFRAME
-        file = self.file
+        dico = self.file.deepcopy()
         data = {
             "chr_name": [],
             "start": [],
@@ -150,19 +155,6 @@ class Histogram_(Plotconfig):
             }
         )
         df_data = df_.loc[df_["CopyNumber"] == cn]
-        # for val in df_data.loc[df_data["CopyNumber"] == cn]["Variants"]:
-        #    [
-        #        data["chr_name"].append(chroms)
-        #        for chroms in df_data["Chromosomes"].to_list()
-        #    ]
-        #    data["start"].append(int(val["SV_start"]))
-        #    data["end"].append(int(val["SV_end"]))
-        #    data["val"].append(1)
-        #    data["color"].append("grey")
-        #    data["info"].append(
-        #        ";".join([str(key) + "=" + str(value) for key, value in #val.items()])
-        #    )
-        # file["dataframe"]["data"] = data
         start = []
         stop = []
         ref = []
@@ -174,31 +166,115 @@ class Histogram_(Plotconfig):
                 df_data["Variants_type"].to_list(),
             )
         ):
+            # DEBUGG
+            # print(*items)
+            # for val in items:
+            #    if isinstance(val, list):
+            #        print(type(val[0]))
+            #    else:
+            #        print(type(val))
+            # exit()
             start.append(items[0])
             stop.append(items[1])
             ref.append(items[2])
-            alt.extend(items[3])
+            alt.append(str(items[3][0]))
         data["chr_name"].extend(df_data["Chromosomes"].to_list())
         data["start"].extend(start)
         data["end"].extend(stop)
-        data["val"].extend(list(itertools.repeat(1, len(df_data.index))))
+        data["val"].extend(list(itertools.repeat(2, len(df_data.index))))
         data["ref"].extend(ref)
         data["alt"].extend(alt)
         data["type"].extend(df_data["Variants_type"].to_list())
         data["color"].extend(list(itertools.repeat("grey", len(df_data.index))))
-        data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
+        # data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
+        data["hovertext"].extend(
+            [
+                "Genes ("
+                + str(len(record.split(",")))
+                + "): "
+                + ",".join(record.split(",")[:5])
+                for record in df_data["Genes"].to_list()
+            ]
+        )
         data["symbol"].extend(list(itertools.repeat(0, len(df_data.index))))
         data["genes"].extend(df_data["Genes"].to_list())
         data["exons"].extend(list(itertools.repeat("", len(df_data.index))))
         # data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
-        file["dataframe"]["data"] = data
-        return file
+        dico["dataframe"]["data"] = data
+        return dico
 
     def dict_to_str(self, info_field: list) -> Generator:
         for info_dict in info_field:
             yield ";".join(
                 [str(key) + "=" + str(value) for key, value in info_dict.items()]
             )
+
+    def histo_cnv_level(self):
+        for cn in list(set(self.data["CopyNumber"])):
+            global_d = self.data_histogram_variants(cn)
+            dico = {}
+            dico["show"] = "True"
+            dico["customfillcolor"] = "False"
+            dico["file"] = global_d
+            dico["sortbycolor"] = "False"
+            dico["colorcolumn"] = 7
+            radius = (
+                self.rangescale[cn]
+                + self.rangescale[cn]
+                + self.options["Variants"]["rings"]["height"]
+            ) / 2
+            dico["radius"] = {
+                "R0": radius,
+                "R1": radius,
+            }
+            dico["hovertextformat"] = self.hovertextformat
+            dico["trace"] = {
+                "hoverinfo": "text",
+                "mode": "markers",
+                "marker": {
+                    "size": 5,
+                    "symbol": global_d["dataframe"]["data"["symbol"],
+                    "color": "gray",
+                    "opacity": 0.1,
+                },
+                "uid": "cnv_level_" + str(cn)
+            }
+            dico["layout"] = {
+                "type": "path",
+                "layer": "above",
+                "opacity": 0.1,
+                "fillcolor": "red",
+                "line": {"color": "lightgray", "width": 5},
+            }
+            yield dico
+
+    def merge_options(self, cytoband_data: dict) -> list:
+        """
+        func handle math and geometry need to take data in specific order
+        chr start stop val OTHERWIS TROUBLE
+        """
+        histo_data = []
+
+        cyto = {}
+        cyto["chr_name"] = cytoband_data["chr_name"]
+        cyto["start"] = cytoband_data["start"]
+        cyto["end"] = cytoband_data["end"]
+        # Remember to have val column in data otherwise it leads to crash]
+        cyto["val"] = list(itertools.repeat(1, len(cytoband_data["chr_name"])))
+        cyto["band_color"] = list(
+            itertools.repeat("lightgray", len(cytoband_data["chr_name"]))
+        )
+        cyto["band"] = cytoband_data["band"]
+        # Cytoband tiles 3  need fill data
+        self.cytoband_data["file"]["dataframe"]["data"] = cyto
+
+        self.cytoband_data["layout"]["line"]["color"] = cyto["band_color"]
+        self.cytoband_data["trace"]["marker"]["color"] = cyto["band_color"]
+
+        return list(self.histo_cnv_level())
+
+        # def __call__(self):
+        #    return pd.DataFrame.from_dict(self.data)
 
     def extract_start_stop_ref_alt(
         self, record: list, info_field: list, variant_type: list
@@ -222,7 +298,6 @@ class Histogram_(Plotconfig):
                         record[i].REF,
                         record[i].ALT,
                     )
-
                 else:
                     print("Can't establish SV length, annotations missing EXIT")
                     exit()
@@ -235,71 +310,3 @@ class Histogram_(Plotconfig):
                     record[i].REF,
                     record[i].ALT,
                 )
-
-    def merge_options(self, cytoband_data: dict) -> list:
-        """
-        func handle math and geometry need to take data in specific order
-        chr start stop val OTHERWIS TROUBLE
-        """
-        histo_data = []
-
-        cyto = OrderedDict()
-        cyto["chr_name"] = cytoband_data["chr_name"]
-        cyto["start"] = cytoband_data["start"]
-        cyto["end"] = cytoband_data["end"]
-        # Remember to have val column in data otherwise it leads to crash]
-        cyto["val"] = list(itertools.repeat(1, len(cytoband_data["chr_name"])))
-        cyto["band_color"] = list(
-            itertools.repeat("lightgray", len(cytoband_data["chr_name"]))
-        )
-        cyto["band"] = cytoband_data["band"]
-        # Cytoband tiles 3  need fill data
-        self.cytoband_data["file"]["dataframe"]["data"] = cyto
-
-        self.cytoband_data["layout"]["line"]["color"] = cyto["band_color"]
-        self.cytoband_data["trace"]["marker"]["color"] = cyto["band_color"]
-
-        for i, cn in enumerate(list(set(self.data["CopyNumber"]))):
-            global_d = self.data_histogram_variants(cn)
-            data = {}
-            data["show"] = self.show
-            data["customfillcolor"] = "False"
-            data["file"] = global_d
-            data["sortbycolor"] = "False"
-            data["colorcolumn"] = 7
-            radius = (
-                self.rangescale[cn]
-                + self.rangescale[cn]
-                + self.options["Variants"]["rings"]["height"]
-            ) / 2
-            data["radius"] = {
-                "R0": radius,
-                "R1": radius,
-            }
-            data["hovertextformat"] = self.hovertextformat
-            data["trace"] = {
-                "hoverinfo": "text",
-                "mode": "markers",
-                "marker": {
-                    "size": 5,
-                    "symbol": global_d["dataframe"]["data"]["symbol"],
-                    "color": "gray",
-                    "opacity": 0.1,
-                },
-                "uid": "cnv_level_" + str(cn),
-            }
-            data["layout"] = self.layout
-            histo_data.append(data)
-
-        # self.cytoband_data["trace"]["trace"]["marker"]["color"] = cytoband_data[
-        #    "band_color"
-        # ]
-        histo_data.append(self.cytoband_data)
-
-        print("\n\n")
-        pprint(histo_data[1])
-        exit()
-        return histo_data
-
-    def __call__(self):
-        return pd.DataFrame.from_dict(self.data)
