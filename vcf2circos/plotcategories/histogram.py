@@ -128,7 +128,7 @@ class Histogram_(Plotconfig):
     def data_histogram_variants(self, cn) -> dict:
         # for each sv event regarding copy number
         # TODO get information in data as DATAFRAME
-        dico = self.file.deepcopy()
+        d_file = self.file.copy()
         data = {
             "chr_name": [],
             "start": [],
@@ -200,8 +200,8 @@ class Histogram_(Plotconfig):
         data["genes"].extend(df_data["Genes"].to_list())
         data["exons"].extend(list(itertools.repeat("", len(df_data.index))))
         # data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
-        dico["dataframe"]["data"] = data
-        return dico
+        d_file["dataframe"]["data"] = data
+        return d_file
 
     def dict_to_str(self, info_field: list) -> Generator:
         for info_dict in info_field:
@@ -209,44 +209,121 @@ class Histogram_(Plotconfig):
                 [str(key) + "=" + str(value) for key, value in info_dict.items()]
             )
 
-    def histo_cnv_level(self):
-        for cn in list(set(self.data["CopyNumber"])):
-            global_d = self.data_histogram_variants(cn)
-            dico = {}
-            dico["show"] = "True"
-            dico["customfillcolor"] = "False"
-            dico["file"] = global_d
-            dico["sortbycolor"] = "False"
-            dico["colorcolumn"] = 7
-            radius = (
-                self.rangescale[cn]
-                + self.rangescale[cn]
-                + self.options["Variants"]["rings"]["height"]
-            ) / 2
-            dico["radius"] = {
-                "R0": radius,
-                "R1": radius,
+    def histo_cnv_level(self, cn):
+        d_file = {
+            "path": "",
+            "header": "infer",
+            "sep": "\t",
+            "dataframe": {"orient": "columns", "data": None},
+        }
+        data = {
+            "chr_name": [],
+            "start": [],
+            "end": [],
+            "val": [],
+            "ref": [],
+            "alt": [],
+            "type": [],
+            "color": [],
+            "hovertext": [],
+            "symbol": [],
+            "genes": [],
+            "exons": [],
+        }
+        df_ = pd.DataFrame.from_dict(self.data).astype(
+            {
+                "Chromosomes": str,
+                "Genes": str,
+                "Exons": str,
+                "Variants": object,
+                "Variants_type": str,
+                "CopyNumber": int,
+                "Color": str,
             }
-            dico["hovertextformat"] = self.hovertextformat
-            dico["trace"] = {
-                "hoverinfo": "text",
-                "mode": "markers",
-                "marker": {
-                    "size": 5,
-                    "symbol": global_d["dataframe"]["data"["symbol"],
-                    "color": "gray",
-                    "opacity": 0.1,
-                },
-                "uid": "cnv_level_" + str(cn)
-            }
-            dico["layout"] = {
-                "type": "path",
-                "layer": "above",
+        )
+        df_data = df_.loc[df_["CopyNumber"] == cn]
+        start = []
+        stop = []
+        ref = []
+        alt = []
+        for items in list(
+            self.extract_start_stop_ref_alt(
+                df_data["Record"].to_list(),
+                df_data["Variants"].to_list(),
+                df_data["Variants_type"].to_list(),
+            )
+        ):
+            # DEBUGG
+            # print(*items)
+            # for val in items:
+            #    if isinstance(val, list):
+            #        print(type(val[0]))
+            #    else:
+            #        print(type(val))
+            # exit()
+            start.append(items[0])
+            stop.append(items[1])
+            ref.append(items[2])
+            alt.append(str(items[3][0]))
+        data["chr_name"].extend(df_data["Chromosomes"].to_list())
+        data["start"].extend(start)
+        data["end"].extend(stop)
+        data["val"].extend(list(itertools.repeat(2, len(df_data.index))))
+        data["ref"].extend(ref)
+        data["alt"].extend(alt)
+        data["type"].extend(df_data["Variants_type"].to_list())
+        data["color"].extend(list(itertools.repeat("grey", len(df_data.index))))
+        # data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
+        data["hovertext"].extend(
+            [
+                "Genes ("
+                + str(len(record.split(",")))
+                + "): "
+                + ",".join(record.split(",")[:5])
+                for record in df_data["Genes"].to_list()
+            ]
+        )
+        data["symbol"].extend(list(itertools.repeat(0, len(df_data.index))))
+        data["genes"].extend(df_data["Genes"].to_list())
+        data["exons"].extend(list(itertools.repeat("", len(df_data.index))))
+        # data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
+        d_file["dataframe"]["data"] = data
+
+        d = {}
+        d["show"] = "True"
+        d["customfillcolor"] = "False"
+        d["file"] = d_file
+        d["sortbycolor"] = "False"
+        d["colorcolumn"] = 7
+        radius = (
+            self.rangescale[cn]
+            + self.rangescale[cn]
+            + self.options["Variants"]["rings"]["height"]
+        ) / 2
+        d["radius"] = {
+            "R0": radius,
+            "R1": radius,
+        }
+        d["hovertextformat"] = self.hovertextformat
+        d["trace"] = {
+            "hoverinfo": "text",
+            "mode": "markers",
+            "marker": {
+                "size": 5,
+                "symbol": d_file["dataframe"]["data"]["symbol"],
+                "color": "gray",
                 "opacity": 0.1,
-                "fillcolor": "red",
-                "line": {"color": "lightgray", "width": 5},
-            }
-            yield dico
+            },
+            "uid": "cnv_level_" + str(cn),
+        }
+        d["layout"] = {
+            "type": "path",
+            "layer": "above",
+            "opacity": 0.1,
+            "fillcolor": "red",
+            "line": {"color": "lightgray", "width": 5},
+        }
+        return d
 
     def merge_options(self, cytoband_data: dict) -> list:
         """
@@ -270,8 +347,12 @@ class Histogram_(Plotconfig):
 
         self.cytoband_data["layout"]["line"]["color"] = cyto["band_color"]
         self.cytoband_data["trace"]["marker"]["color"] = cyto["band_color"]
-
-        return list(self.histo_cnv_level())
+        whole_cn = []
+        for cn in list(set(self.data["CopyNumber"])):
+            res = self.histo_cnv_level(cn)
+            whole_cn.append(res)
+        pprint(whole_cn)
+        return whole_cn
 
         # def __call__(self):
         #    return pd.DataFrame.from_dict(self.data)
