@@ -2,10 +2,9 @@
 import os
 import sys
 import inspect
-from vcf2circos.plotcategories import plotconfig
-from vcf2circos.plotcategories import ideogram
 from vcf2circos.plotcategories.histogram import Histogram_
 from vcf2circos.plotcategories.ideogram import Ideogram
+from vcf2circos.plotcategories.scatter import Scatter_
 from vcf2circos.plotcategories.ring import Ring
 from vcf2circos.plotcategories.cytoband import Cytoband
 from vcf2circos.plotcategories.plotconfig import Plotconfig
@@ -250,6 +249,22 @@ def run_vcf2circos():
                     + options["Variants"]["rings"]["space"]
                 )
                 rangescale.append(val)
+            scatter = Scatter_(
+                filename=input_file,
+                options=options.copy(),
+                show=True,
+                file=None,
+                radius=None,
+                sortbycolor=None,
+                colorcolumn=6,
+                hovertextformat=None,
+                trace_car=None,
+                data=None,
+                layout=None,
+                config_ring=options["Variants"]["rings"],
+                rangescale=rangescale,
+            )
+
             ideogram = Ideogram(
                 filename=input_file,
                 options=options.copy(),
@@ -307,23 +322,25 @@ def run_vcf2circos():
                 config_ring=options["Variants"]["rings"],
                 rangescale=rangescale,
             )
-            print(histogram.__call__())
 
-            for items in inspect.getmembers(ideogram):
-                if items[0] == "data":
-                    print(items)
+            # for items in inspect.getmembers(ideogram):
+            #    if items[0] == "data":
+            #        print(items)
 
             js = {}
             js["General"] = ideogram.options["General"]
+            data_histo = histogram.merge_options(cytoband.data_cytoband())
 
             js["Category"] = {
                 "ideogram": ideogram.merge_options(),
                 "ring": ring.create_ring(),
-                "cytoband": cytoband.merge_options()[0],
-                # "histogram": histogram.merge_options(),
+                "cytoband": cytoband.merge_options(),
+                "histogram": data_histo,
+                "scatter": scatter.merge_options(data_histo),
             }
+            exit()
             # js["Category"]["histogram"].append(histogram.merge_options())
-            pprint(js)
+            # pprint(js)
             print("\n")
             # print(type(js["Category"]["cytoband"]))
             fig_instance = Figure(dash_dict=js)
