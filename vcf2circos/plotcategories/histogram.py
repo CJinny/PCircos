@@ -104,12 +104,7 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {
-                    "size": 0,
-                    "symbol": 0,
-                    "color": None,
-                    "opacity": 0,
-                },  # 8
+                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
             },
             "layout": {
                 "type": "path",
@@ -118,17 +113,42 @@ class Histogram_(Plotconfig):
                 "line": {"color": None, "width": 0},
             },
         }
+        self.genes = pd.read_csv(
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "genes." + self.options["Assembly"] + ".sorted.txt",
+            )
+        )
+        self.df_data = pd.DataFrame.from_dict(self.data).astype(
+            {
+                "Chromosomes": str,
+                "Genes": str,
+                "Exons": str,
+                "Variants": object,
+                "Variants_type": str,
+                "CopyNumber": int,
+                "Color": str,
+            }
+        )
 
     def cytoband_histogram(self):
         pass
 
-    def genes_histogram(self):
-        pass
+    def dict_to_str(self, info_field: list) -> Generator:
+        for info_dict in info_field:
+            yield ";".join(
+                [str(key) + "=" + str(value) for key, value in info_dict.items()]
+            )
 
-    def data_histogram_variants(self, cn) -> dict:
-        # for each sv event regarding copy number
-        # TODO get information in data as DATAFRAME
-        d_file = self.file.copy()
+    def adapt_data(self, cn):
+        d_file = {
+            "path": "",
+            "header": "infer",
+            "sep": "\t",
+            "dataframe": {"orient": "columns", "data": None},
+        }
         data = {
             "chr_name": [],
             "start": [],
@@ -143,18 +163,8 @@ class Histogram_(Plotconfig):
             "genes": [],
             "exons": [],
         }
-        df_ = pd.DataFrame.from_dict(self.data).astype(
-            {
-                "Chromosomes": str,
-                "Genes": str,
-                "Exons": str,
-                "Variants": object,
-                "Variants_type": str,
-                "CopyNumber": int,
-                "Color": str,
-            }
-        )
-        df_data = df_.loc[df_["CopyNumber"] == cn]
+
+        df_data = self.df_data.loc[self.df_data["CopyNumber"] == cn]
         start = []
         stop = []
         ref = []
@@ -203,93 +213,9 @@ class Histogram_(Plotconfig):
         d_file["dataframe"]["data"] = data
         return d_file
 
-    def dict_to_str(self, info_field: list) -> Generator:
-        for info_dict in info_field:
-            yield ";".join(
-                [str(key) + "=" + str(value) for key, value in info_dict.items()]
-            )
-
     def histo_cnv_level(self, cn):
-        d_file = {
-            "path": "",
-            "header": "infer",
-            "sep": "\t",
-            "dataframe": {"orient": "columns", "data": None},
-        }
-        data = {
-            "chr_name": [],
-            "start": [],
-            "end": [],
-            "val": [],
-            "ref": [],
-            "alt": [],
-            "type": [],
-            "color": [],
-            "hovertext": [],
-            "symbol": [],
-            "genes": [],
-            "exons": [],
-        }
-        df_ = pd.DataFrame.from_dict(self.data).astype(
-            {
-                "Chromosomes": str,
-                "Genes": str,
-                "Exons": str,
-                "Variants": object,
-                "Variants_type": str,
-                "CopyNumber": int,
-                "Color": str,
-            }
-        )
-        df_data = df_.loc[df_["CopyNumber"] == cn]
-        start = []
-        stop = []
-        ref = []
-        alt = []
-        for items in list(
-            self.extract_start_stop_ref_alt(
-                df_data["Record"].to_list(),
-                df_data["Variants"].to_list(),
-                df_data["Variants_type"].to_list(),
-            )
-        ):
-            # DEBUGG
-            # print(*items)
-            # for val in items:
-            #    if isinstance(val, list):
-            #        print(type(val[0]))
-            #    else:
-            #        print(type(val))
-            # exit()
-            start.append(items[0])
-            stop.append(items[1])
-            ref.append(items[2])
-            alt.append(str(items[3][0]))
-        data["chr_name"].extend(df_data["Chromosomes"].to_list())
-        data["start"].extend(start)
-        data["end"].extend(stop)
-        data["val"].extend(list(itertools.repeat(2, len(df_data.index))))
-        data["ref"].extend(ref)
-        data["alt"].extend(alt)
-        data["type"].extend(df_data["Variants_type"].to_list())
-        data["color"].extend(list(itertools.repeat("grey", len(df_data.index))))
-        # data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
-        data["hovertext"].extend(
-            [
-                "Genes ("
-                + str(len(record.split(",")))
-                + "): "
-                + ",".join(record.split(",")[:5])
-                for record in df_data["Genes"].to_list()
-            ]
-        )
-        data["symbol"].extend(list(itertools.repeat(0, len(df_data.index))))
-        data["genes"].extend(df_data["Genes"].to_list())
-        data["exons"].extend(list(itertools.repeat("", len(df_data.index))))
-        # data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
-        d_file["dataframe"]["data"] = data
-
         d = {}
+        d_file = self.adapt_data(cn)
         d["show"] = "True"
         d["customfillcolor"] = "False"
         d["file"] = d_file
@@ -351,11 +277,17 @@ class Histogram_(Plotconfig):
         for cn in list(set(self.data["CopyNumber"])):
             res = self.histo_cnv_level(cn)
             whole_cn.append(res)
-        pprint(whole_cn)
         return whole_cn
 
         # def __call__(self):
         #    return pd.DataFrame.from_dict(self.data)
+
+    def histo_genes(self):
+        dico = {}
+        # remove empty gene
+        gene_list = list(filter(lambda x: x != "", self.data["Genes"].split(",")))
+
+        pass
 
     def extract_start_stop_ref_alt(
         self, record: list, info_field: list, variant_type: list
