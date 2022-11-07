@@ -13,7 +13,7 @@ import pandas as pd
 from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
 from tqdm import tqdm
-from vcf2circos.utils import variants_color
+from vcf2circos.utils import variants_color, timeit
 from pprint import pprint
 
 
@@ -101,6 +101,7 @@ class Plotconfig(VcfReader):
 
         pass
 
+    @timeit
     def process_vcf(self) -> dict:
         """
         Process Just one time vcf variants in a dict which contains all required informations for all type of var used after,
@@ -285,10 +286,10 @@ class Plotconfig(VcfReader):
                     refgene_genes,
                 )
                 if record.INFO.get("SVTYPE") is None:
-                    print(record)
-                    print(
-                        record.CHROM, record.POS, (int(record.POS) + alternate),
-                    )
+                    # print(record)
+                    # print(
+                    #    record.CHROM, record.POS, (int(record.POS) + alternate),
+                    # )
                     if not gene_name:
                         gene_name = [""]
             return ",".join(gene_name)
