@@ -119,7 +119,9 @@ class Histogram_(Plotconfig):
                 "Assembly",
                 self.options["Assembly"],
                 "genes." + self.options["Assembly"] + ".sorted.txt",
-            )
+            ),
+            header=0,
+            sep="\t",
         )
         self.df_data = pd.DataFrame.from_dict(self.data).astype(
             {
@@ -274,20 +276,65 @@ class Histogram_(Plotconfig):
         self.cytoband_data["layout"]["line"]["color"] = cyto["band_color"]
         self.cytoband_data["trace"]["marker"]["color"] = cyto["band_color"]
         whole_cn = []
+        # Histo_cnv_level
         for cn in list(set(self.data["CopyNumber"])):
             res = self.histo_cnv_level(cn)
             whole_cn.append(res)
+        # Genes plots
+        whole_cn.append(self.histo_genes())
+
+        # cytoband tiles
+        whole_cn.append(self.cytoband_data)
         return whole_cn
 
         # def __call__(self):
         #    return pd.DataFrame.from_dict(self.data)
 
     def histo_genes(self):
+        data = {}
         dico = {}
         # remove empty gene
-        gene_list = list(filter(lambda x: x != "", self.data["Genes"].split(",")))
-
-        pass
+        gene_list = list(filter(lambda x: x != "", self.df_data["Genes"]))
+        print(*self.genes.columns)
+        print(self.genes.head())
+        # select genes in or batch of variations
+        df_filter = self.genes.loc[self.genes["gene"].isin(gene_list)]
+        print(df_filter.head())
+        print(*df_filter.columns)
+        for fields in df_filter.columns:
+            if fields != "transcript":
+                data[fields] = df_filter[fields].to_list()
+        pprint(data)
+        dico["file"] = {
+            "path": "",
+            "header": "infer",
+            "sep": "\t",
+            "dataframe": {"orient": "columns", "data": data},
+        }
+        dico["show"] = self.show
+        dico["colorcolumn"] = 4
+        dico["radius"] = {"R0": 0.98, "R1": 0.98}
+        dico[
+            "hovertextformat"
+        ] = ' "<b>{}:{}-{}<br>Gene: {}</b><br>".format(a[i,0], a[i,1], a[i,2], a[i,5])'
+        dico["trace"] = {
+            "uid": "genes",
+            "hoverinfo": "text",
+            "mode": "markers",
+            "marker": {
+                "size": 3,
+                "symbol": 0,
+                "color": df_filter["color"].to_list(),
+                "opacity": 1,
+            },
+        }
+        dico["layout"] = {
+            "type": "path",
+            "layer": "above",
+            "opacity": 1,
+            "line": {"color": df_filter["color"].to_list(), "width": 3},
+        }
+        return dico
 
     def extract_start_stop_ref_alt(
         self, record: list, info_field: list, variant_type: list
