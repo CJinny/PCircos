@@ -7,6 +7,8 @@ import os
 import gzip
 from tqdm import tqdm
 from natsort import natsort_keygen
+from functools import wraps
+import time
 
 # Globals
 variants_color = {
@@ -200,3 +202,14 @@ def formatted_refgene(refgene: str, assembly: str, ts: str) -> str:
     #    + oe
     # )
     return df
+
+def timeit(func):
+    @wraps(func)
+    def timeit_wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+        print(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
+        return result
+    return timeit_wrapper
