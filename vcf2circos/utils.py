@@ -12,7 +12,7 @@ import time
 
 # Globals
 variants_color = {
-    "INS": "rouge",
+    "INS": "red",
     "INV": "purple",
     "DEL": "orange",
     "DUP": "blue",
@@ -27,6 +27,24 @@ def json_to_dict(jsonpath: str) -> dict:
     """
     with open(jsonpath) as json_file:
         return json.load(json_file)
+
+
+def check_data_plot(dico):
+    var_numb = len(dico["chr_name"])
+    for d_fields in dico:
+        assert len(dico[d_fields]) == var_numb, (
+            "Missing values in " + d_fields + " fields"
+        )
+    if "end" in dico:
+        pass
+    else:
+        assert ["chr_name", "start", "val", "ref", "alt", "type", "color",] == list(
+            dico.keys()
+        )[:7], (
+            "ISSUES wrong list data order, leads to crash in mathematical operations \n\t..."
+            + ", ".join(list(dico.keys())[:7])
+            + " ,..."
+        )
 
 
 def systemcall(command: str) -> list:
@@ -203,6 +221,7 @@ def formatted_refgene(refgene: str, assembly: str, ts: str) -> str:
     # )
     return df
 
+
 def timeit(func):
     @wraps(func)
     def timeit_wrapper(*args, **kwargs):
@@ -210,6 +229,7 @@ def timeit(func):
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
         total_time = end_time - start_time
-        print(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
+        print(f"Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds")
         return result
+
     return timeit_wrapper
