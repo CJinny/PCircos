@@ -1,11 +1,12 @@
 from pprint import pprint
 from typing import Generator
 from vcf2circos.plotcategories.plotconfig import Plotconfig
+from vcf2circos.utils import timeit
+
 from os.path import join as osj
 import pandas as pd
-import os
-import itertools
-from collections import OrderedDict
+from itertools import chain, repeat
+from collections import OrderedDict, Counter
 
 
 class Histogram_(Plotconfig):
@@ -127,7 +128,7 @@ class Histogram_(Plotconfig):
             ),
             header=0,
             sep="\t",
-        )
+        ).drop_duplicates(subset="gene", keep="first")
         self.df_data = pd.DataFrame.from_dict(self.data).astype(
             {
                 "Chromosomes": str,
@@ -139,9 +140,12 @@ class Histogram_(Plotconfig):
                 "Color": str,
             }
         )
-
-    def cytoband_histogram(self):
-        pass
+        self.df_morbid = pd.read_csv(
+            osj(self.options["Static"], "morbid.txt"),
+            header=None,
+            sep="\t",
+            names=["genes"],
+        )
 
     def dict_to_str(self, info_field: list) -> Generator:
         for info_dict in info_field:
@@ -149,7 +153,7 @@ class Histogram_(Plotconfig):
                 [str(key) + "=" + str(value) for key, value in info_dict.items()]
             )
 
-    def adapt_data(self, cn):
+    def adapt_data(self, cn: int) -> dict:
         d_file = {
             "path": "",
             "header": "infer",
@@ -198,11 +202,11 @@ class Histogram_(Plotconfig):
         data["chr_name"].extend(df_data["Chromosomes"].to_list())
         data["start"].extend(start)
         data["end"].extend(stop)
-        data["val"].extend(list(itertools.repeat(2, len(df_data.index))))
+        data["val"].extend(list(repeat(2, len(df_data.index))))
         data["ref"].extend(ref)
         data["alt"].extend(alt)
         data["type"].extend(df_data["Variants_type"].to_list())
-        data["color"].extend(list(itertools.repeat("grey", len(df_data.index))))
+        data["color"].extend(list(repeat("grey", len(df_data.index))))
         # data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
         data["hovertext"].extend(
             [
@@ -213,14 +217,14 @@ class Histogram_(Plotconfig):
                 for record in df_data["Genes"].to_list()
             ]
         )
-        data["symbol"].extend(list(itertools.repeat(0, len(df_data.index))))
+        data["symbol"].extend(list(repeat(0, len(df_data.index))))
         data["genes"].extend(df_data["Genes"].to_list())
-        data["exons"].extend(list(itertools.repeat("", len(df_data.index))))
+        data["exons"].extend(list(repeat("", len(df_data.index))))
         # data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
         d_file["dataframe"]["data"] = data
         return d_file
 
-    def histo_cnv_level(self, cn):
+    def histo_cnv_level(self, cn: int) -> dict:
         d = {}
         d_file = self.adapt_data(cn)
         d["show"] = "True"
@@ -270,10 +274,8 @@ class Histogram_(Plotconfig):
         cyto["start"] = cytoband_data["start"]
         cyto["end"] = cytoband_data["end"]
         # Remember to have val column in data otherwise it leads to crash]
-        cyto["val"] = list(itertools.repeat(1, len(cytoband_data["chr_name"])))
-        cyto["band_color"] = list(
-            itertools.repeat("lightgray", len(cytoband_data["chr_name"]))
-        )
+        cyto["val"] = list(repeat(1, len(cytoband_data["chr_name"])))
+        cyto["band_color"] = list(repeat("lightgray", len(cytoband_data["chr_name"])))
         cyto["band"] = cytoband_data["band"]
         # Cytoband tiles 3  need fill data
         self.cytoband_data["file"]["dataframe"]["data"] = cyto
@@ -295,21 +297,50 @@ class Histogram_(Plotconfig):
         # def __call__(self):
         #    return pd.DataFrame.from_dict(self.data)
 
-    def histo_genes(self):
+    def process_gene_list(self, genes_list):
+        for record in genes_list:
+            if record:
+                yield record.split(",")
+
+    def morbid_genes(self, genes):
+        for g in genes:
+            if g in self.df_morbid["genes"].to_list():
+                yield "red"
+            else:
+                yield "lightgray"
+
+    @timeit
+    def histo_genes(self) -> dict:
         data = {}
         dico = {}
-        # remove empty gene
-        gene_list = list(filter(lambda x: x != "", self.df_data["Genes"]))
+        # remove empty gene, df_data attribute of class basic data from plot config Parents class
+        # gene_list = list(filter(lambda x: x != "", self.df_data["Genes"]))
+        gene_list = list(
+            set(
+                list(
+                    map(
+                        str,
+                        chain.from_iterable(
+                            list(self.process_gene_list(self.df_data["Genes"]))
+                        ),
+                    )
+                )
+            )
+        )
         print(*self.genes.columns)
         print(self.genes.head())
-        # select genes in or batch of variations
+        # select genes in or batch of variations (from refeseq assembly)
         df_filter = self.genes.loc[self.genes["gene"].isin(gene_list)]
         print(df_filter.head())
         print(*df_filter.columns)
+        print(*gene_list)
         for fields in df_filter.columns:
             if fields != "transcript":
-                data[fields] = df_filter[fields].to_list()
-        pprint(data)
+                if fields == "color":
+                    data[fields] = list(self.morbid_genes(df_filter["gene"]))
+                else:
+                    data[fields] = df_filter[fields].to_list()
+        # pprint(data, sort_dicts=False)
         dico["file"] = {
             "path": "",
             "header": "infer",
@@ -329,17 +360,24 @@ class Histogram_(Plotconfig):
             "marker": {
                 "size": 3,
                 "symbol": 0,
-                "color": df_filter["color"].to_list(),
+                "color": data["color"],
                 "opacity": 1,
             },
         }
         dico["layout"] = {
             "type": "path",
             "layer": "above",
-            "opacity": 1,
-            "line": {"color": df_filter["color"].to_list(), "width": 3},
+            "opacity": 0.2,
+            "line": {"color": data["color"], "width": 3},
         }
         return dico
+
+    def genes_omim_morbid(self):
+        """ "
+        If it's a morbid gene it will be colored in red in circos gene level
+        done in static file in genes.<assembly>
+        """
+        pass
 
     def extract_start_stop_ref_alt(
         self, record: list, info_field: list, variant_type: list
