@@ -104,7 +104,12 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
+                "marker": {
+                    "size": 0,
+                    "symbol": 0,
+                    "color": None,
+                    "opacity": 0,
+                },  # 8
             },
             "layout": {
                 "type": "path",
@@ -242,7 +247,7 @@ class Histogram_(Plotconfig):
                 "color": "gray",
                 "opacity": 0.1,
             },
-            "uid": "cnv_level_" + str(cn),
+            "uid": "cnv_scatter_level_" + str(cn),
         }
         d["layout"] = {
             "type": "path",
