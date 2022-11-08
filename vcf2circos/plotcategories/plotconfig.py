@@ -40,7 +40,10 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open("../demo_data/options.general.json", "r",)
+            open(
+                "../demo_data/options.general.json",
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -142,8 +145,13 @@ class Plotconfig(VcfReader):
         #    rep = ""
         #    excl = ["None", None]
         #    for
-        #
-        return data
+        # TESTTTTTTTTT
+        return (
+            pd.DataFrame.from_dict(data)
+            .loc[pd.DataFrame.from_dict(data)["Chromosomes"] == "chr14"]
+            .to_dict("list")
+        )
+        # return data
 
     def chr_adapt(self, record: object) -> str:
         try:
@@ -282,7 +290,11 @@ class Plotconfig(VcfReader):
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [record.CHROM, record.POS, (int(record.POS) + alternate),],
+                    [
+                        record.CHROM,
+                        record.POS,
+                        (int(record.POS) + alternate),
+                    ],
                     refgene_genes,
                 )
                 if record.INFO.get("SVTYPE") is None:
