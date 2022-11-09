@@ -19,41 +19,15 @@ class Ring(Plotconfig):
     }}
     """
 
-    def __init__(
-        self,
-        filename,
-        options,
-        show,
-        file,
-        radius,
-        sortbycolor,
-        colorcolumn,
-        hovertextformat,
-        trace_car,
-        data,
-        layout,
-        config_ring,
-        rangescale,
-    ):
-        super().__init__(
-            filename,
-            options,
-            show,
-            file,
-            radius,
-            sortbycolor,
-            colorcolumn,
-            hovertextformat,
-            trace_car,
-            data,
-            layout,
-        )
-        # In order to auto generate rings
-        self.rangescale = rangescale
-        self.config_ring = config_ring
+    def __init__(self, plotconfig):
+        self.plotconfig = plotconfig
         self.variants_position = self.config_ring["position"]
         self.variants_ring_space = self.config_ring["space"]
         self.variants_ring_height = self.config_ring["height"]
+
+    def __getattr__(self, item):
+        if hasattr(self.plotconfig, item):
+            return getattr(self.plotconfig, item)
 
     def create_ring(self):
         rings_list = []
@@ -61,10 +35,7 @@ class Ring(Plotconfig):
         for i, coeff in enumerate(self.rangescale):
             rings_list.append(
                 {
-                    "radius": {
-                        "R0": coeff,
-                        "R1": coeff + self.config_ring["height"],
-                    },
+                    "radius": {"R0": coeff, "R1": coeff + self.config_ring["height"],},
                     "layout": {
                         "opacity": 0.1,
                         "fillcolor": "lightgray",

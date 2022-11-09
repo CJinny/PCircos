@@ -28,33 +28,8 @@ class Ideogram(Plotconfig):
     }}
     """
 
-    def __init__(
-        self,
-        filename,
-        options,
-        show,
-        file,
-        radius,
-        sortbycolor,
-        colorcolumn,
-        hovertextformat,
-        trace_car,
-        data,
-        layout,
-    ):
-        super().__init__(
-            filename,
-            options,
-            show,
-            file,
-            radius,
-            sortbycolor,
-            colorcolumn,
-            hovertextformat,
-            trace_car,
-            data,
-            layout,
-        )
+    def __init__(self, plotconfig):
+        self.plotconfig = plotconfig
         assert os.path.exists(osj(self.options["Static"], "chr_size.txt"))
         self.chr_conf = pd.read_csv(
             osj(self.options["Static"], "chr_size.txt"), sep="\t", header=0
@@ -122,6 +97,10 @@ class Ideogram(Plotconfig):
                 "font": {"family": "Times New Roman", "size": 8, "color": "black",},
             },
         }
+
+    def __getattr__(self, item):
+        if hasattr(self.plotconfig, item):
+            return getattr(self.plotconfig, item)
 
     def data_ideogram(self):
         tmp = self.chr_conf.loc[

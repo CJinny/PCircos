@@ -7,38 +7,9 @@ from pprint import pprint
 
 
 class Scatter_(Plotconfig):
-    def __init__(
-        self,
-        filename,
-        options,
-        show,
-        file,
-        radius,
-        sortbycolor,
-        colorcolumn,
-        hovertextformat,
-        trace_car,
-        data,
-        layout,
-        config_ring,
-        rangescale,
-    ):
-        super().__init__(
-            filename,
-            options,
-            show,
-            file,
-            radius,
-            sortbycolor,
-            colorcolumn,
-            hovertextformat,
-            trace_car,
-            data,
-            layout,
-        )
+    def __init__(self, plotconfig):
+        self.plotconfig = plotconfig
         self.hovertextformat = ' "<b>{}:{}</b> | {} > {}<br>{}<br><br>{}".format(a[i,0], a[i,1], a[i,3], a[i,4], a[i,5], a[i,7])'
-        self.rangescale = rangescale
-        self.config_ring = config_ring
         self.variants_position = self.config_ring["position"]
         self.variants_ring_space = self.config_ring["space"]
         self.variants_ring_height = self.config_ring["height"]
@@ -51,6 +22,10 @@ class Scatter_(Plotconfig):
             + (max(self.rangescale) * self.variants_ring_space)
             + ((max(self.rangescale) + 2) * self.variants_ring_height),
         }
+
+    def __getattr__(self, item):
+        if hasattr(self.plotconfig, item):
+            return getattr(self.plotconfig, item)
 
     def adapt_data(self, histo_data: list) -> list:
         final = []
@@ -84,11 +59,7 @@ class Scatter_(Plotconfig):
                     if key not in od.keys():
                         od[key] = val
                 final.append(
-                    [
-                        od,
-                        dico["radius"],
-                        dico["trace"]["uid"],
-                    ]
+                    [od, dico["radius"], dico["trace"]["uid"],]
                 )
         return final
 

@@ -14,34 +14,8 @@ class Cytoband(Plotconfig):
     }}
     """
 
-    def __init__(
-        self,
-        filename,
-        options,
-        show,
-        file,
-        radius,
-        sortbycolor,
-        colorcolumn,
-        hovertextformat,
-        trace_car,
-        data,
-        layout,
-    ):
-        super().__init__(
-            filename,
-            options,
-            show,
-            file,
-            radius,
-            sortbycolor,
-            colorcolumn,
-            hovertextformat,
-            trace_car,
-            data,
-            layout,
-        )
-
+    def __init__(self, plotconfig):
+        self.plotconfig = plotconfig
         # Cytoband params
         # Need creation of dict in options attribute, regarding data input
         assert os.path.exists(
@@ -63,7 +37,6 @@ class Cytoband(Plotconfig):
             header=0,
             compression="infer",
         )
-        self.file = file
         self.colorcolumn = 3
         self.sortbycolor = "True"
         self.hovertextformat = ' "<b>{}</b>".format(a[i,0])'
@@ -79,6 +52,10 @@ class Cytoband(Plotconfig):
             "opacity": 1.0,
             "line": {"color": "black", "width": 0},
         }
+
+    def __getattr__(self, item):
+        if hasattr(self.plotconfig, item):
+            return getattr(self.plotconfig, item)
 
     def data_cytoband(self):
         tmp = self.cytoband_conf.loc[

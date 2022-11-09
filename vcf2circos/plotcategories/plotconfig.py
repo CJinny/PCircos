@@ -37,13 +37,12 @@ class Plotconfig(VcfReader):
         trace_car: dict,
         data: list,
         layout: dict,
+        rangescale: list,
+        config_ring: dict,
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open(
-                "../demo_data/options.general.json",
-                "r",
-            )
+            open("../demo_data/options.general.json", "r",)
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -58,6 +57,8 @@ class Plotconfig(VcfReader):
         self.trace_car = trace_car
         self.data = self.process_vcf()
         self.layout = layout
+        self.rangescale = rangescale
+        self.config_ring = config_ring
         self.refgene_genes = osj(
             self.options["Static"],
             "Assembly",
@@ -85,23 +86,6 @@ class Plotconfig(VcfReader):
         pass
 
     def vcf_options_default(self):
-        pass
-
-    def get_json(self) -> dict:
-        """
-        last func to be called, passed to Figure class to generate circos plot (main)
-        """
-
-        variants_position = (
-            self.options.get("Variants", {}).get("rings", {}).get("position", 0.5)
-        )
-        variants_ring_height = (
-            self.options.get("Variants", {}).get("rings", {}).get("height", 0.04)
-        )
-        variants_ring_space = (
-            self.options.get("Variants", {}).get("rings", {}).get("space", 0.01)
-        )
-
         pass
 
     @timeit
@@ -146,12 +130,12 @@ class Plotconfig(VcfReader):
         #    excl = ["None", None]
         #    for
         # TESTTTTTTTTT
-        return (
-            pd.DataFrame.from_dict(data)
-            .loc[pd.DataFrame.from_dict(data)["Chromosomes"] == "chr14"]
-            .to_dict("list")
-        )
-        # return data
+        # return (
+        #    pd.DataFrame.from_dict(data)
+        #    .loc[pd.DataFrame.from_dict(data)["Chromosomes"] == "chr14"]
+        #    .to_dict("list")
+        # )
+        return data
 
     def chr_adapt(self, record: object) -> str:
         try:
@@ -290,11 +274,7 @@ class Plotconfig(VcfReader):
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [
-                        record.CHROM,
-                        record.POS,
-                        (int(record.POS) + alternate),
-                    ],
+                    [record.CHROM, record.POS, (int(record.POS) + alternate),],
                     refgene_genes,
                 )
                 if record.INFO.get("SVTYPE") is None:

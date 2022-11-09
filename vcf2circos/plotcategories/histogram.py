@@ -14,40 +14,11 @@ class Histogram_(Plotconfig):
     It need to create one histogram for each SV event FOR EACH SV height (from 0 copy number to 5), which will create the grey band between color dor
     """
 
-    def __init__(
-        self,
-        filename,
-        options,
-        show,
-        file,
-        radius,
-        sortbycolor,
-        colorcolumn,
-        hovertextformat,
-        trace_car,
-        data,
-        layout,
-        config_ring,
-        rangescale,
-    ):
-        super().__init__(
-            filename,
-            options,
-            show,
-            file,
-            radius,
-            sortbycolor,
-            colorcolumn,
-            hovertextformat,
-            trace_car,
-            data,
-            layout,
-        )
-        self.config_ring = config_ring
+    def __init__(self, plotconfig):
+        self.plotconfig = plotconfig
         self.variants_position = self.config_ring["position"]
         self.variants_ring_space = self.config_ring["space"]
         self.variants_ring_height = self.config_ring["height"]
-        self.rangescale = rangescale
         # corresponding to SNV InDel height 7th ring (after 0 to 5 copy number height)
         self.radius = {
             "R0": self.variants_position
@@ -58,13 +29,6 @@ class Histogram_(Plotconfig):
             + ((max(self.rangescale) + 2) * self.variants_ring_height),
         }
         print("#Range", self.rangescale)
-        # self.radius = {"R0": 0.90, "R1": 0.92}
-        self.file = {
-            "path": "",
-            "header": "infer",
-            "sep": "\t",
-            "dataframe": {"orient": "columns", "data": data},
-        }
         self.hovertextformat = ' "<b>{}:{}-{}</b><br>{}<br><br>{}".format(a[i,0], a[i,1], a[i,2], a[i,6], a[i,8])'
         self.trace = {
             "hoverinfo": "text",
@@ -105,12 +69,7 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {
-                    "size": 0,
-                    "symbol": 0,
-                    "color": None,
-                    "opacity": 0,
-                },  # 8
+                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
             },
             "layout": {
                 "type": "path",
@@ -146,6 +105,10 @@ class Histogram_(Plotconfig):
             sep="\t",
             names=["genes"],
         )
+
+    def __getattr__(self, item):
+        if hasattr(self.plotconfig, item):
+            return getattr(self.plotconfig, item)
 
     def dict_to_str(self, info_field: list) -> Generator:
         for info_dict in info_field:
@@ -357,12 +320,7 @@ class Histogram_(Plotconfig):
             "uid": "genes",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {
-                "size": 3,
-                "symbol": 0,
-                "color": data["color"],
-                "opacity": 1,
-            },
+            "marker": {"size": 3, "symbol": 0, "color": data["color"], "opacity": 1,},
         }
         dico["layout"] = {
             "type": "path",
