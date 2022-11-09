@@ -250,10 +250,12 @@ def run_vcf2circos():
             )
 
             # Create plot object
+            histogram = Histogram_(pc)
+            # Ugly as hell, if we wanna take only snv indel overlapping SV
+            pc.data = histogram.data
             ideogram = Ideogram(pc)
             ring = Ring(pc)
             cytoband = Cytoband(pc)
-            histogram = Histogram_(pc)
             scatter = Scatter_(pc)
 
             js = {}
