@@ -69,7 +69,12 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
+                "marker": {
+                    "size": 0,
+                    "symbol": 0,
+                    "color": None,
+                    "opacity": 0,
+                },  # 8
             },
             "layout": {
                 "type": "path",
@@ -320,7 +325,12 @@ class Histogram_(Plotconfig):
             "uid": "genes",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {"size": 3, "symbol": 0, "color": data["color"], "opacity": 1,},
+            "marker": {
+                "size": 3,
+                "symbol": 0,
+                "color": data["color"],
+                "opacity": 1,
+            },
         }
         dico["layout"] = {
             "type": "path",
@@ -342,7 +352,7 @@ class Histogram_(Plotconfig):
     ) -> Generator:
         # infer type of var could be done before
         for i, info_dict in enumerate(info_field):
-            if variant_type[i] != "OTHER":
+            if variant_type[i] not in ["OTHER", "SNV", "INDEL"]:
                 if "SV_start" in record[i].INFO and "SV_end" in record[i].INFO:
                     yield (int(info_dict.get("SV_start")), int(info_dict.get("SV_end")))
                 elif "END" in record[i].INFO:

@@ -42,7 +42,10 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open("../demo_data/options.general.json", "r",)
+            open(
+                "../demo_data/options.general.json",
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -178,8 +181,17 @@ class Plotconfig(VcfReader):
                     return (svtype, copynumber)
                 else:
                     return (svtype, self.get_copynumber_values(svtype, record))
+        # SNV or INDEL identify y pyVCF
+        elif record.var_type == "snp" or record.var_type == "indel":
+            return (self.cast_snv_indels(record), 6)
         else:
             return ("OTHER", 6)
+
+    def cast_snv_indels(self, record):
+        if record.var_type == "snp":
+            return "SNV"
+        elif record.var_type == "indel":
+            return "INDEL"
 
     def get_copynumber_values(self, svtype: str, record: object) -> int:
         """
@@ -274,7 +286,11 @@ class Plotconfig(VcfReader):
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [record.CHROM, record.POS, (int(record.POS) + alternate),],
+                    [
+                        record.CHROM,
+                        record.POS,
+                        (int(record.POS) + alternate),
+                    ],
                     refgene_genes,
                 )
                 if record.INFO.get("SVTYPE") is None:
