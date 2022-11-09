@@ -121,6 +121,53 @@ class Histogram_(Plotconfig):
                 [str(key) + "=" + str(value) for key, value in info_dict.items()]
             )
 
+    def only_snv_indels_in_sv(self, data):
+        df_data = pd.DataFrame.from_dict(data).astype(
+            {
+                "chr_name": str,
+                "start": int,
+                "end": int,
+                "val": int,
+                "ref": str,
+                "alt": str,
+                "type": str,
+                "color": str,
+                "hovertext": str,
+                "symbol": int,
+                "genes": str,
+                "exons": str,
+            }
+        )
+        snv_indels_df = df_data[df_data["type"].isin(["SNV", "INDEL", "OTHER"])]
+        sv_df = df_data[~df_data["type"].isin(["SNV", "INDEL", "OTHER"])]
+        pd.set_option("display.max_columns", None)
+        pd.set_option("display.width", None)
+        # pd.set_option("display.max_colwidth", -1)
+        # SNV / INDEL
+        snv_indel_not_overlapp = []
+        snv_indel_overlapp = []
+        for i, si in snv_indels_df.iterrows():
+            # WHOLE
+            for j, v in sv_df.iterrows():
+                if (
+                    si["chr_name"] == v["chr_name"]
+                    and si["start"] > v["start"]
+                    and si["start"] < v["end"]
+                ):
+                    snv_indel_overlapp.append(
+                        [si["chr_name"], si["start"], si["ref"], si["alt"]]
+                    )
+                # else:
+                #    if (
+                #        not [si["chr_name"], si["start"], si["end"]]
+                #        in snv_indel_not_overlapp
+                #    ):
+                #        snv_indel_not_overlapp.append(
+                #            [si["chr_name"], si["start"], si["end"]]
+                #        )
+        # print(snv_indel_not_overlapp)
+        return snv_indel_overlapp
+
     def adapt_data(self, cn: int) -> dict:
         d_file = {
             "path": "",
@@ -167,6 +214,7 @@ class Histogram_(Plotconfig):
             stop.append(items[1])
             ref.append(items[2])
             alt.append(str(items[3][0]))
+
         data["chr_name"].extend(df_data["Chromosomes"].to_list())
         data["start"].extend(start)
         data["end"].extend(stop)
@@ -190,6 +238,7 @@ class Histogram_(Plotconfig):
         data["genes"].extend(df_data["Genes"].to_list())
         data["exons"].extend(list(repeat("", len(df_data.index))))
         # data["info"].extend(list(self.dict_to_str(df_data["Variants"].to_list())))
+
         d_file["dataframe"]["data"] = data
         return d_file
 
@@ -273,12 +322,86 @@ class Histogram_(Plotconfig):
         for cn in list(set(self.data["CopyNumber"])):
             res = self.histo_cnv_level(cn)
             whole_cn.append(res)
+
+        whole_var = {
+            "chr_name": [],
+            "start": [],
+            "end": [],
+            "val": [],
+            "ref": [],
+            "alt": [],
+            "type": [],
+            "color": [],
+            "hovertext": [],
+            "symbol": [],
+            "genes": [],
+            "exons": [],
+        }
+        for dic in whole_cn:
+            for key, val in dic["file"]["dataframe"]["data"].items():
+                whole_var[key].extend(val)
+
+        snv_indel_overlapp = self.only_snv_indels_in_sv(whole_var)
+        print(snv_indel_overlapp)
+        for dico in whole_cn:
+            print(dico["trace"]["uid"])
+            if dico["trace"]["uid"] == "cnv_scatter_level_6":
+                df_ = pd.DataFrame.from_dict(dico["file"]["dataframe"]["data"])
+                print(df_)
+                for wr in snv_indel_overlapp:
+                    df_ = df_.loc[
+                        (df_["chr_name"] == wr[0])
+                        & (df_["start"] == wr[1])
+                        & (df_["ref"] == wr[2])
+                        & (df_["alt"] == wr[3])
+                    ]
+                    dico["file"]["dataframe"]["data"] = df_.to_dict("list")
+        print(dico["file"]["dataframe"]["data"])
+        # for val in self.data["Record"]:
+        #    print(val)
+        #    print(val.var_type)
+        #    print("\n")
+        # exit()
+        self.remove_snv_(snv_indel_overlapp)
+
+        # dico["file"]["dataframe"]["data"]
         # Genes plots
         whole_cn.append(self.histo_genes())
 
         # cytoband tiles
         whole_cn.append(self.cytoband_data)
+
         return whole_cn
+
+    def remove_snv_(self, list_to_remove):
+        index_keep = []
+        index_to_rm = []
+        for vars in list_to_remove:
+            print(vars)
+            for i, record in enumerate(self.data["Record"]):
+                if (
+                    record.CHROM == vars[0]
+                    and record.POS == vars[1]
+                    and record.REF == vars[2]
+                    and str(record.ALT[0]) == vars[3]
+                ):
+                    index_keep.append(i)
+        for j, rd in enumerate(self.data["Record"]):
+            # print(rd.var_type)
+            # print(rd)
+            # print("\n")
+            if rd.var_type == "snp" or rd.var_type == "indel":
+                # print(rd)
+                # print(j)
+                if j not in index_keep:
+                    # print("index to remove: " + str(j))
+                    # print(record)
+                    index_to_rm.append(j)
+
+        self.df_data.drop(index=index_to_rm, inplace=True)
+        self.data = self.df_data.to_dict("list")
+        # pprint(self.data, sort_dicts=False)
+        # print(len(self.data["Chromosomes"]))
 
         # def __call__(self):
         #    return pd.DataFrame.from_dict(self.data)
