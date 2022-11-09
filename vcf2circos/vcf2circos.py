@@ -219,24 +219,6 @@ def run_vcf2circos():
         # Input
 
         if input_format in ["vcf", "gz"]:
-            # plotconfig = Plotconfig(
-            #    filename=input_file,
-            #    options=options.copy(),
-            #    show=True,
-            #    file=None,
-            #    radius=None,
-            #    sortbycolor=None,
-            #    colorcolumn=6,
-            #    hovertextformat=None,
-            #    trace_car=None,
-            #    data=None,
-            #    layout=None,
-            # )
-            # rangescale = np.linspace(
-            #    options["Variants"]["rings"]["min"],
-            #    options["Variants"]["rings"]["max"] + 1,
-            #    num=options["Variants"]["rings"]["nrings"],
-            # )
             rangescale = []
             val = (
                 options["Variants"]["rings"]["position"]
@@ -249,7 +231,9 @@ def run_vcf2circos():
                     + options["Variants"]["rings"]["space"]
                 )
                 rangescale.append(val)
-            scatter = Scatter_(
+
+            # Read vcf and process raw data to feed child class
+            pc = Plotconfig(
                 filename=input_file,
                 options=options.copy(),
                 show=True,
@@ -261,71 +245,16 @@ def run_vcf2circos():
                 trace_car=None,
                 data=None,
                 layout=None,
-                config_ring=options["Variants"]["rings"],
                 rangescale=rangescale,
+                config_ring=options["Variants"]["rings"],
             )
 
-            ideogram = Ideogram(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-            )
-            ring = Ring(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-                config_ring=options["Variants"]["rings"],
-                rangescale=rangescale
-                # config_ring=options["Variants"]["rings"],
-            )
-            cytoband = Cytoband(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-            )
-            histogram = Histogram_(
-                filename=input_file,
-                options=options.copy(),
-                show=True,
-                file=None,
-                radius=None,
-                sortbycolor=None,
-                colorcolumn=6,
-                hovertextformat=None,
-                trace_car=None,
-                data=None,
-                layout=None,
-                config_ring=options["Variants"]["rings"],
-                rangescale=rangescale,
-            )
-
-            # for items in inspect.getmembers(ideogram):
-            #    if items[0] == "data":
-            #        print(items)
+            # Create plot object
+            ideogram = Ideogram(pc)
+            ring = Ring(pc)
+            cytoband = Cytoband(pc)
+            histogram = Histogram_(pc)
+            scatter = Scatter_(pc)
 
             js = {}
             js["General"] = ideogram.options["General"]
@@ -338,7 +267,6 @@ def run_vcf2circos():
                 "histogram": data_histo,
                 "scatter": scatter.merge_options(data_histo),
             }
-            exit()
             # js["Category"]["histogram"].append(histogram.merge_options())
             # pprint(js)
             print("\n")
@@ -350,7 +278,7 @@ def run_vcf2circos():
                 if not os.path.exists(os.path.dirname(export_file)):
                     os.mkdir(os.path.dirname(export_file))
                 f = open(export_file, "w")
-                f.write(json.dumps(copy.deepcopy(ideo.get_json()), indent=4))
+                f.write(json.dumps(copy.deepcopy(js)), indent=4))
                 f.close()
 
         elif input_format in ["json"]:
