@@ -278,7 +278,7 @@ def run_vcf2circos():
                 if not os.path.exists(os.path.dirname(export_file)):
                     os.mkdir(os.path.dirname(export_file))
                 f = open(export_file, "w")
-                f.write(json.dumps(copy.deepcopy(js)), indent=4))
+                f.write(json.dumps(copy.deepcopy(js)), indent=4)
                 f.close()
 
         elif input_format in ["json"]:
