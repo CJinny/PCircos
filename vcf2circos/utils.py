@@ -35,7 +35,14 @@ def check_data_plot(dico):
     var_numb = len(dico["chr_name"])
     for d_fields in dico:
         assert len(dico[d_fields]) == var_numb, (
-            "Missing values in " + d_fields + " fields"
+            "Missing values in "
+            + d_fields
+            + " fields\n\t...chrom: "
+            + str(var_numb)
+            + " "
+            + d_fields
+            + ": "
+            + str(len(dico[d_fields]))
         )
     if "end" in dico:
         pass
