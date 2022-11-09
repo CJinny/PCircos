@@ -176,15 +176,16 @@ class Histogram_(Plotconfig):
         data["type"].extend(df_data["Variants_type"].to_list())
         data["color"].extend(list(repeat("grey", len(df_data.index))))
         # data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
-        data["hovertext"].extend(
-            [
-                "Genes ("
-                + str(len(record.split(",")))
-                + "): "
-                + ",".join(record.split(",")[:5])
-                for record in df_data["Genes"].to_list()
-            ]
-        )
+        data["hovertext"].extend(list(self.generate_hovertext_var(df_data["Variants"])))
+        # data["hovertext"].extend(
+        #    [
+        #        "Genes ("
+        #        + str(len(record.split(",")))
+        #        + "): "
+        #        + ",".join(record.split(",")[:5])
+        #        for record in df_data["Genes"].to_list()
+        #    ]
+        # )
         data["symbol"].extend(list(repeat(0, len(df_data.index))))
         data["genes"].extend(df_data["Genes"].to_list())
         data["exons"].extend(list(repeat("", len(df_data.index))))
@@ -230,13 +231,30 @@ class Histogram_(Plotconfig):
         }
         return d
 
+    def generate_hovertext_var(self, variants_list) -> Generator:
+        # print(self.data["Variants"])
+        # print(len(self.data["Variants"]))
+        # print(len(self.data["Chromosomes"]))
+        # exit()
+        # dict containing INFO field for each var
+        for var in variants_list:
+            yield "<br>".join(
+                [
+                    ": ".join(
+                        [
+                            str(value) if not isinstance(value, list) else str(value[0])
+                            for value in pairs
+                        ]
+                    )
+                    for pairs in list(zip(var.keys(), var.values()))
+                ]
+            )
+
     def merge_options(self, cytoband_data: dict) -> list:
         """
         func handle math and geometry need to take data in specific order
         chr start stop val OTHERWIS TROUBLE
         """
-        histo_data = []
-
         cyto = {}
         cyto["chr_name"] = cytoband_data["chr_name"]
         cyto["start"] = cytoband_data["start"]
@@ -265,12 +283,12 @@ class Histogram_(Plotconfig):
         # def __call__(self):
         #    return pd.DataFrame.from_dict(self.data)
 
-    def process_gene_list(self, genes_list):
+    def process_gene_list(self, genes_list: list) -> Generator:
         for record in genes_list:
             if record:
                 yield record.split(",")
 
-    def morbid_genes(self, genes):
+    def morbid_genes(self, genes: list) -> Generator:
         for g in genes:
             if g in self.df_morbid["genes"].to_list():
                 yield "red"
