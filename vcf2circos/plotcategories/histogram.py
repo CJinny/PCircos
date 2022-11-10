@@ -83,33 +83,6 @@ class Histogram_(Plotconfig):
                 "line": {"color": None, "width": 0},
             },
         }
-        self.genes = pd.read_csv(
-            osj(
-                self.options["Static"],
-                "Assembly",
-                self.options["Assembly"],
-                "genes." + self.options["Assembly"] + ".sorted.txt",
-            ),
-            header=0,
-            sep="\t",
-        ).drop_duplicates(subset="gene", keep="first")
-        self.df_data = pd.DataFrame.from_dict(self.data).astype(
-            {
-                "Chromosomes": str,
-                "Genes": str,
-                "Exons": str,
-                "Variants": object,
-                "Variants_type": str,
-                "CopyNumber": int,
-                "Color": str,
-            }
-        )
-        self.df_morbid = pd.read_csv(
-            osj(self.options["Static"], "morbid.txt"),
-            header=None,
-            sep="\t",
-            names=["genes"],
-        )
 
     def __getattr__(self, item):
         if hasattr(self.plotconfig, item):
@@ -436,10 +409,10 @@ class Histogram_(Plotconfig):
                 )
             )
         )
-        print(*self.genes.columns)
-        print(self.genes.head())
+        print(*self.df_genes.columns)
+        print(self.df_genes.head())
         # select genes in or batch of variations (from refeseq assembly)
-        df_filter = self.genes.loc[self.genes["gene"].isin(gene_list)]
+        df_filter = self.df_genes.loc[self.df_genes["gene"].isin(gene_list)]
         print(df_filter.head())
         print(*df_filter.columns)
         print(*gene_list)

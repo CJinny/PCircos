@@ -62,17 +62,65 @@ class Plotconfig(VcfReader):
         self.layout = layout
         self.rangescale = rangescale
         self.config_ring = config_ring
-        self.refgene_genes = osj(
-            self.options["Static"],
-            "Assembly",
-            self.options["Assembly"],
-            "genes." + self.options["Assembly"] + "sorted.txt",
+        # self.refgene_genes = osj(
+        #    self.options["Static"],
+        #    "Assembly",
+        #    self.options["Assembly"],
+        #    "genes." + self.options["Assembly"] + "sorted.txt",
+        # )
+        # self.refgene_exons = osj(
+        #    self.options["Static"],
+        #    "Assembly",
+        #    self.options["Assembly"],
+        #    "exons." + self.options["Assembly"] + ".txt.gz",
+        # )
+        # In case of non coding genes (even in coding genes but same CDS) multiple lines, keep only the first to have non redundant file
+        self.df_genes = pd.read_csv(
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "genes." + self.options["Assembly"] + ".sorted.txt",
+            ),
+            header=0,
+            sep="\t",
+        ).drop_duplicates(subset="gene", keep="first")
+        self.df_transcripts = pd.read_csv(
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "transcripts." + self.options["Assembly"] + ".sorted.txt",
+            ),
+            header=0,
+            sep="\t",
         )
-        self.refgene_exons = osj(
-            self.options["Static"],
-            "Assembly",
-            self.options["Assembly"],
-            "exons." + self.options["Assembly"] + ".txt.gz",
+        self.df_exons = pd.read_csv(
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "exons." + self.options["Assembly"] + ".sorted.txt",
+            ),
+            header=0,
+            sep="\t",
+        )
+        self.df_data = pd.DataFrame.from_dict(self.data).astype(
+            {
+                "Chromosomes": str,
+                "Genes": str,
+                "Exons": str,
+                "Variants": object,
+                "Variants_type": str,
+                "CopyNumber": int,
+                "Color": str,
+            }
+        )
+        self.df_morbid = pd.read_csv(
+            osj(self.options["Static"], "morbid.txt"),
+            header=None,
+            sep="\t",
+            names=["genes"],
         )
 
     @staticmethod
