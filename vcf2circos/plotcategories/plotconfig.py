@@ -8,6 +8,7 @@ from functools import lru_cache
 import re
 import json
 import os
+from typing import Generator
 import pandas as pd
 
 from vcf2circos.vcfreader import VcfReader
@@ -157,11 +158,11 @@ class Plotconfig(VcfReader):
             "Color": [],
         }
         # VCF parsed file from PyVCF3
+        self.breakend_record = []
         for record in self.vcf_reader:
             # particular process for breakend
             if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
-                pass
-                # self.compute_breakend()
+                self.breakend_record.append(record)
             else:
                 # print(record.INFO["SV"])
                 data["Chromosomes"].append(self.chr_adapt(record))
@@ -194,10 +195,6 @@ class Plotconfig(VcfReader):
             return "chr" + record.CHROM
         except AttributeError:
             return record.CHROM
-
-    def compute_breakend(self):
-        # TODO
-        pass
 
     def get_copynumber_type(self, record: object) -> tuple:
         """
@@ -349,3 +346,18 @@ class Plotconfig(VcfReader):
                     if not gene_name:
                         gene_name = [""]
             return ",".join(gene_name)
+
+    def generate_hovertext_var(self, variants_list) -> Generator:
+        # dict containing INFO field for each var
+        for var in variants_list:
+            yield "<br>".join(
+                [
+                    ": ".join(
+                        [
+                            str(value) if not isinstance(value, list) else str(value[0])
+                            for value in pairs
+                        ]
+                    )
+                    for pairs in list(zip(var.keys(), var.values()))
+                ]
+            )
