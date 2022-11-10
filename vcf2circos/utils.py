@@ -17,6 +17,7 @@ variants_color = {
     "DEL": "orange",
     "DUP": "blue",
     "CNV": "brown",
+    "BND": "blue",
     "SNV": "gray",
     "INDEL": "gray",
     "OTHER": "gray",
