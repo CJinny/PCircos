@@ -250,10 +250,7 @@ def run_vcf2circos():
                 config_ring=options["Variants"]["rings"],
             )
             # Ugly as hell, if we wanna take only snv indel overlapping SV
-            
 
-            link = Link(pc)
-            exit()
             # Create plot object
             histogram = Histogram_(pc)
             pc.data = histogram.data
@@ -261,6 +258,7 @@ def run_vcf2circos():
             ring = Ring(pc)
             cytoband = Cytoband(pc)
             scatter = Scatter_(pc)
+            link = Link(pc)
 
             js = {}
             js["General"] = ideogram.options["General"]
@@ -272,9 +270,11 @@ def run_vcf2circos():
                 "cytoband": cytoband.merge_options(),
                 "histogram": data_histo,
                 "scatter": scatter.merge_options(data_histo),
+                "link": link.merge_options(),
             }
             # js["Category"]["histogram"].append(histogram.merge_options())
-            # pprint(js)
+            # pprint(ideogram.merge_options())
+            # exit()
             print("\n")
             # print(type(js["Category"]["cytoband"]))
             fig_instance = Figure(dash_dict=js)
