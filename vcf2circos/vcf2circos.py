@@ -8,6 +8,7 @@ from vcf2circos.plotcategories.scatter import Scatter_
 from vcf2circos.plotcategories.ring import Ring
 from vcf2circos.plotcategories.cytoband import Cytoband
 from vcf2circos.plotcategories.plotconfig import Plotconfig
+from vcf2circos.plotcategories.link import Link
 from pprint import pprint
 
 
@@ -248,10 +249,13 @@ def run_vcf2circos():
                 rangescale=rangescale,
                 config_ring=options["Variants"]["rings"],
             )
+            # Ugly as hell, if we wanna take only snv indel overlapping SV
+            
 
+            link = Link(pc)
+            exit()
             # Create plot object
             histogram = Histogram_(pc)
-            # Ugly as hell, if we wanna take only snv indel overlapping SV
             pc.data = histogram.data
             ideogram = Ideogram(pc)
             ring = Ring(pc)
