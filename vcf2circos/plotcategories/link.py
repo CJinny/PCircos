@@ -1,7 +1,8 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
-from vcf2circos.utils import generate_hovertext_var
+from vcf2circos.utils import generate_hovertext_var, variants_color
 import re
 from pprint import pprint
+from itertools import repeat
 
 
 class Link(Plotconfig):
@@ -44,6 +45,7 @@ class Link(Plotconfig):
         # pos_tmp = string.split(":")[1]
 
     def merge_options(self) -> list:
+        plot = {}
         data = {
             "chr1_name": [],
             "chr1_start": [],
@@ -73,7 +75,40 @@ class Link(Plotconfig):
                     data["hovertext"].extend(
                         list(generate_hovertext_var([values["record_info"]]))
                     )
+                    data["color"].append(variants_color["BND"])
+                    data["symbol"].append(0)
+        pprint(data, sort_dicts=False)
 
-        print(data)
-        exit()
+        plot["show"] = ("True",)
+        plot["file"] = {
+            "path": "",
+            "header": "infer",
+            "sep": "\t",
+            "dataframe": {"orient": "columns", "data": data},
+        }
+        plot["radius"] = {"R0": 0, "R1": 0.5}
+        plot["sortbycolor"] = ("False",)
+        plot["colorcolumn"] = 6
+        plot["hovertextformat"] = [
+            ' "<b>{}:{}-{}<br>{}:{}-{}</b><br><br>{}".format(a[i,0], a[i,1], a[i,2], a[i,3], a[i,4], a[i,5], a[i,7])',
+            ' "<b>{}:{}-{}<br>{}:{}-{}</b><br><br>{}".format(a[i,3], a[i,4], a[i,5], a[i,0], a[i,1], a[i,2], a[i,7])',
+        ]
+        plot["trace"] = {
+            "uid": "transloc",
+            "hoverinfo": "text",
+            "marker": {
+                "size": 0,
+                "symbol": data["symbol"],
+                "opacity": 0,
+                "color": data["color"],
+            },
+        }
+        plot["layout"] = {
+            "type": "path",
+            "layer": "above",
+            "opacity": 0.8,
+            "line": {"color": "gray", "width": 5},
+        }
+
+        return plot
 
