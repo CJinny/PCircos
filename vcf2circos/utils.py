@@ -6,7 +6,9 @@ from os.path import join as osj
 import os
 import gzip
 from tqdm import tqdm
-from natsort import natsort_keygen
+
+# from natsort import natsort_keygen
+from typing import Generator
 from functools import wraps
 import time
 
@@ -57,6 +59,26 @@ def check_data_plot(dico):
         )
 
 
+def generate_hovertext_var(variants_list) -> Generator:
+    # print(self.data["Variants"])
+    # print(len(self.data["Variants"]))
+    # print(len(self.data["Chromosomes"]))
+    # exit()
+    # dict containing INFO field for each var
+    for var in variants_list:
+        yield "<br>".join(
+            [
+                ": ".join(
+                    [
+                        str(value) if not isinstance(value, list) else str(value[0])
+                        for value in pairs
+                    ]
+                )
+                for pairs in list(zip(var.keys(), var.values()))
+            ]
+        )
+
+
 def systemcall(command: str) -> list:
     """
     Call bash command
@@ -90,6 +112,8 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
     https://genome.ucsc.edu/cgi-bin/hgTrackUi?g=refSeqComposite&db=hg38
     ex: python -c 'from foo import hello; print hello()'
      zcat transcripts.hg38.txt.gz.tmp | grep chr_name > transcripts.hg38.sorted.txt && zcat transcripts.hg38.txt.gz.tmp | grep -v "chr_name" | sort -k1,1V -k2,2n >> transcripts.hg38.sorted.txt
+     same for both 3 files except exons sort after chr and pos by exons
+     zcat exons.hg38.txt.gz.tmp | grep chr_name > exons.hg38.sorted.txt && zcat exons.hg38.txt.gz.tmp | grep -v "chr_name" | sort -k1,1V -k2,2n >> exons.hg38.sorted.txt
     """
     if ts is not None:
         transcripts = ts.split(",")
@@ -129,16 +153,7 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
             with gzip.open(output_transcripts, "wb+") as out_t:
                 out_g.write(
                     bytes(
-                        "\t".join(
-                            [
-                                "chr_name",
-                                "start",
-                                "end",
-                                "val",
-                                "color",
-                                "gene",
-                            ]
-                        )
+                        "\t".join(["chr_name", "start", "end", "val", "color", "gene",])
                         + "\n",
                         "UTF-8",
                     )
@@ -192,7 +207,7 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
                                     str(row["cdsStart"]),
                                     str(row["cdsEnd"]),
                                     "1",
-                                    omim_morbid(row["name2"]),
+                                    str(row["name2"]),
                                     str(row["name2"]),
                                 ]
                             )
