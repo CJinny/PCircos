@@ -43,10 +43,7 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open(
-                "../demo_data/options.general.json",
-                "r",
-            )
+            open("../demo_data/options.general.json", "r",)
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -59,7 +56,6 @@ class Plotconfig(VcfReader):
         self.colorcolumn = colorcolumn
         self.hovertextformat = hovertextformat
         self.trace_car = trace_car
-        self.data = self.process_vcf()
         self.layout = layout
         self.rangescale = rangescale
         self.config_ring = config_ring
@@ -106,6 +102,14 @@ class Plotconfig(VcfReader):
             header=0,
             sep="\t",
         )
+        self.df_morbid = pd.read_csv(
+            osj(self.options["Static"], "morbid.txt"),
+            header=None,
+            sep="\t",
+            names=["genes"],
+        )
+        # Last function to be called to generate class attribute
+        self.data = self.process_vcf()
         self.df_data = pd.DataFrame.from_dict(self.data).astype(
             {
                 "Chromosomes": str,
@@ -116,12 +120,6 @@ class Plotconfig(VcfReader):
                 "CopyNumber": int,
                 "Color": str,
             }
-        )
-        self.df_morbid = pd.read_csv(
-            osj(self.options["Static"], "morbid.txt"),
-            header=None,
-            sep="\t",
-            names=["genes"],
         )
 
     @staticmethod
@@ -159,10 +157,12 @@ class Plotconfig(VcfReader):
         }
         # VCF parsed file from PyVCF3
         self.breakend_record = []
+        # self.breakend_genes = []
         for record in self.vcf_reader:
             # particular process for breakend
             if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
                 self.breakend_record.append(record)
+                # self.breakend_genes.append(self.get_genes_var(record))
             else:
                 # print(record.INFO["SV"])
                 data["Chromosomes"].append(self.chr_adapt(record))
@@ -270,13 +270,13 @@ class Plotconfig(VcfReader):
             elif svtype == "DEL":
                 return 2 - gt
 
-    def find_record_gene(self, coord: list, refgene_genes) -> list:
+    def find_record_gene(self, coord: list) -> list:
         """
         Greedy, for now need good info in vcf annotations
         """
         gene_list = []
         # only chr for this variants
-        refgene_chr = refgene_genes.loc[refgene_genes["chr_name"] == coord[0]]
+        refgene_chr = self.df_genes.loc[self.df_genes["chr_name"] == coord[0]]
         for j, rows in refgene_chr.iterrows():
             # variant start begin before a gene and stop inside or after
             if coord[1] <= rows["start"] and (
@@ -293,17 +293,17 @@ class Plotconfig(VcfReader):
         return list(set(gene_list))
 
     def get_genes_var(self, record: object) -> str:
-        refgene_genes = pd.read_csv(
-            osj(
-                self.options["Static"],
-                "Assembly",
-                self.options["Assembly"],
-                "genes." + self.options["Assembly"] + ".sorted.txt",
-            ),
-            sep="\t",
-            header=0,
-            # compression="infer",
-        )
+        # refgene_genes = pd.read_csv(
+        #    osj(
+        #        self.options["Static"],
+        #        "Assembly",
+        #        self.options["Assembly"],
+        #        "genes." + self.options["Assembly"] + ".sorted.txt",
+        #    ),
+        #    sep="\t",
+        #    header=0,
+        #    # compression="infer",
+        # )
         # print(*refgene_genes.columns)
         # .drop_duplicates(subset=["gene"], keep="first")
 
@@ -317,26 +317,25 @@ class Plotconfig(VcfReader):
                 "INV",
                 None,
             ] or record.INFO.get("SV_type") not in ["BND, TRA", "INV", None]:
+                # if record.INFO.get("SVTYPE") != None or record.INFO.get("SV_type") != None:
                 # assert "SVLEN" in record.INFO
                 # print(record.INFO["SVLEN"])
-                gene_name = self.find_record_gene(
-                    [
-                        record.CHROM,
-                        record.POS,
-                        int(record.POS) + int(record.INFO["SVLEN"][0]),
-                    ],
-                    refgene_genes,
-                )
+                try:
+                    gene_name = self.find_record_gene(
+                        [
+                            record.CHROM,
+                            record.POS,
+                            int(record.POS) + int(record.INFO["SVLEN"][0]),
+                        ]
+                    )
+                except KeyError:
+                    print("ERROR missing SVLEN annotation for record ", record)
+                    exit()
             # SNV indel
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [
-                        record.CHROM,
-                        record.POS,
-                        (int(record.POS) + alternate),
-                    ],
-                    refgene_genes,
+                    [record.CHROM, record.POS, (int(record.POS) + alternate),]
                 )
                 if record.INFO.get("SVTYPE") is None:
                     # print(record)
