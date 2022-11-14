@@ -1,7 +1,7 @@
 from pprint import pprint
 from typing import Generator
 from vcf2circos.plotcategories.plotconfig import Plotconfig
-from vcf2circos.utils import timeit
+from vcf2circos.utils import timeit, generate_hovertext_var
 
 from os.path import join as osj
 import pandas as pd
@@ -197,7 +197,7 @@ class Histogram_(Plotconfig):
         data["type"].extend(df_data["Variants_type"].to_list())
         data["color"].extend(list(repeat("grey", len(df_data.index))))
         # data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
-        data["hovertext"].extend(list(self.generate_hovertext_var(df_data["Variants"])))
+        data["hovertext"].extend(list(generate_hovertext_var(df_data["Variants"])))
         # data["hovertext"].extend(
         #    [
         #        "Genes ("
@@ -252,25 +252,6 @@ class Histogram_(Plotconfig):
             "line": {"color": "lightgray", "width": 5},
         }
         return d
-
-    def generate_hovertext_var(self, variants_list) -> Generator:
-        # print(self.data["Variants"])
-        # print(len(self.data["Variants"]))
-        # print(len(self.data["Chromosomes"]))
-        # exit()
-        # dict containing INFO field for each var
-        for var in variants_list:
-            yield "<br>".join(
-                [
-                    ": ".join(
-                        [
-                            str(value) if not isinstance(value, list) else str(value[0])
-                            for value in pairs
-                        ]
-                    )
-                    for pairs in list(zip(var.keys(), var.values()))
-                ]
-            )
 
     def merge_options(self, cytoband_data: dict) -> list:
         """
