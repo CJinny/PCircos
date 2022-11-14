@@ -11,6 +11,7 @@ from tqdm import tqdm
 from typing import Generator
 from functools import wraps
 import time
+import numpy as np
 
 # Globals
 variants_color = {
@@ -24,6 +25,32 @@ variants_color = {
     "INDEL": "gray",
     "OTHER": "gray",
 }
+
+
+class Colorpal:
+    def __init__(self, n=None):
+        self.color = self.random_rgb()
+        if n is not None:
+            self.colorpal = [self.random_rgb() for c in range(0, n)]
+
+    # def __call__(self):
+    #    if len(self.colorpal) == 0:
+    #        print("Specify length of color pal EXIT")
+    #        exit()
+    #    else:
+    #        return self.colorpal
+
+    def __iter__(self):
+        try:
+            for v in self.colorpal:
+                yield v
+        except AttributeError:
+            print("Specify length of color pal EXIT")
+            exit()
+
+    def random_rgb(self):
+        return tuple(map(str, list(np.random.choice(range(255), size=3))))
+
 
 # Utils func
 def json_to_dict(jsonpath: str) -> dict:
