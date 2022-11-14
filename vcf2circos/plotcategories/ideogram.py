@@ -1,4 +1,5 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
+from vcf2circos.utils import Colorpal
 import pandas as pd
 from os.path import join as osj
 import os
@@ -30,9 +31,16 @@ class Ideogram(Plotconfig):
 
     def __init__(self, plotconfig):
         self.plotconfig = plotconfig
-        assert os.path.exists(osj(self.options["Static"], "chr_size.txt"))
+        # assert os.path.exists(osj(self.options["Static"], "chr_size.txt"))
         self.chr_conf = pd.read_csv(
-            osj(self.options["Static"], "chr_size.txt"), sep="\t", header=0
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "chr." + self.options["Assembly"] + ".sorted.txt",
+            ),
+            sep="\t",
+            header=0,
         )
         self.degreerange = [0, 360]
         self.showfillcolor = self.cast_bool(True)
@@ -104,14 +112,17 @@ class Ideogram(Plotconfig):
 
     def data_ideogram(self):
         tmp = self.chr_conf.loc[
-            self.chr_conf["chr_label"].isin(self.data["Chromosomes"])
+            self.chr_conf["chr_name"].isin(self.data["Chromosomes"])
         ]
         data = {
-            "chr_name": tmp["chr_label"].to_list(),
-            "chr_size": tmp["chr_size"].to_list(),
-            "chr_label": tmp["chr_label"].to_list(),
-            "chr_color": tmp["chr_color"].tolist(),
+            "chr_name": tmp["chr_name"].to_list(),
+            "chr_size": tmp["size"].to_list(),
+            "chr_label": tmp["chr_name"].to_list(),
+            "chr_color": list(Colorpal(len(tmp["chr_name"].to_list()))),
         }
+        print(data["chr_name"])
+        print(data["chr_color"])
+        # exit()
         return data
 
     def merge_options(self):
