@@ -8,9 +8,9 @@ from itertools import repeat
 class Link(Plotconfig):
     def __init__(self, plotconfig) -> None:
         self.plotconfig = plotconfig
-        print(self.breakend_record)
+        # print(self.breakend_record)
         # print(self.breakend_genes)
-        self.merge_options()
+        # self.merge_options()
 
     def __getattr__(self, item):
         if hasattr(self.plotconfig, item):
@@ -77,7 +77,7 @@ class Link(Plotconfig):
                     )
                     data["color"].append(variants_color["BND"])
                     data["symbol"].append(0)
-        pprint(data, sort_dicts=False)
+        # pprint(data, sort_dicts=False)
 
         plot["show"] = ("True",)
         plot["file"] = {
