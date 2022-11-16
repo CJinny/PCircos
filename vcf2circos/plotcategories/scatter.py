@@ -32,6 +32,9 @@ class Scatter_(Plotconfig):
         # list of dico from histo class
         for dico in histo_data:
             # key val in each dico
+            # if dico["trace"]["uid"] == "cnv_scatter_level_6":
+            #    pprint(dico["file"]["dataframe"]["data"])
+            #    exit()
             if dico["trace"]["uid"].startswith("cnv_"):
                 tmp = {}
                 for key, val in dico["file"]["dataframe"]["data"].items():
@@ -58,9 +61,7 @@ class Scatter_(Plotconfig):
                 for key, val in tmp.items():
                     if key not in od.keys():
                         od[key] = val
-                final.append(
-                    [od, dico["radius"], dico["trace"]["uid"],]
-                )
+                final.append([od, dico["radius"], dico["trace"]["uid"]])
         return final
 
     def merge_options(self, histo_data):
@@ -71,7 +72,9 @@ class Scatter_(Plotconfig):
         #    data_list_list[0], data_list_list[1], data_list_list[2]
         # )
         for data, radius, level in data_list_list:
-            final.append(self.scatter_cnv_level(data, radius, level))
+            # if no more mutations in copy number level remove dict
+            if data["chr_name"]:
+                final.append(self.scatter_cnv_level(data, radius, level))
         # CHECK
         # for dico_data in final:
         #    check_data_plot(dico_data)
@@ -102,5 +105,5 @@ class Scatter_(Plotconfig):
             },
             "uid": level,
         }
-        check_data_plot(data)
+        # check_data_plot(data)
         return d
