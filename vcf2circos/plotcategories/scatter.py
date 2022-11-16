@@ -4,6 +4,7 @@ from collections import OrderedDict
 from os.path import join as osj
 import numpy as np
 from pprint import pprint
+from itertools import repeat
 
 
 class Scatter_(Plotconfig):
@@ -26,6 +27,20 @@ class Scatter_(Plotconfig):
     def __getattr__(self, item):
         if hasattr(self.plotconfig, item):
             return getattr(self.plotconfig, item)
+
+    def adapt_genes(self, dico: dict) -> dict:
+        gene_scatter = {}
+        gene_scatter["chr_name"] = dico["chr_name"] + dico["chr_name"]
+        gene_scatter["start"] = dico["start"] + dico["end"]
+        gene_scatter["val"] = dico["val"] + dico["val"]
+        gene_scatter["color"] = dico["color"] + dico["color"]
+        gene_scatter["gene"] = dico["gene"] + dico["gene"]
+        gene_scatter["infos"] = list(repeat("", len(gene_scatter["chr_name"])))
+
+        # pprint(gene_scatter)
+        gene_scatter["hovertext"] = dico["gene"] + dico["gene"]
+        print(gene_scatter.keys())
+        return gene_scatter
 
     def adapt_data(self, histo_data: list) -> list:
         final = []
@@ -62,6 +77,22 @@ class Scatter_(Plotconfig):
                     if key not in od.keys():
                         od[key] = val
                 final.append([od, dico["radius"], dico["trace"]["uid"]])
+            elif dico["trace"]["uid"] == "genes":
+                dico[
+                    "hovertextformat"
+                ] = ' "<b>{}:{}<br>Gene: {}</b><br>{}".format(a[i,0], a[i,1], a[i,4], a[i,6])'
+                dico["file"]["dataframe"]["data"] = self.adapt_genes(
+                    dico["file"]["dataframe"]["data"]
+                )
+                final.append(
+                    [
+                        dico["file"]["dataframe"]["data"],
+                        dico["radius"],
+                        dico["trace"]["uid"],
+                    ]
+                )
+
+                # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
         return final
 
     def merge_options(self, histo_data):
@@ -78,9 +109,14 @@ class Scatter_(Plotconfig):
         # CHECK
         # for dico_data in final:
         #    check_data_plot(dico_data)
+        final[-1]["trace"]["marker"]["symbol"] = 0
         return final
 
     def scatter_cnv_level(self, data, radius, level):
+        if data.get("symbol") is not None:
+            symbol = data.get("symbol")
+        else:
+            symbol = data.get("val")
         d = {}
         d["show"] = "True"
         d["file"] = {
@@ -99,7 +135,7 @@ class Scatter_(Plotconfig):
             "mode": "markers",
             "marker": {
                 "size": 5,
-                "symbol": data["symbol"],
+                "symbol": symbol,
                 "color": data["color"],
                 "opacity": 1,
             },
