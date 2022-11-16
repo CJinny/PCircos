@@ -86,8 +86,9 @@ class Link(Plotconfig):
             "sep": "\t",
             "dataframe": {"orient": "columns", "data": data},
         }
-        plot["radius"] = {"R0": 0, "R1": 0.5}
-        plot["sortbycolor"] = ("False",)
+        # R0 stay to zero and R1 follow rings position options
+        plot["radius"] = {"R0": 0, "R1": self.options["Variants"]["rings"]["position"]}
+        plot["sortbycolor"] = "False"
         plot["colorcolumn"] = 6
         plot["hovertextformat"] = [
             ' "<b>{}:{}-{}<br>{}:{}-{}</b><br><br>{}".format(a[i,0], a[i,1], a[i,2], a[i,3], a[i,4], a[i,5], a[i,7])',
@@ -111,4 +112,3 @@ class Link(Plotconfig):
         }
 
         return plot
-
