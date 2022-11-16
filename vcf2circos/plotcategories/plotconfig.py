@@ -43,7 +43,10 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open("../demo_data/options.general.json", "r",)
+            open(
+                "../demo_data/options.general.json",
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -175,16 +178,17 @@ class Plotconfig(VcfReader):
                 data["Variants_type"].append(svtype)
                 data["CopyNumber"].append(copynumber)
                 data["Color"].append(variants_color[svtype])
-        # pprint(data)
         # test
         # def replace_(dico):
         #    rep = ""
         #    excl = ["None", None]
         #    for
+
         # TESTTTTTTTTT
+        # self.breakend_record = []
         # return (
         #    pd.DataFrame.from_dict(data)
-        #    .loc[pd.DataFrame.from_dict(data)["Chromosomes"] == "chr14"]
+        #    .loc[pd.DataFrame.from_dict(data)["Chromosomes"] == "chr1"]
         #    .to_dict("list")
         # )
         return data
@@ -289,7 +293,6 @@ class Plotconfig(VcfReader):
             # SV all size done
             if coord[1] <= rows["start"] and coord[2] <= rows["end"]:
                 break
-
         return list(set(gene_list))
 
     def get_genes_var(self, record: object) -> str:
@@ -308,6 +311,7 @@ class Plotconfig(VcfReader):
         # .drop_duplicates(subset=["gene"], keep="first")
 
         gene_name = record.INFO.get("Gene_name")
+        record.CHROM = self.chr_adapt(record)
         if isinstance(gene_name, str):
             return gene_name
         # No Gene_name annotation need to find overlapping gene in sv
@@ -328,6 +332,7 @@ class Plotconfig(VcfReader):
                             int(record.POS) + int(record.INFO["SVLEN"][0]),
                         ]
                     )
+                    return ",".join(gene_name)
                 except KeyError:
                     print("ERROR missing SVLEN annotation for record ", record)
                     exit()
@@ -335,16 +340,23 @@ class Plotconfig(VcfReader):
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [record.CHROM, record.POS, (int(record.POS) + alternate),]
+                    [
+                        record.CHROM,
+                        record.POS,
+                        (int(record.POS) + alternate),
+                    ]
                 )
-                if record.INFO.get("SVTYPE") is None:
-                    # print(record)
-                    # print(
-                    #    record.CHROM, record.POS, (int(record.POS) + alternate),
-                    # )
-                    if not gene_name:
-                        gene_name = [""]
-            return ",".join(gene_name)
+                if not gene_name:
+                    gene_name = [""]
+                return ",".join(gene_name)
+                # if record.INFO.get("SVTYPE") is None:
+                #    # print(record)
+                #    # print(
+                #    #    record.CHROM, record.POS, (int(record.POS) + alternate),
+                #    # )
+                #    if not gene_name:
+                #        gene_name = [""]
+                #        return ",".join(gene_name)
 
     def generate_hovertext_var(self, variants_list) -> Generator:
         # dict containing INFO field for each var
