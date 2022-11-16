@@ -47,16 +47,20 @@ class Datafactory:
         # Create plot object
 
         histogram = Histogram_(pc)
+        cytoband = Cytoband(pc)
+        data_histo = histogram.merge_options(cytoband.data_cytoband())
+        # If snv overlapping only
+        # pc.data = histogram.data
+        # pc.df_data = histogram.df_data
 
         # pc.data = histogram.data
         ideogram = Ideogram(pc)
         ring = Ring(pc)
-        cytoband = Cytoband(pc)
+
         scatter = Scatter_(pc)
         link = Link(pc)
         js = {}
         js["General"] = ideogram.options["General"]
-        data_histo = histogram.merge_options(cytoband.data_cytoband())
 
         js["Category"] = {
             "ideogram": ideogram.merge_options(),
@@ -65,6 +69,17 @@ class Datafactory:
             "histogram": data_histo,
             "scatter": scatter.merge_options(data_histo),
         }
+
+        for plot_type in js["Category"]:
+            if plot_type == "histogram" or plot_type == "scatter":
+                for val in js["Category"][plot_type]:
+                    if not val["file"]["dataframe"]["data"]["chr_name"]:
+                        js["Category"][plot_type].remove(val)
+        for plot_type in js["Category"]:
+            if plot_type == "histogram" or plot_type == "scatter":
+                if not js["Category"][plot_type]:
+                    del plot_type
+
         # lm = link.merge_options()
         # sm = scatter.merge_options(data_histo)
         # if lm["file"]["dataframe"]["data"]["chr1_name"]:
