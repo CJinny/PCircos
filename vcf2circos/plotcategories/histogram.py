@@ -426,7 +426,7 @@ class Histogram_(Plotconfig):
         }
         dico["show"] = self.show
         dico["colorcolumn"] = 4
-        dico["radius"] = {"R0": 0.98, "R1": 0.98}
+        dico["radius"] = {"R0": 0.96, "R1": 0.96}
         dico[
             "hovertextformat"
         ] = ' "<b>{}:{}-{}<br>Gene: {}</b><br>".format(a[i,0], a[i,1], a[i,2], a[i,5])'
