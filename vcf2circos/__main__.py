@@ -1,14 +1,8 @@
 # enable dash only in dash module, disable dash here
 import os
 import sys
-from vcf2circos.plotcategories.histogram import Histogram_
-from vcf2circos.plotcategories.ideogram import Ideogram
-from vcf2circos.plotcategories.scatter import Scatter_
-from vcf2circos.plotcategories.ring import Ring
-from vcf2circos.plotcategories.cytoband import Cytoband
-from vcf2circos.plotcategories.plotconfig import Plotconfig
-from vcf2circos.plotcategories.link import Link
 from vcf2circos.parseargs import Parseargs
+from vcf2circos.datafactory import Datafactory
 from pprint import pprint
 
 
@@ -117,63 +111,13 @@ def main():
     # Input
 
     if input_format in ["vcf", "gz"]:
-        rangescale = []
-        val = (
-            options["Variants"]["rings"]["position"]
-            + options["Variants"]["rings"]["space"]
-        )
-        rangescale.append(val)
-        for i in range(options["Variants"]["rings"]["nrings"]):
-            val += (
-                options["Variants"]["rings"]["height"]
-                + options["Variants"]["rings"]["space"]
-            )
-            rangescale.append(val)
 
-        # Read vcf and process raw data to feed child class
-        pc = Plotconfig(
-            filename=input_file,
-            options=options.copy(),
-            show=True,
-            file=None,
-            radius=None,
-            sortbycolor=None,
-            colorcolumn=6,
-            hovertextformat=None,
-            trace_car=None,
-            data=None,
-            layout=None,
-            rangescale=rangescale,
-            config_ring=options["Variants"]["rings"],
-        )
-        # Ugly as hell, if we wanna take only snv indel overlapping SV
-
-        # Create plot object
-        histogram = Histogram_(pc)
-        pc.data = histogram.data
-        ideogram = Ideogram(pc)
-        ring = Ring(pc)
-        cytoband = Cytoband(pc)
-        scatter = Scatter_(pc)
-        link = Link(pc)
-
-        js = {}
-        js["General"] = ideogram.options["General"]
-        data_histo = histogram.merge_options(cytoband.data_cytoband())
-
-        js["Category"] = {
-            "ideogram": ideogram.merge_options(),
-            "ring": ring.create_ring(),
-            "cytoband": cytoband.merge_options(),
-            "histogram": data_histo,
-            "scatter": scatter.merge_options(data_histo),
-            "link": link.merge_options(),
-        }
         # js["Category"]["histogram"].append(histogram.merge_options())
         # pprint(ideogram.merge_options())
         # exit()
         print("\n")
         # print(type(js["Category"]["cytoband"]))
+        js = Datafactory(input_file, options).plot_dict()
         fig_instance = Figure(dash_dict=js)
 
         # Export in vcf2circos JSON
