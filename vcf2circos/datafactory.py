@@ -55,7 +55,7 @@ class Datafactory:
 
         # pc.data = histogram.data
         ideogram = Ideogram(pc)
-        ring = Ring(pc)
+        ring = Ring(pc, ["genes"])
 
         scatter = Scatter_(pc)
         link = Link(pc)
