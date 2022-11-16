@@ -1,5 +1,6 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 import numpy as np
+from pprint import pprint
 
 # space, space between ring in option.example.json
 # height hauteur du ring
@@ -45,10 +46,10 @@ class Ring(Plotconfig):
         rings_list[6]["layout"]["fillcolor"] = "grey"
         rings_list[6]["layout"]["line"]["color"] = "grey"
         if self.ring_upper_var is not None:
-            R1 = 1.0 - self.variants_ring_space
+            R1 = 1.03
             R0 = R1 - self.variants_ring_height
             for field in self.ring_upper_var:
-                R1 -= self.variants_ring_space - self.variants_ring_height
-                R0 -= self.variants_ring_space - self.variants_ring_height
+                R1 -= self.variants_ring_space + self.variants_ring_height
+                R0 -= self.variants_ring_space + self.variants_ring_height
                 rings_list.append(self.ring(R0, R1))
         return rings_list
