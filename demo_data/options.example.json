@@ -50,11 +50,9 @@
 			"show_none": true
 		},
 		"rings": {
-			"position": 0.50,
+			"position": 0.5,
 			"height": 0.04,
 			"space": 0.01,
-			"min": 0,
-			"max": 5,
 			"nrings": 6
 		}
 	}
