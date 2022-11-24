@@ -1,3 +1,4 @@
+from typing import Generator
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from vcf2circos.utils import variants_color, check_data_plot
 from collections import OrderedDict
@@ -8,7 +9,7 @@ from itertools import repeat
 
 
 class Scatter_(Plotconfig):
-    def __init__(self, plotconfig):
+    def __init__(self, plotconfig, data_histo):
         self.plotconfig = plotconfig
         self.hovertextformat = ' "<b>{}:{}</b> | {} > {}<br>{}<br><br>{}".format(a[i,0], a[i,1], a[i,3], a[i,4], a[i,5], a[i,7])'
         self.variants_position = self.config_ring["position"]
@@ -23,6 +24,7 @@ class Scatter_(Plotconfig):
             + (max(self.rangescale) * self.variants_ring_space)
             + ((max(self.rangescale) + 2) * self.variants_ring_height),
         }
+        self.data_histo = data_histo
 
     def __getattr__(self, item):
         if hasattr(self.plotconfig, item):
@@ -38,14 +40,15 @@ class Scatter_(Plotconfig):
         gene_scatter["infos"] = list(repeat("", len(gene_scatter["chr_name"])))
 
         # pprint(gene_scatter)
-        gene_scatter["hovertext"] = dico["gene"] + dico["gene"]
-        print(gene_scatter.keys())
+        # gene_scatter["hovertext"] = dico["gene"] + dico["gene"]
+        gene_scatter["hovertext"] = list(repeat("", len(gene_scatter["chr_name"])))
+        # print(gene_scatter.keys())
         return gene_scatter
 
-    def adapt_data(self, histo_data: list) -> list:
+    def adapt_data(self) -> list:
         final = []
         # list of dico from histo class
-        for dico in histo_data:
+        for dico in self.data_histo:
             # key val in each dico
             # if dico["trace"]["uid"] == "cnv_scatter_level_6":
             #    pprint(dico["file"]["dataframe"]["data"])
@@ -77,27 +80,35 @@ class Scatter_(Plotconfig):
                     if key not in od.keys():
                         od[key] = val
                 final.append([od, dico["radius"], dico["trace"]["uid"]])
+            # Becarefull to not hoverride histogram data
             elif dico["trace"]["uid"] == "genes":
-                dico[
-                    "hovertextformat"
-                ] = ' "<b>{}:{}<br>Gene: {}</b><br>{}".format(a[i,0], a[i,1], a[i,4], a[i,6])'
-                dico["file"]["dataframe"]["data"] = self.adapt_genes(
+                tmp = self.adapt_genes(
                     dico["file"]["dataframe"]["data"]
                 )
-                # final.append(
-                #    [
-                #        dico["file"]["dataframe"]["data"],
-                #        dico["radius"],
-                #        dico["trace"]["uid"],
-                #    ]
-                # )
+                tmp["color"] = list(
+                    self.morbid_genes(tmp["gene"])
+                )
+                final.append(
+                    [
+                        tmp,
+                        dico["radius"],
+                        dico["trace"]["uid"],
+                    ]
+                )
 
         # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
         return final
 
-    def merge_options(self, histo_data):
+    def morbid_genes(self, genes: list) -> Generator:
+        for g in genes:
+            if g in self.df_morbid["genes"].to_list():
+                yield "red"
+            else:
+                yield "lightgray"
+
+    def merge_options(self):
         final = []
-        data_list_list = self.adapt_data(histo_data)
+        data_list_list = self.adapt_data()
 
         # return self.scatter_cnv_level(
         #    data_list_list[0], data_list_list[1], data_list_list[2]
@@ -105,19 +116,59 @@ class Scatter_(Plotconfig):
         for data, radius, level in data_list_list:
             # if no more mutations in copy number level remove dict
             if data["chr_name"]:
-                final.append(self.scatter_cnv_level(data, radius, level))
+                if level == "genes":
+                    colorcolumn = 3
+                    symbol = 0
+                    hovertextformat = ' "<b>{}:{}<br>Gene: {}</b><br>{}".format(a[i,0], a[i,1], a[i,4], a[i,6])'
+                    final.append(
+                        self.scatter_cnv_level(
+                            data, radius, level, hovertextformat, symbol, colorcolumn
+                        )
+                    )
+                else:
+                    final.append(self.scatter_cnv_level(data, radius, level))
 
         # CHECK
         # for dico_data in final:
         #    check_data_plot(dico_data)
         # final[-1]["trace"]["marker"]["symbol"] = 0
-        return final
 
-    def scatter_cnv_level(self, data, radius, level):
-        if data.get("symbol") is not None:
-            symbol = data.get("symbol")
-        else:
-            symbol = data.get("val")
+        # pprint(final, sort_dicts=False)
+        # exit
+        check_data_plot(
+            final[0]["file"]["dataframe"]["data"],
+            list_keys=[
+                "chr_name",
+                "start",
+                "val",
+                "color",
+                "gene",
+                "infos",
+                "hovertext",
+            ],
+        )
+        return final
+        # if len(final) == 1:
+        #    return final[0]
+        # else:
+        #    return final
+
+    def scatter_cnv_level(
+        self, data, radius, level, hovertextformat=None, symbol=None, colorcolumn=None
+    ):
+        # if data.get("symbol") is not None:
+        #    symbol = data.get("symbol")
+        # else:
+        #    symbol = data.get("val")
+        if hovertextformat is None:
+            hovertextformat = self.hovertextformat
+        if symbol is None:
+            if "symbol" in data.keys():
+                symbol = data["symbol"]
+            else:
+                symbol = data["val"]
+        if colorcolumn is None:
+            colorcolumn = 6
         d = {}
         d["show"] = "True"
         d["file"] = {
@@ -128,9 +179,9 @@ class Scatter_(Plotconfig):
         }
 
         d["sortbycolor"] = "False"
-        d["colorcolumn"] = 6
+        d["colorcolumn"] = colorcolumn
         d["radius"] = radius
-        d["hovertextformat"] = self.hovertextformat
+        d["hovertextformat"] = hovertextformat
         d["trace"] = {
             "hoverinfo": "text",
             "mode": "markers",
