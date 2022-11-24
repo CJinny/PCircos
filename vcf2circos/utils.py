@@ -61,8 +61,12 @@ def json_to_dict(jsonpath: str) -> dict:
         return json.load(json_file)
 
 
-def check_data_plot(dico):
-    var_numb = len(dico["chr_name"])
+def check_data_plot(dico, list_keys=None):
+    try:
+        var_numb = len(dico["chr_name"])
+    except KeyError:
+        print(dico.keys())
+        exit()
     for d_fields in dico:
         assert len(dico[d_fields]) == var_numb, (
             "Missing values in "
@@ -77,9 +81,9 @@ def check_data_plot(dico):
     if "end" in dico:
         pass
     else:
-        assert ["chr_name", "start", "val", "ref", "alt", "type", "color",] == list(
-            dico.keys()
-        )[:7], (
+        if list_keys is None:
+            list_keys = ["chr_name", "start", "val", "ref", "alt", "type", "color"]
+        assert list_keys == list(dico.keys())[:7], (
             "ISSUES wrong list data order, leads to crash in mathematical operations \n\t..."
             + ", ".join(list(dico.keys())[:7])
             + " ,..."
