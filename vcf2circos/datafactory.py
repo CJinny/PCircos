@@ -6,6 +6,7 @@ from vcf2circos.plotcategories.cytoband import Cytoband
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from vcf2circos.plotcategories.link import Link
 from pprint import pprint
+import json
 
 
 class Datafactory:
@@ -67,18 +68,34 @@ class Datafactory:
             "ring": ring.create_ring(),
             "cytoband": cytoband.merge_options(),
             "histogram": data_histo,
-            "scatter": scatter.merge_options(data_histo),
+            # "scatter": scatter.merge_options(data_histo),
         }
-
+        with open("without.json", "w+") as o:
+            data = json.dumps(js, indent=4)
+            o.write(data)
+        exit()
+        remove_under = []
         for plot_type in js["Category"]:
             if plot_type == "histogram" or plot_type == "scatter":
-                for val in js["Category"][plot_type]:
+                for i, val in enumerate(js["Category"][plot_type]):
+                    # print(val["file"]["dataframe"]["data"]["chr_name"])
                     if not val["file"]["dataframe"]["data"]["chr_name"]:
-                        js["Category"][plot_type].remove(val)
+                        # print(val["file"]["dataframe"]["data"]["chr_name"])
+                        remove_under.append((plot_type, i))
+        # Could remove only one ore need to build a copy
+        if remove_under:
+            # print("DELETE empty")
+            del js["Category"][remove_under[0][0]][remove_under[0][1]]
+            # print(js["Category"][remove_under[0][0]])
+
+        remove = []
         for plot_type in js["Category"]:
             if plot_type == "histogram" or plot_type == "scatter":
                 if not js["Category"][plot_type]:
-                    del plot_type
+                    remove.append(plot_type)
+        for item in remove:
+            del js["Category"][item]
+        print(js["Category"].keys())
 
         # lm = link.merge_options()
         # sm = scatter.merge_options(data_histo)
