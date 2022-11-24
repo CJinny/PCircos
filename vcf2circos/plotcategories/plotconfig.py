@@ -44,7 +44,7 @@ class Plotconfig(VcfReader):
         super().__init__(filename, options)
         self.default_options = json.load(
             open(
-                "../demo_data/options.general.json",
+                osj(self.options["Static"] + "/options.general.json"),
                 "r",
             )
         )
