@@ -69,12 +69,7 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {
-                    "size": 0,
-                    "symbol": 0,
-                    "color": None,
-                    "opacity": 0,
-                },  # 8
+                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
             },
             "layout": {
                 "type": "path",
@@ -298,9 +293,9 @@ class Histogram_(Plotconfig):
                 for key, val in dic["file"]["dataframe"]["data"].items():
                     whole_var[key].extend(val)
             snv_indel_overlapp = self.only_snv_indels_in_sv(whole_var)
-            print(snv_indel_overlapp)
+            # print(snv_indel_overlapp)
             for dico in whole_cn:
-                print(dico["trace"]["uid"])
+                # print(dico["trace"]["uid"])
                 if dico["trace"]["uid"] == "cnv_scatter_level_6":
                     df_ = pd.DataFrame.from_dict(dico["file"]["dataframe"]["data"])
                     # if at least one snv indel overlap a sv
@@ -348,7 +343,7 @@ class Histogram_(Plotconfig):
         index_keep = []
         index_to_rm = []
         for vars in list_to_remove:
-            print(vars)
+            # print(vars)
             for i, record in enumerate(self.data["Record"]):
                 if (
                     record.CHROM == vars[0]
@@ -378,13 +373,6 @@ class Histogram_(Plotconfig):
             if record:
                 yield record.split(",")
 
-    def morbid_genes(self, genes: list) -> Generator:
-        for g in genes:
-            if g in self.df_morbid["genes"].to_list():
-                yield "red"
-            else:
-                yield "lightgray"
-
     @timeit
     def histo_genes(self) -> dict:
         data = {}
@@ -403,18 +391,19 @@ class Histogram_(Plotconfig):
                 )
             )
         )
-        print(*self.df_genes.columns)
-        print(self.df_genes.head())
-        # select genes in or batch of variations (from refeseq assembly)
+        # print(*self.df_genes.columns)
+        # print(self.df_genes.head())
+        ## select genes in or batch of variations (from refeseq assembly)
         df_filter = self.df_genes.loc[self.df_genes["gene"].isin(gene_list)]
-        print(df_filter.head())
-        print(*df_filter.columns)
-        print(*gene_list)
-        print(self.df_data["Genes"].head())
+        # print(*gene_list)
+        # print(self.df_data["Genes"].head())
+
+        # Set color
         for fields in df_filter.columns:
             if fields != "transcript":
                 if fields == "color":
-                    data[fields] = list(self.morbid_genes(df_filter["gene"]))
+                    # data[fields] = list(self.morbid_genes(df_filter["gene"]))
+                    data[fields] = list(repeat("lightgray", len(df_filter.index)))
                 else:
                     data[fields] = df_filter[fields].to_list()
         # pprint(data, sort_dicts=False)
@@ -434,12 +423,7 @@ class Histogram_(Plotconfig):
             "uid": "genes",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {
-                "size": 3,
-                "symbol": 0,
-                "color": data["color"],
-                "opacity": 1,
-            },
+            "marker": {"size": 3, "symbol": 0, "color": data["color"], "opacity": 1,},
         }
         dico["layout"] = {
             "type": "path",
