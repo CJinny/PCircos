@@ -43,10 +43,7 @@ class Plotconfig(VcfReader):
     ):
         super().__init__(filename, options)
         self.default_options = json.load(
-            open(
-                osj(self.options["Static"] + "/options.general.json"),
-                "r",
-            )
+            open(osj(self.options["Static"] + "/options.general.json"), "r",)
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(
@@ -309,7 +306,6 @@ class Plotconfig(VcfReader):
         # )
         # print(*refgene_genes.columns)
         # .drop_duplicates(subset=["gene"], keep="first")
-
         gene_name = record.INFO.get("Gene_name")
         record.CHROM = self.chr_adapt(record)
         if isinstance(gene_name, str):
@@ -340,11 +336,7 @@ class Plotconfig(VcfReader):
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [
-                        record.CHROM,
-                        record.POS,
-                        (int(record.POS) + alternate),
-                    ]
+                    [record.CHROM, record.POS, (int(record.POS) + alternate),]
                 )
                 if not gene_name:
                     gene_name = [""]
