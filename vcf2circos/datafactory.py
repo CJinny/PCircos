@@ -58,31 +58,40 @@ class Datafactory:
         ideogram = Ideogram(pc)
         ring = Ring(pc, ["genes"])
 
-        scatter = Scatter_(pc)
+        scatter = Scatter_(pc, data_histo.copy())
         link = Link(pc)
         js = {}
         js["General"] = ideogram.options["General"]
+        #print("HISTO\n")
+        #for ite in data_histo:
+        #    print(ite["file"]["dataframe"]["data"].keys())
 
         js["Category"] = {
             "ideogram": ideogram.merge_options(),
             "ring": ring.create_ring(),
             "cytoband": cytoband.merge_options(),
             "histogram": data_histo,
-            # "scatter": scatter.merge_options(data_histo),
+            "scatter": scatter.merge_options(),
         }
-        with open("without.json", "w+") as o:
-            data = json.dumps(js, indent=4)
-            o.write(data)
-        exit()
+
+        # DEBUg
+        # with open("without.json", "w+") as o:
+        #    data = json.dumps(js, indent=4)
+        #    o.write(data)
+        # exit()
+
+        #Adjustement in case of no data for example when use overlapping snv only
         remove_under = []
         for plot_type in js["Category"]:
             if plot_type == "histogram" or plot_type == "scatter":
-                for i, val in enumerate(js["Category"][plot_type]):
-                    # print(val["file"]["dataframe"]["data"]["chr_name"])
-                    if not val["file"]["dataframe"]["data"]["chr_name"]:
+                # Only for list
+                if isinstance(js["Category"][plot_type], list):
+                    for i, val in enumerate(js["Category"][plot_type]):
                         # print(val["file"]["dataframe"]["data"]["chr_name"])
-                        remove_under.append((plot_type, i))
-        # Could remove only one ore need to build a copy
+                        if not val["file"]["dataframe"]["data"]["chr_name"]:
+                            # print(val["file"]["dataframe"]["data"]["chr_name"])
+                            remove_under.append((plot_type, i))
+        ## Could remove only one ore need to build a copy
         if remove_under:
             # print("DELETE empty")
             del js["Category"][remove_under[0][0]][remove_under[0][1]]
@@ -90,13 +99,17 @@ class Datafactory:
 
         remove = []
         for plot_type in js["Category"]:
-            if plot_type == "histogram" or plot_type == "scatter":
-                if not js["Category"][plot_type]:
-                    remove.append(plot_type)
+           if plot_type == "histogram" or plot_type == "scatter":
+               if not js["Category"][plot_type]:
+                   remove.append(plot_type)
         for item in remove:
-            del js["Category"][item]
-        print(js["Category"].keys())
+           del js["Category"][item]
+        
 
+
+        # exit()
+        # print(js["Category"]["scatter"].keys())
+        # exit()
         # lm = link.merge_options()
         # sm = scatter.merge_options(data_histo)
         # if lm["file"]["dataframe"]["data"]["chr1_name"]:
