@@ -84,15 +84,15 @@ class Scatter_(Plotconfig):
                 dico["file"]["dataframe"]["data"] = self.adapt_genes(
                     dico["file"]["dataframe"]["data"]
                 )
-                final.append(
-                    [
-                        dico["file"]["dataframe"]["data"],
-                        dico["radius"],
-                        dico["trace"]["uid"],
-                    ]
-                )
+                # final.append(
+                #    [
+                #        dico["file"]["dataframe"]["data"],
+                #        dico["radius"],
+                #        dico["trace"]["uid"],
+                #    ]
+                # )
 
-                # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
+        # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
         return final
 
     def merge_options(self, histo_data):
@@ -106,10 +106,11 @@ class Scatter_(Plotconfig):
             # if no more mutations in copy number level remove dict
             if data["chr_name"]:
                 final.append(self.scatter_cnv_level(data, radius, level))
+
         # CHECK
         # for dico_data in final:
         #    check_data_plot(dico_data)
-        final[-1]["trace"]["marker"]["symbol"] = 0
+        # final[-1]["trace"]["marker"]["symbol"] = 0
         return final
 
     def scatter_cnv_level(self, data, radius, level):
@@ -133,6 +134,7 @@ class Scatter_(Plotconfig):
         d["trace"] = {
             "hoverinfo": "text",
             "mode": "markers",
+            "opacity": 1,
             "marker": {
                 "size": 5,
                 "symbol": symbol,
