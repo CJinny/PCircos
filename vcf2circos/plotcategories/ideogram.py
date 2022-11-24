@@ -120,8 +120,6 @@ class Ideogram(Plotconfig):
             "chr_label": tmp["chr_name"].to_list(),
             "chr_color": list(Colorpal(len(tmp["chr_name"].to_list()))),
         }
-        print(data["chr_name"])
-        print(data["chr_color"])
         # exit()
         return data
 
