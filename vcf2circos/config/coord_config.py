@@ -354,4 +354,3 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
         pass
 
     return data_dict
-    
