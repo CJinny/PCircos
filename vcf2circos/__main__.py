@@ -25,7 +25,6 @@ from Complex import Complex
 from fig import Figure
 from time import time
 
-from vcfreader import VcfReader
 from os.path import join as osj
 
 import plotly
@@ -144,8 +143,9 @@ def main():
         if not output_format:
             plot(fig)
         elif output_format in ["html"]:
-            if not os.path.exists(os.path.dirname(output_file)):
-                os.mkdir(os.path.dirname(output_file))
+            if "/" in output_file:
+                if not os.path.exists(os.path.dirname(output_file)):
+                    os.mkdir(os.path.dirname(output_file))
             plot(fig, filename=output_file)
         elif output_format in [
             "png",

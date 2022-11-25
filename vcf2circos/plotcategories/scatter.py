@@ -82,18 +82,10 @@ class Scatter_(Plotconfig):
                 final.append([od, dico["radius"], dico["trace"]["uid"]])
             # Becarefull to not hoverride histogram data
             elif dico["trace"]["uid"] == "genes":
-                tmp = self.adapt_genes(
-                    dico["file"]["dataframe"]["data"]
-                )
-                tmp["color"] = list(
-                    self.morbid_genes(tmp["gene"])
-                )
+                tmp = self.adapt_genes(dico["file"]["dataframe"]["data"])
+                tmp["color"] = list(self.morbid_genes(tmp["gene"]))
                 final.append(
-                    [
-                        tmp,
-                        dico["radius"],
-                        dico["trace"]["uid"],
-                    ]
+                    [tmp, dico["radius"], dico["trace"]["uid"],]
                 )
 
         # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
@@ -135,18 +127,18 @@ class Scatter_(Plotconfig):
 
         # pprint(final, sort_dicts=False)
         # exit
-        check_data_plot(
-            final[0]["file"]["dataframe"]["data"],
-            list_keys=[
-                "chr_name",
-                "start",
-                "val",
-                "color",
-                "gene",
-                "infos",
-                "hovertext",
-            ],
-        )
+        # check_data_plot(
+        #    final[0]["file"]["dataframe"]["data"],
+        #    list_keys=[
+        #        "chr_name",
+        #        "start",
+        #        "val",
+        #        "color",
+        #        "gene",
+        #        "infos",
+        #        "hovertext",
+        #    ],
+        # )
         return final
         # if len(final) == 1:
         #    return final[0]

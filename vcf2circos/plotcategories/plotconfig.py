@@ -11,14 +11,15 @@ import os
 from typing import Generator
 import pandas as pd
 
-from vcf2circos.vcfreader import VcfReader
+# from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
 from tqdm import tqdm
 from vcf2circos.utils import variants_color, timeit
 from pprint import pprint
+import vcf
 
 
-class Plotconfig(VcfReader):
+class Plotconfig:
     """
     Options regroup options passed in args in json file otherwise
     it will be a empty dict,
@@ -41,14 +42,14 @@ class Plotconfig(VcfReader):
         rangescale: list,
         config_ring: dict,
     ):
-        super().__init__(filename, options)
+        # super().__init__(filename, options)
+        self.filename = filename
+        self.options = options
         self.default_options = json.load(
             open(osj(self.options["Static"] + "/options.general.json"), "r",)
         )
         if not self.options.get("General", {}).get("title", None):
-            self.options["General"]["title"] = os.path.basename(
-                self.get_metadatas().get("filename", "myCircos")
-            )
+            self.options["General"]["title"] = os.path.basename(filename)
         self.show = self.cast_bool(show)
         self.file = file
         self.radius = radius
@@ -59,6 +60,9 @@ class Plotconfig(VcfReader):
         self.layout = layout
         self.rangescale = rangescale
         self.config_ring = config_ring
+        self.vcf_reader = vcf.Reader(
+            filename=filename, strict_whitespace=True, encoding="utf-8"
+        )
         # self.refgene_genes = osj(
         #    self.options["Static"],
         #    "Assembly",
