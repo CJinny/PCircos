@@ -2076,16 +2076,13 @@ class VcfReader:
                     "val": [],
                     "color": [],
                     "gene": [],
-                }
-                gene_i = 0
-                # for gene in copy.deepcopy(self.options.get("Genes",{}).get("dataframe",{}).get("data",{})).get("gene",[]):
-                for gene in copy.deepcopy(
-                    self.options.get("Genes", {})
-                    .get("data", {})
-                    .get("dataframe", {})
-                    .get("data", {})
-                ).get("gene", []):
-                    if gene in gene_list:
+                        "chr_name": [],
+                        "start": [],
+                        "end": [],
+                        "val": [],
+                        "color": [],
+                        "gene": [],
+                        "infos": [],
                         genes_data["chr_name"].append(
                             self.options["Genes"]["data"]["dataframe"]["data"][
                                 "chr_name"
@@ -2118,6 +2115,75 @@ class VcfReader:
                         )
                     gene_i += 1
                 self.options["Genes"]["data"]["dataframe"]["data"] = genes_data
+
+            # Construct infos_dict and hovertext 
+            
+            # create data fields
+            if "infos" not in self.options["Genes"]["data"]["dataframe"]["data"]:
+                self.options["Genes"]["data"]["dataframe"]["data"]["infos"] = []
+            if "hovertext" not in self.options["Genes"]["data"]["dataframe"]["data"]:
+                self.options["Genes"]["data"]["dataframe"]["data"]["hovertext"] = []
+            if "infos_dict" not in self.options["Genes"]["data"]["dataframe"]["data"]:
+                self.options["Genes"]["data"]["dataframe"]["data"]["infos_dict"] = []
+
+            # fill data fields
+            gene_i = 0
+            for gene in self.options["Genes"]["data"]["dataframe"]["data"]["gene"]:
+                
+                infos_dict = {}
+                hovertext = ""
+                
+                # infos in data
+                try:
+                    infos = self.options["Genes"]["data"]["dataframe"]["data"]["infos"][gene_i]
+                except IndexError:
+                    infos = ""
+                    self.options["Genes"]["data"]["dataframe"]["data"]["infos"].append(infos)
+                
+                # infos in a dict
+                if isinstance(infos, str) and infos:
+                    try:
+                        infos_dict = json.loads(infos)
+                    except ValueError as e:
+                        infos_dict = {"infos": infos}
+                        vcf_infos = {}
+                        vcf_infos_nb = 1
+                        for info in infos.split(";"):
+                            if vcf_infos_nb > 1:
+                                vcf_infos_index = "_" + str(vcf_infos_nb)
+                            else:
+                                vcf_infos_index = ""
+                            info_split = info.split("=")
+                            if len(info_split) > 1:
+                                vcf_infos[str(info_split[0])] = textwrap.shorten(info_split[1], width=TEXTWRAP_WIDTH, placeholder=TEXTWRAP_HOLDER)
+                            else:
+                                if info_split[0]:
+                                    vcf_infos["infos" + str(vcf_infos_index)] = textwrap.shorten(info_split[0], width=TEXTWRAP_WIDTH, placeholder=TEXTWRAP_HOLDER)
+                            vcf_infos_nb+=1
+                        infos_dict = vcf_infos
+                
+                # hovertext
+                if isinstance(infos_dict, dict):
+                    for info in infos_dict:
+                        hovertext += "<br>" + str(info) + "=" + str(infos_dict[info])
+                else:
+                    for info in infos.split(";"):
+                        hovertext += "<br>" + str(info)
+                    
+                
+                try:
+                    infos_dict_test = self.options["Genes"]["data"]["dataframe"]["data"]["infos_dict"][gene_i]
+                except IndexError:
+                    self.options["Genes"]["data"]["dataframe"]["data"]["infos_dict"].append(infos_dict)
+                #self.options["Genes"]["data"]["dataframe"]["data"]["infos_dict"].append(infos_dict)
+
+                try:
+                    hovertext_test = self.options["Genes"]["data"]["dataframe"]["data"]["hovertext"][gene_i]
+                except IndexError:
+                    self.options["Genes"]["data"]["dataframe"]["data"]["hovertext"].append(str(hovertext))
+                #self.options["Genes"]["data"]["dataframe"]["data"]["hovertext"].append(str(hovertext))
+
+                gene_i += 1
 
             # Genes params
 
@@ -2186,6 +2252,7 @@ class VcfReader:
                     "marker": {"size": 5, "symbol": 0, "opacity": 1},
                 },
             }
+
 
             genes_scatter_category_type = "scatter"
             if genes_scatter_category_type not in params["Category"]:
