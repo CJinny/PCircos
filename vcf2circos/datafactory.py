@@ -62,8 +62,8 @@ class Datafactory:
         link = Link(pc)
         js = {}
         js["General"] = ideogram.options["General"]
-        #print("HISTO\n")
-        #for ite in data_histo:
+        # print("HISTO\n")
+        # for ite in data_histo:
         #    print(ite["file"]["dataframe"]["data"].keys())
 
         js["Category"] = {
@@ -72,6 +72,7 @@ class Datafactory:
             "cytoband": cytoband.merge_options(),
             "histogram": data_histo,
             "scatter": scatter.merge_options(),
+            "link": link.merge_options(),
         }
 
         # DEBUg
@@ -80,7 +81,7 @@ class Datafactory:
         #    o.write(data)
         # exit()
 
-        #Adjustement in case of no data for example when use overlapping snv only
+        # Adjustement in case of no data for example when use overlapping snv only
         remove_under = []
         for plot_type in js["Category"]:
             if plot_type == "histogram" or plot_type == "scatter":
@@ -99,13 +100,19 @@ class Datafactory:
 
         remove = []
         for plot_type in js["Category"]:
-           if plot_type == "histogram" or plot_type == "scatter":
-               if not js["Category"][plot_type]:
-                   remove.append(plot_type)
-        for item in remove:
-           del js["Category"][item]
-        
+            if plot_type == "histogram" or plot_type == "scatter":
+                if not js["Category"][plot_type]:
+                    remove.append(plot_type)
+            elif plot_type == "link":
+                if not js["Category"][plot_type]:
+                    remove.append(plot_type)
 
+        for item in remove:
+            del js["Category"][item]
+        if remove:
+            print("#[INFO] Whole category to remove: " + ", ".join(remove))
+        if remove_under:
+            print("#[INFO] index of category to remove: ", remove_under)
 
         # exit()
         # print(js["Category"]["scatter"].keys())
