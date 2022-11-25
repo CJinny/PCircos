@@ -32,7 +32,7 @@
 			"BBS4",
 			"BBS5"
 		],
-		"only_snv_in_sv_genes": true
+		"only_snv_in_sv_genes": false
 	},
 	"Exons": {
 		"show": false

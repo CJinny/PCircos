@@ -104,7 +104,9 @@ class Datafactory:
                 if not js["Category"][plot_type]:
                     remove.append(plot_type)
             elif plot_type == "link":
-                if not js["Category"][plot_type]:
+                if not js["Category"][plot_type]["file"]["dataframe"]["data"][
+                    "chr1_name"
+                ]:
                     remove.append(plot_type)
 
         for item in remove:
@@ -113,7 +115,8 @@ class Datafactory:
             print("#[INFO] Whole category to remove: " + ", ".join(remove))
         if remove_under:
             print("#[INFO] index of category to remove: ", remove_under)
-
+        # print(js["Category"].keys())
+        # print(js["Category"]["link"])
         # exit()
         # print(js["Category"]["scatter"].keys())
         # exit()
