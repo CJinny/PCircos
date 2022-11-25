@@ -193,7 +193,16 @@ class Histogram_(Plotconfig):
         data["type"].extend(df_data["Variants_type"].to_list())
         data["color"].extend(list(repeat("grey", len(df_data.index))))
         # data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
-        data["hovertext"].extend(list(generate_hovertext_var(df_data["Variants"])))
+        data["hovertext"].extend(
+            list(
+                generate_hovertext_var(
+                    df_data["Variants"],
+                    full_annot=100,
+                    true_annot=self.options["Variants"]["annotations"]["fields"],
+                )
+            )
+        )
+        print(data["hovertext"])
         # data["hovertext"].extend(
         #    [
         #        "Genes ("
@@ -373,7 +382,6 @@ class Histogram_(Plotconfig):
             if record:
                 yield record.split(",")
 
-    @timeit
     def histo_genes(self) -> dict:
         data = {}
         dico = {}

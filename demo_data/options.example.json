@@ -40,12 +40,8 @@
 	"Variants": {
 		"annotations": {
 			"fields": [
-				"chr",
-				"pos",
-				"ref",
-				"alt",
-				"nomen",
-				"*"
+				"SpliceAI",
+				"SPiP"
 			],
 			"show_none": true
 		},

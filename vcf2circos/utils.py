@@ -90,24 +90,69 @@ def check_data_plot(dico, list_keys=None):
         )
 
 
-def generate_hovertext_var(variants_list) -> Generator:
+def generate_hovertext_var(
+    variants_list, full_annot=None, true_annot=None
+) -> Generator:
     # print(self.data["Variants"])
     # print(len(self.data["Variants"]))
     # print(len(self.data["Chromosomes"]))
     # exit()
     # dict containing INFO field for each var
+    # print(variants_list)
+    # for var in variants_list:
+    #    yield "<br>".join(
+    #        [
+    #            ": ".join(
+    #                [
+    #                    str(value) if not isinstance(value, list) else str(value[0])
+    #                    for value in pairs
+    #                ]
+    #            )
+    #            for pairs in list(zip(var.keys(), var.values()))
+    #        ]
+    #    )
+    # 30 longueur char
+    # 15 hauteur annot
     for var in variants_list:
-        yield "<br>".join(
-            [
-                ": ".join(
+        tmp = []
+        # print(var)
+        for i, pairs in enumerate(list(zip(var.keys(), var.values()))):
+            if true_annot is not None:
+                # If user want this annotations
+                if pairs[0] not in true_annot:
+                    print(pairs[0] + " not in")
+                    continue
+                else:
+                    print(pairs[0])
+
+            if full_annot is not None:
+                if i == full_annot:
+                    break
+            else:
+                if i == 15:
+                    break
+            # Adjust annotations values 30 char max
+            if isinstance(pairs[1], list):
+                length = sum(
                     [
-                        str(value) if not isinstance(value, list) else str(value[0])
-                        for value in pairs
+                        len(items) if isinstance(items, str) else len(str(items))
+                        for items in pairs[1]
                     ]
                 )
-                for pairs in list(zip(var.keys(), var.values()))
-            ]
-        )
+            else:
+                length = len(pairs)
+            if length > 30 and true_annot is None:
+                print(pairs[1])
+                continue
+            else:
+                if not isinstance(pairs[1], list):
+                    tmp.append(":".join([pairs[0], str(pairs[1])]))
+                else:
+                    tmp.append(
+                        ": ".join([pairs[0], ",".join([str(val) for val in pairs[1]])])
+                    )
+        yield "\n".join(tmp)
+        # exit()
 
 
 def systemcall(command: str) -> list:
