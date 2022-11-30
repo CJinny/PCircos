@@ -72,7 +72,6 @@ class Datafactory:
             "cytoband": cytoband.merge_options(),
             "histogram": data_histo,
             "scatter": scatter.merge_options(),
-            "link": link.merge_options(),
         }
 
         # DEBUg
@@ -100,6 +99,13 @@ class Datafactory:
 
         remove = []
         for plot_type in js["Category"]:
+            if isinstance(js["Category"][plot_type], list):
+                print(
+                    js["Category"][plot_type][typ].keys()
+                    for typ in js["Category"][plot_type]
+                )
+            else:
+                print(js["Category"][plot_type].keys())
             if plot_type == "histogram" or plot_type == "scatter":
                 if not js["Category"][plot_type]:
                     remove.append(plot_type)
@@ -115,7 +121,10 @@ class Datafactory:
             print("#[INFO] Whole category to remove: " + ", ".join(remove))
         if remove_under:
             print("#[INFO] index of category to remove: ", remove_under)
-        # print(js["Category"].keys())
+        print(js["Category"].keys())
+        # with open("example_work", "w+") as out:
+        #   d = json.dumps(js, indent=4)
+        #   out.write(d)
         # print(js["Category"]["link"])
         # exit()
         # print(js["Category"]["scatter"].keys())
