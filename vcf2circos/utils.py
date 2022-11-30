@@ -80,7 +80,7 @@ def check_data_plot(dico, list_keys=None):
         )
     if "end" in dico:
         pass
-    #else:
+    # else:
     #    if list_keys is None:
     #        list_keys = ["chr_name", "start", "val", "ref", "alt", "type", "color"]
     #    assert list_keys == list(dico.keys())[:7], (
@@ -108,6 +108,26 @@ def generate_hovertext_var(variants_list) -> Generator:
                 for pairs in list(zip(var.keys(), var.values()))
             ]
         )
+
+
+# def generate_hovertext_var(variants_list) -> Generator:
+#    # print(self.data["Variants"])
+#    # print(len(self.data["Variants"]))
+#    # print(len(self.data["Chromosomes"]))
+#    # exit()
+#    # dict containing INFO field for each var
+#    for var in variants_list:
+#        yield "<br>".join(
+#            [
+#                ": ".join(
+#                    [
+#                        str(value) if not isinstance(value, list) else str(value[0])
+#                        for value in pairs
+#                    ]
+#                )
+#                for pairs in list(zip(var.keys(), var.values()))
+#            ]
+#        )
 
 
 def cast_svtype(svtype):
