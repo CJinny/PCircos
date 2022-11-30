@@ -45,6 +45,15 @@ class Scatter_(Plotconfig):
         # print(gene_scatter.keys())
         return gene_scatter
 
+    def val_data_col(self, dico):
+        for key, val in dico["file"]["dataframe"]["data"].items():
+            if key not in ["start", "end", "color", "genes", "exons"]:
+                # tmp[key] = list(np.repeat(val, 2))
+                # utils color match en fonciton du type
+                #    tmp_se.append(val)
+
+                yield key, list(np.repeat(val, 2))
+
     def adapt_data(self) -> list:
         final = []
         # list of dico from histo class
@@ -55,11 +64,11 @@ class Scatter_(Plotconfig):
             #    exit()
             if dico["trace"]["uid"].startswith("cnv_"):
                 tmp = {}
-                for key, val in dico["file"]["dataframe"]["data"].items():
-                    if key not in ["start", "end", "color", "genes", "exons"]:
-                        tmp[key] = list(np.repeat(val, 2))
-                        # utils color match en fonciton du type
-                        #    tmp_se.append(val)
+                od = OrderedDict()
+                tmp["chr_name"] = [
+                    *dico["file"]["dataframe"]["data"]["chr_name"],
+                    *dico["file"]["dataframe"]["data"]["chr_name"],
+                ]
                 tmp["start"] = []
                 for s, e in zip(
                     dico["file"]["dataframe"]["data"]["start"],
@@ -67,18 +76,33 @@ class Scatter_(Plotconfig):
                 ):
                     tmp["start"].append(s)
                     tmp["start"].append(e)
-                tmp["color"] = [variants_color[var] for var in tmp["type"]]
-                od = OrderedDict()
-                od["chr_name"] = tmp["chr_name"]
-                od["start"] = tmp["start"]
-                od["val"] = tmp["val"]
-                od["ref"] = tmp["ref"]
-                od["alt"] = tmp["alt"]
-                od["type"] = tmp["type"]
-                od["color"] = tmp["color"]
+                # print(dico.keys())
+                # print(dico["trace"]["uid"])
+                tmp["color"] = [
+                    variants_color[var]
+                    for var in dico["file"]["dataframe"]["data"]["type"]
+                ]
                 for key, val in tmp.items():
-                    if key not in od.keys():
+                    if key != "color":
                         od[key] = val
+
+                for key, val in dico["file"]["dataframe"]["data"].items():
+                    if key not in od.keys() and key not in [
+                        "genes",
+                        "end",
+                        "exons",
+                        "hovertext",
+                        "symbol",
+                    ]:
+                        od[key] = [*val, *val]
+                od["color"] = [*tmp["color"], *tmp["color"]]
+                od["hovertext"] = list(np.repeat("", len(od["color"])))
+                od["symbol"] = [
+                    *dico["file"]["dataframe"]["data"]["symbol"],
+                    *dico["file"]["dataframe"]["data"]["symbol"],
+                ]
+                # print(od)
+                # exit()
                 final.append([od, dico["radius"], dico["trace"]["uid"]])
             # Becarefull to not hoverride histogram data
             elif dico["trace"]["uid"] == "genes":
@@ -127,18 +151,11 @@ class Scatter_(Plotconfig):
 
         # pprint(final, sort_dicts=False)
         # exit
-        # check_data_plot(
-        #    final[0]["file"]["dataframe"]["data"],
-        #    list_keys=[
-        #        "chr_name",
-        #        "start",
-        #        "val",
-        #        "color",
-        #        "gene",
-        #        "infos",
-        #        "hovertext",
-        #    ],
-        # )
+        for dico in final:
+            check_data_plot(dico["file"]["dataframe"]["data"])
+            print(dico["trace"]["uid"])
+            print(dico["file"]["dataframe"]["data"].keys())
+            print("\n")
         return final
         # if len(final) == 1:
         #    return final[0]

@@ -171,18 +171,22 @@ class Histogram_(Plotconfig):
                 df_data["Variants_type"].to_list(),
             )
         ):
-            # DEBUGG
-            # print(*items)
-            # for val in items:
-            #    if isinstance(val, list):
-            #        print(type(val[0]))
-            #    else:
-            #        print(type(val))
-            # exit()
-            start.append(items[0])
-            stop.append(items[1])
-            ref.append(items[2])
-            alt.append(str(items[3][0]))
+            try:
+                # DEBUGG
+                # print(*items)
+                # for val in items:
+                #    if isinstance(val, list):
+                #        print(type(val[0]))
+                #    else:
+                #        print(type(val))
+                # exit()
+                start.append(items[0])
+                stop.append(items[1])
+                ref.append(items[2])
+                alt.append(str(items[3][0]))
+            except IndexError:
+                print("ERROR ", items)
+                exit()
 
         data["chr_name"].extend(df_data["Chromosomes"].to_list())
         data["start"].extend(start)
@@ -447,7 +451,12 @@ class Histogram_(Plotconfig):
         for i, info_dict in enumerate(info_field):
             if variant_type[i] not in ["OTHER", "SNV", "INDEL"]:
                 if "SV_start" in record[i].INFO and "SV_end" in record[i].INFO:
-                    yield (int(info_dict.get("SV_start")), int(info_dict.get("SV_end")))
+                    yield (
+                        int(info_dict.get("SV_start").split("|")[0]),
+                        int(info_dict.get("SV_end").split("|")[0]),
+                        record[i].REF,
+                        record[i].ALT,
+                    )
                 elif "END" in record[i].INFO:
                     yield (
                         int(record[i].POS),
