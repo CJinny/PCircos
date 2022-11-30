@@ -1,8 +1,8 @@
 {
 	"General": {
 		"title": "",
-		"width": 1400,
-		"height": 1400,
+		"width": 1200,
+		"height": 1200,
 		"plot_bgcolor": "white"
 	},
 	"Static": "../demo_data",
@@ -10,14 +10,8 @@
 	"Chromosomes": {
 		"cytoband": "True",
 		"list": [
-			"chr7",
-			"chr13",
-			"chr12",
-			"chr14",
-			"chr15",
 			"chrX",
-			"chr1",
-			"chr17"
+			"chr13"
 		]
 	},
 	"Genes": {

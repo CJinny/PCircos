@@ -80,14 +80,14 @@ def check_data_plot(dico, list_keys=None):
         )
     if "end" in dico:
         pass
-    else:
-        if list_keys is None:
-            list_keys = ["chr_name", "start", "val", "ref", "alt", "type", "color"]
-        assert list_keys == list(dico.keys())[:7], (
-            "ISSUES wrong list data order, leads to crash in mathematical operations \n\t..."
-            + ", ".join(list(dico.keys())[:7])
-            + " ,..."
-        )
+    #else:
+    #    if list_keys is None:
+    #        list_keys = ["chr_name", "start", "val", "ref", "alt", "type", "color"]
+    #    assert list_keys == list(dico.keys())[:7], (
+    #        "ISSUES wrong list data order, leads to crash in mathematical operations \n\t..."
+    #        + ", ".join(list(dico.keys())[:7])
+    #        + " ,..."
+    #    )
 
 
 def generate_hovertext_var(
@@ -153,6 +153,13 @@ def generate_hovertext_var(
                     )
         yield "\n".join(tmp)
         # exit()
+
+
+def cast_svtype(svtype):
+    """
+    In case of pip in svtype
+    """
+    return svtype.split("|")[0]
 
 
 def systemcall(command: str) -> list:

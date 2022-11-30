@@ -14,7 +14,7 @@ import pandas as pd
 # from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
 from tqdm import tqdm
-from vcf2circos.utils import variants_color, timeit
+from vcf2circos.utils import variants_color, timeit, cast_svtype
 from pprint import pprint
 import vcf
 
@@ -114,14 +114,36 @@ class Plotconfig:
         )
         # Last function to be called to generate class attribute
         self.data = self.process_vcf()
-        self.df_data = pd.DataFrame.from_dict(self.data).astype(
+        self.df_data = pd.DataFrame.from_dict(self.data)  # .astype(
+        #    {
+        #        "Chromosomes": str,
+        #        "Genes": str,
+        #        "Exons": str,
+        #        "Variants": object,
+        #        "Variants_type": str,
+        #        "CopyNumber": int,
+        #        "Color": str,
+        #    }
+        # )
+        # self.df_data = self.data_nan_formatting()
+
+    def data_nan_formatting(self):
+        df_tmp = pd.DataFrame.from_dict(self.data)
+        # df_tmp.to_csv("test_nanvar.tsv", sep="\t", header=True, index=False)
+        df = df_tmp.dropna()
+        if len(df_tmp.index) != len(df.index):
+            print(
+                "WARNING Removing ",
+                str(len(df_tmp.index) - len(df.index)) + " Variations",
+            )
+        return df.astype(
             {
                 "Chromosomes": str,
                 "Genes": str,
                 "Exons": str,
                 "Variants": object,
                 "Variants_type": str,
-                "CopyNumber": int,
+                "CopyNumber": object,
                 "Color": str,
             }
         )
@@ -163,22 +185,24 @@ class Plotconfig:
         self.breakend_record = []
         # self.breakend_genes = []
         for record in self.vcf_reader:
-            # particular process for breakend
-            if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
-                self.breakend_record.append(record)
-                # self.breakend_genes.append(self.get_genes_var(record))
-            else:
-                # print(record.INFO["SV"])
-                data["Chromosomes"].append(self.chr_adapt(record))
-                data["Genes"].append(self.get_genes_var(record))
-                data["Exons"].append("")
-                # TODO exons time consumming
-                data["Record"].append(record)
-                data["Variants"].append(record.INFO)
-                svtype, copynumber = self.get_copynumber_type(record)
-                data["Variants_type"].append(svtype)
-                data["CopyNumber"].append(copynumber)
-                data["Color"].append(variants_color[svtype])
+            # Could now do filter to only plot some specific gene or chromosomes
+            if self.chr_adapt(record) in self.options["Chromosomes"]["list"]:
+                # particular process for breakend
+                if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
+                    self.breakend_record.append(record)
+                    # self.breakend_genes.append(self.get_genes_var(record))
+                else:
+                    # print(record.INFO["SV"])
+                    data["Chromosomes"].append(self.chr_adapt(record))
+                    data["Genes"].append(self.get_genes_var(record))
+                    data["Exons"].append("")
+                    # TODO exons time consumming
+                    data["Record"].append(record)
+                    data["Variants"].append(record.INFO)
+                    svtype, copynumber = self.get_copynumber_type(record)
+                    data["Variants_type"].append(svtype)
+                    data["CopyNumber"].append(copynumber)
+                    data["Color"].append(variants_color[svtype])
         # test
         # def replace_(dico):
         #    rep = ""
@@ -210,10 +234,16 @@ class Plotconfig:
         # checking if CopyNumber annotation in info field
         if record.INFO.get("SVTYPE", ""):
             svtype = record.INFO.get("SVTYPE", "")
-            return (svtype, self.get_copynumber_values(svtype, record))
+            return (
+                cast_svtype(svtype),
+                self.get_copynumber_values(cast_svtype(svtype), record),
+            )
         elif record.INFO.get("SV_type", ""):
             svtype = record.INFO.get("SV_type", "")
-            return (svtype, self.get_copynumber_values(svtype, record))
+            return (
+                cast_svtype(svtype),
+                self.get_copynumber_values(cast_svtype(svtype), record),
+            )
         # It's SV in ALT field
         elif alt.startswith("<"):
             rep = {"<": "", ">": ""}
@@ -223,14 +253,17 @@ class Plotconfig:
             # in case of copy number in alt
             if re.search(r"$[0-9]+", svtype).group():
                 copynumber = re.search(r"$[0-9]+", svtype).group()
-                return (svtype, copynumber)
+                return (cast_svtype(svtype), copynumber)
             else:
                 svtype = svtype.split(":")[0]
                 if len(svtype) > 1:
                     copynumber = svtype[1]
-                    return (svtype, copynumber)
+                    return (cast_svtype(svtype), copynumber)
                 else:
-                    return (svtype, self.get_copynumber_values(svtype, record))
+                    return (
+                        cast_svtype(svtype),
+                        self.get_copynumber_values(cast_svtype(svtype), record),
+                    )
         # SNV or INDEL identify y pyVCF
         elif record.var_type == "snp" or record.var_type == "indel":
             return (self.cast_snv_indels(record), 6)
@@ -323,19 +356,35 @@ class Plotconfig:
             ] or record.INFO.get("SV_type") not in ["BND, TRA", "INV", None]:
                 # if record.INFO.get("SVTYPE") != None or record.INFO.get("SV_type") != None:
                 # assert "SVLEN" in record.INFO
+
                 # print(record.INFO["SVLEN"])
                 try:
+                    # print(record.INFO["SVLEN"])
                     gene_name = self.find_record_gene(
                         [
                             record.CHROM,
                             record.POS,
-                            int(record.POS) + int(record.INFO["SVLEN"][0]),
+                            int(record.POS) + int(float(record.INFO["SVLEN"][0])),
                         ]
                     )
                     return ",".join(gene_name)
-                except KeyError:
-                    print("ERROR missing SVLEN annotation for record ", record)
-                    exit()
+                except (KeyError, ValueError):
+                    try:
+                        # print(record.INFO["SV_length"])
+                        gene_name = self.find_record_gene(
+                            [
+                                record.CHROM,
+                                record.POS,
+                                int(record.POS) + int(float(record.INFO["SV_length"])),
+                            ]
+                        )
+                        return ",".join(gene_name)
+                    except (KeyError, ValueError):
+                        print(
+                            "ERROR missing SVLEN annotation for record ",
+                            record.INFO["SV_length"],
+                        )
+                        exit()
             # SNV indel
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
