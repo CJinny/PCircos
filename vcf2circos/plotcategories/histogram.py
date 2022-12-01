@@ -344,6 +344,8 @@ class Histogram_(Plotconfig):
         #    print("\n")
         # exit()
         # dico["file"]["dataframe"]["data"]
+        # Extra
+        whole_cn.extend(self.generate_extra_plots_from_df())
 
         # Genes plots
         whole_cn.append(self.histo_genes())
@@ -491,3 +493,37 @@ class Histogram_(Plotconfig):
                     record[i].REF,
                     record[i].ALT,
                 )
+
+    def generate_extra_plots_from_df(self):
+        if "gc" in self.options["Extra"]:
+            gc = []
+            # self.gcplus = pd.DataFrame(osj(self.options["static"], #"histogram_pos_chr"))
+            for gc_ in ["histogram_pos_chr.txt", "histogram_neg_chr.txt"]:
+                gc_dict = {
+                    "show": "True",
+                    "customfillcolor": "False",
+                    "file": {
+                        "path": osj(self.options["Static"], gc_),
+                        "header": "infer",
+                        "sep": "\t",
+                    },
+                    "sortbycolor": "False",
+                    "colorcolumn": "None",
+                    "radius": {"R0": 0.90, "R1": 0.94},
+                    "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>LogFC:{}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ',
+                    "trace": {
+                        "hoverinfo": "text",
+                        "mode": "markers",
+                        "marker": {"size": 0, "opacity": 0},
+                        "uid": "extra",
+                    },
+                    "layout": {
+                        "type": "path",
+                        "opacity": 1,
+                        "fillcolor": "blue",
+                        "line": {"color": "blue", "width": 0},
+                    },
+                }
+                gc.append(gc_dict)
+
+            return gc

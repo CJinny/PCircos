@@ -89,9 +89,10 @@ class Datafactory:
                 if isinstance(js["Category"][plot_type], list):
                     for i, val in enumerate(js["Category"][plot_type]):
                         # print(val["file"]["dataframe"]["data"]["chr_name"])
-                        if not val["file"]["dataframe"]["data"]["chr_name"]:
-                            # print(val["file"]["dataframe"]["data"]["chr_name"])
-                            remove_under.append((plot_type, i))
+                        if val["trace"]["uid"].startswith("cnv_"):
+                            if not val["file"]["dataframe"]["data"]["chr_name"]:
+                                # print(val["file"]["dataframe"]["data"]["chr_name"])
+                                remove_under.append((plot_type, i))
         ## Could remove only one ore need to build a copy
         if remove_under:
             print("#[INFO] index of category to remove: " + ", ".join(remove_under))
@@ -101,13 +102,6 @@ class Datafactory:
 
         remove = []
         for plot_type in js["Category"]:
-            if isinstance(js["Category"][plot_type], list):
-                print(
-                    js["Category"][plot_type][typ].keys()
-                    for typ in js["Category"][plot_type]
-                )
-            else:
-                print(js["Category"][plot_type].keys())
             if plot_type == "histogram" or plot_type == "scatter":
                 if not js["Category"][plot_type]:
                     remove.append(plot_type)

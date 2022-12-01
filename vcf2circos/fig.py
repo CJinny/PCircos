@@ -633,11 +633,16 @@ class Figure(Complex):
 
             except Exception:
                 print(f"[WARN] debugging...")
-                # print(self.get_data[key])
+                print(self.get_data[key])
                 print(f"[WARN] end of debugging...")
 
             for j in range(len(data_array_list)):
+                print(key)
+                print(j)
+                print(self.categories[key][j])
                 hovertextformat = self.categories[key][j]["hovertextformat"]
+                if key == "histogram":
+                    hovertextformat = ' "<b>{}:{}-{}</br><br><br>{}".format(a[i,0], a[i,1], a[i,2], a[i,3])'
 
                 hvtext.append([])
                 a = data_array_list[j]

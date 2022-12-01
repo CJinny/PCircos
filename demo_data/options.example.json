@@ -9,10 +9,7 @@
 	"Assembly": "hg19",
 	"Chromosomes": {
 		"cytoband": "True",
-		"list": [
-			"chr1",
-			"chr13"
-		]
+		"list": []
 	},
 	"Genes": {
 		"list": [
@@ -42,5 +39,8 @@
 			"space": 0.01,
 			"nrings": 6
 		}
-	}
+	},
+	"Extra": [
+		"gc"
+	]
 }
