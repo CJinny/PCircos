@@ -186,7 +186,10 @@ class Plotconfig:
         # self.breakend_genes = []
         for record in self.vcf_reader:
             # Could now do filter to only plot some specific gene or chromosomes
-            if self.chr_adapt(record) in self.options["Chromosomes"]["list"]:
+            if (
+                self.chr_adapt(record) in self.options["Chromosomes"]["list"]
+                or not self.options["Chromosomes"]["list"]
+            ):
                 # particular process for breakend
                 if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
                     self.breakend_record.append(record)

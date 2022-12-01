@@ -72,6 +72,7 @@ class Datafactory:
             "cytoband": cytoband.merge_options(),
             "histogram": data_histo,
             "scatter": scatter.merge_options(),
+            "link": link.merge_options(),
         }
 
         # DEBUg
@@ -93,6 +94,7 @@ class Datafactory:
                             remove_under.append((plot_type, i))
         ## Could remove only one ore need to build a copy
         if remove_under:
+            print("#[INFO] index of category to remove: " + ", ".join(remove_under))
             # print("DELETE empty")
             del js["Category"][remove_under[0][0]][remove_under[0][1]]
             # print(js["Category"][remove_under[0][0]])
@@ -114,14 +116,14 @@ class Datafactory:
                     "chr1_name"
                 ]:
                     remove.append(plot_type)
-
-        for item in remove:
-            del js["Category"][item]
         if remove:
             print("#[INFO] Whole category to remove: " + ", ".join(remove))
-        if remove_under:
-            print("#[INFO] index of category to remove: ", remove_under)
-        print(js["Category"].keys())
+            for item in remove:
+                del js["Category"][item]
+
+        # print(js["Category"].keys())
+        # print(js["Category"]["link"]["file"]["dataframe"]["data"])
+        # exit()
         # with open("example_work", "w+") as out:
         #   d = json.dumps(js, indent=4)
         #   out.write(d)

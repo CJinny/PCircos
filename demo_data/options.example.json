@@ -10,7 +10,7 @@
 	"Chromosomes": {
 		"cytoband": "True",
 		"list": [
-			"chrX",
+			"chr1",
 			"chr13"
 		]
 	},
@@ -33,14 +33,7 @@
 	},
 	"Variants": {
 		"annotations": {
-			"fields": [
-				"chr",
-				"pos",
-				"ref",
-				"alt",
-				"nomen",
-				"*"
-			],
+			"fields": [],
 			"show_none": true
 		},
 		"rings": {
