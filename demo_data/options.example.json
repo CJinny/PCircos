@@ -10,7 +10,7 @@
 	"Chromosomes": {
 		"cytoband": "True",
 		"list": [
-			"chrX",
+			"chr1",
 			"chr13"
 		]
 	},
@@ -34,8 +34,20 @@
 	"Variants": {
 		"annotations": {
 			"fields": [
+				"SV_chrom",
+				"SV_start",
+				"SV_end",
+				"FORMAT",
 				"SpliceAI",
-				"SPiP"
+				"SPiP",
+				"ACMG",
+				"varankVarScore",
+				"gene",
+				"zygisity",
+				"rsClinicalSignificance",
+				"OMIM_ID",
+				"OMIM_inheritance",
+				"OMIM_phenotype"
 			],
 			"show_none": true
 		},
