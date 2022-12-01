@@ -33,22 +33,7 @@
 	},
 	"Variants": {
 		"annotations": {
-			"fields": [
-				"SV_chrom",
-				"SV_start",
-				"SV_end",
-				"FORMAT",
-				"SpliceAI",
-				"SPiP",
-				"ACMG",
-				"varankVarScore",
-				"gene",
-				"zygisity",
-				"rsClinicalSignificance",
-				"OMIM_ID",
-				"OMIM_inheritance",
-				"OMIM_phenotype"
-			],
+			"fields": [],
 			"show_none": true
 		},
 		"rings": {

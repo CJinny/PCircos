@@ -42,9 +42,13 @@ class Link(Plotconfig):
             tmp = {}
             tmp[(record.CHROM, record.POS)] = {"record_info": record.INFO, "values": []}
             for alts in record.ALT:
-                chrom_pos = self.extract_chr_pos_hover_from_bnd(alts.__str__(), record)
-                if not chrom_pos[0].startswith("chr"):
-                    chrom_pos[0] = "chr" + chrom_pos[0]
+                chrom_pos_tmp = self.extract_chr_pos_hover_from_bnd(
+                    alts.__str__(), record
+                )
+                if not chrom_pos_tmp[0].startswith("chr"):
+                    chrom_pos = ("chr" + chrom_pos_tmp[0], chrom_pos_tmp[1])
+                else:
+                    chrom_pos = (chrom_pos_tmp[0], chrom_pos_tmp[1])
                 tmp[(record.CHROM, record.POS)]["values"].append(chrom_pos)
             data.append(tmp)
         return data
@@ -136,8 +140,8 @@ class Link(Plotconfig):
             "opacity": 0.8,
             "line": {"color": "gray", "width": 2.5},
         }
-        #print(data["chr1_name"])
-        #print(data["chr2_name"])
+        # print(data["chr1_name"])
+        # print(data["chr2_name"])
         # exit()
         plot["file"]["dataframe"]["data"] = self.correct_chosen_var(data)
         return plot

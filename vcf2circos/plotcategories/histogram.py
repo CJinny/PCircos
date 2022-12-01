@@ -201,12 +201,12 @@ class Histogram_(Plotconfig):
             list(
                 generate_hovertext_var(
                     df_data["Variants"],
-                    full_annot=100,
+                    full_annot=20,
                     true_annot=self.options["Variants"]["annotations"]["fields"],
                 )
             )
         )
-        print(data["hovertext"])
+        # print(data["hovertext"])
         # data["hovertext"].extend(
         #    [
         #        "Genes ("

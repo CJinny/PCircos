@@ -5,7 +5,7 @@ from collections import OrderedDict
 from os.path import join as osj
 import numpy as np
 from pprint import pprint
-from itertools import repeat
+from itertools import repeat, chain
 
 
 class Scatter_(Plotconfig):
@@ -65,10 +65,14 @@ class Scatter_(Plotconfig):
             if dico["trace"]["uid"].startswith("cnv_"):
                 tmp = {}
                 od = OrderedDict()
-                tmp["chr_name"] = [
-                    *dico["file"]["dataframe"]["data"]["chr_name"],
-                    *dico["file"]["dataframe"]["data"]["chr_name"],
-                ]
+                tmp["chr_name"] = list(
+                    chain(
+                        *zip(
+                            dico["file"]["dataframe"]["data"]["chr_name"],
+                            dico["file"]["dataframe"]["data"]["chr_name"],
+                        )
+                    )
+                )
                 tmp["start"] = []
                 for s, e in zip(
                     dico["file"]["dataframe"]["data"]["start"],
@@ -94,18 +98,27 @@ class Scatter_(Plotconfig):
                         "hovertext",
                         "symbol",
                     ]:
-                        od[key] = [*val, *val]
-                od["color"] = [*tmp["color"], *tmp["color"]]
-                od["hovertext"] = list(np.repeat("", len(od["color"])))
-                od["hovertext"] = [
-                    *dico["file"]["dataframe"]["data"]["hovertext"],
-                    *dico["file"]["dataframe"]["data"]["hovertext"],
-                ]
-                od["symbol"] = [
-                    *dico["file"]["dataframe"]["data"]["symbol"],
-                    *dico["file"]["dataframe"]["data"]["symbol"],
-                ]
-                # print(od)
+                        od[key] = list(chain(*zip(val, val)))
+                od["color"] = list(chain(*zip(tmp["color"], tmp["color"])))
+                # od["hovertext"] = list(np.repeat("", len(od["color"])))
+                od["hovertext"] = list(
+                    chain(
+                        *zip(
+                            dico["file"]["dataframe"]["data"]["hovertext"],
+                            dico["file"]["dataframe"]["data"]["hovertext"],
+                        )
+                    )
+                )
+                od["symbol"] = list(
+                    chain(
+                        *zip(
+                            dico["file"]["dataframe"]["data"]["symbol"],
+                            dico["file"]["dataframe"]["data"]["symbol"],
+                        )
+                    )
+                )
+                if dico["trace"]["uid"] == "cnv_scatter_level_4":
+                    print(od)
                 # exit()
                 final.append([od, dico["radius"], dico["trace"]["uid"]])
             # Becarefull to not hoverride histogram data
