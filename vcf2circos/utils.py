@@ -90,24 +90,102 @@ def check_data_plot(dico, list_keys=None):
     #    )
 
 
-def generate_hovertext_var(variants_list) -> Generator:
+def delete_multiple_element(list_object, indices):
+    """
+    from https://thispointer.com/python-remove-elements-from-list-by-index/
+    """
+    indices = sorted(indices, reverse=True)
+    for idx in indices:
+        if idx < len(list_object):
+            list_object.pop(idx)
+
+
+def map_annotations(field_annot):
+    if field_annot is not None:
+        uniq = list(set(str(field_annot).split("|")))
+        if len(uniq) == 1:
+            return uniq[0]
+        else:
+            return field_annot
+    else:
+        return "."
+
+
+def generate_hovertext_var(
+    variants_list, full_annot=None, true_annot=None
+) -> Generator:
     # print(self.data["Variants"])
     # print(len(self.data["Variants"]))
     # print(len(self.data["Chromosomes"]))
     # exit()
     # dict containing INFO field for each var
+    # print(variants_list)
+    # for var in variants_list:
+    #    yield "<br>".join(
+    #        [
+    #            ": ".join(
+    #                [
+    #                    str(value) if not isinstance(value, list) else str(value[0])
+    #                    for value in pairs
+    #                ]
+    #            )
+    #            for pairs in list(zip(var.keys(), var.values()))
+    #        ]
+    #    )
+    # 30 longueur char
+    # 15 hauteur annot
     for var in variants_list:
-        yield "<br>".join(
-            [
-                ": ".join(
-                    [
-                        str(value) if not isinstance(value, list) else str(value[0])
-                        for value in pairs
-                    ]
+        tmp = []
+        for i, pairs in enumerate(list(zip(var.keys(), var.values()))):
+            # if pairs[0] == "OMIM_phenotype":
+            # print(pairs[1])
+            if true_annot:
+                # If user want this annotations
+                if pairs[0] not in true_annot:
+                    # print(pairs[0] + " not in")
+                    continue
+
+            if full_annot is not None:
+                if i == full_annot:
+                    break
+            else:
+                if i == 15:
+                    break
+            if not isinstance(pairs[1], list):
+                tmp.append(
+                    ":".join([pairs[0], list(map(map_annotations, [pairs[1]]))[0]])
                 )
-                for pairs in list(zip(var.keys(), var.values()))
-            ]
-        )
+            else:
+                tmp.append(
+                    ": ".join(
+                        [pairs[0], ",".join(list(map(map_annotations, pairs[1])))]
+                    )
+                )
+        to_add = []
+        for items in tmp:
+            if len(items) > 40:
+                items = "".join(items[:40]) + "..."
+                to_add.append(items)
+            else:
+                to_add.append(items)
+        yield "<br>".join(to_add)
+        # exit()
+        # "SV_chrom",
+
+
+# "SV_start",
+# "SV_end",
+# "FORMAT",
+# "SpliceAI",
+# "SPiP",
+# "ACMG",
+# "varankVarScore",
+# "gene",
+# "zygisity",
+# "rsClinicalSignificance",
+# "OMIM_ID",
+# "OMIM_inheritance",
+# "OMIM_phenotype"
 
 
 # def generate_hovertext_var(variants_list) -> Generator:
@@ -349,6 +427,10 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
 
 
 def timeit(func):
+    """
+    https://dev.to/kcdchennai/python-decorator-to-measure-execution-time-54hk
+    """
+
     @wraps(func)
     def timeit_wrapper(*args, **kwargs):
         start_time = time.perf_counter()
