@@ -97,6 +97,10 @@ class Scatter_(Plotconfig):
                         od[key] = [*val, *val]
                 od["color"] = [*tmp["color"], *tmp["color"]]
                 od["hovertext"] = list(np.repeat("", len(od["color"])))
+                od["hovertext"] = [
+                    *dico["file"]["dataframe"]["data"]["hovertext"],
+                    *dico["file"]["dataframe"]["data"]["hovertext"],
+                ]
                 od["symbol"] = [
                     *dico["file"]["dataframe"]["data"]["symbol"],
                     *dico["file"]["dataframe"]["data"]["symbol"],
@@ -153,9 +157,9 @@ class Scatter_(Plotconfig):
         # exit
         for dico in final:
             check_data_plot(dico["file"]["dataframe"]["data"])
-            print(dico["trace"]["uid"])
-            print(dico["file"]["dataframe"]["data"].keys())
-            print("\n")
+            # print(dico["trace"]["uid"])
+            # print(dico["file"]["dataframe"]["data"].keys())
+            # print("\n")
         return final
         # if len(final) == 1:
         #    return final[0]

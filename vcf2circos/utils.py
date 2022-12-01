@@ -80,7 +80,7 @@ def check_data_plot(dico, list_keys=None):
         )
     if "end" in dico:
         pass
-    #else:
+    # else:
     #    if list_keys is None:
     #        list_keys = ["chr_name", "start", "val", "ref", "alt", "type", "color"]
     #    assert list_keys == list(dico.keys())[:7], (
@@ -88,6 +88,27 @@ def check_data_plot(dico, list_keys=None):
     #        + ", ".join(list(dico.keys())[:7])
     #        + " ,..."
     #    )
+
+
+def delete_multiple_element(list_object, indices):
+    """
+    from https://thispointer.com/python-remove-elements-from-list-by-index/
+    """
+    indices = sorted(indices, reverse=True)
+    for idx in indices:
+        if idx < len(list_object):
+            list_object.pop(idx)
+
+
+def map_annotations(field_annot):
+    if field_annot is not None:
+        uniq = list(set(str(field_annot).split("|")))
+        if len(uniq) == 1:
+            return uniq[0]
+        else:
+            return field_annot
+    else:
+        return "."
 
 
 def generate_hovertext_var(
@@ -115,15 +136,14 @@ def generate_hovertext_var(
     # 15 hauteur annot
     for var in variants_list:
         tmp = []
-        # print(var)
         for i, pairs in enumerate(list(zip(var.keys(), var.values()))):
-            if true_annot is not None:
+            # if pairs[0] == "OMIM_phenotype":
+            # print(pairs[1])
+            if true_annot:
                 # If user want this annotations
                 if pairs[0] not in true_annot:
-                    print(pairs[0] + " not in")
+                    # print(pairs[0] + " not in")
                     continue
-                else:
-                    print(pairs[0])
 
             if full_annot is not None:
                 if i == full_annot:
@@ -131,28 +151,41 @@ def generate_hovertext_var(
             else:
                 if i == 15:
                     break
-            # Adjust annotations values 30 char max
-            if isinstance(pairs[1], list):
-                length = sum(
-                    [
-                        len(items) if isinstance(items, str) else len(str(items))
-                        for items in pairs[1]
-                    ]
+            if not isinstance(pairs[1], list):
+                tmp.append(
+                    ":".join([pairs[0], list(map(map_annotations, [pairs[1]]))[0]])
                 )
             else:
-                length = len(pairs)
-            if length > 30 and true_annot is None:
-                print(pairs[1])
-                continue
-            else:
-                if not isinstance(pairs[1], list):
-                    tmp.append(":".join([pairs[0], str(pairs[1])]))
-                else:
-                    tmp.append(
-                        ": ".join([pairs[0], ",".join([str(val) for val in pairs[1]])])
+                tmp.append(
+                    ": ".join(
+                        [pairs[0], ",".join(list(map(map_annotations, pairs[1])))]
                     )
-        yield "\n".join(tmp)
+                )
+        to_add = []
+        for items in tmp:
+            if len(items) > 40:
+                items = "".join(items[:40]) + "..."
+                to_add.append(items)
+            else:
+                to_add.append(items)
+        yield "<br>".join(to_add)
         # exit()
+        # "SV_chrom",
+
+
+# "SV_start",
+# "SV_end",
+# "FORMAT",
+# "SpliceAI",
+# "SPiP",
+# "ACMG",
+# "varankVarScore",
+# "gene",
+# "zygisity",
+# "rsClinicalSignificance",
+# "OMIM_ID",
+# "OMIM_inheritance",
+# "OMIM_phenotype"
 
 
 def cast_svtype(svtype):
@@ -374,6 +407,10 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
 
 
 def timeit(func):
+    """
+    https://dev.to/kcdchennai/python-decorator-to-measure-execution-time-54hk
+    """
+
     @wraps(func)
     def timeit_wrapper(*args, **kwargs):
         start_time = time.perf_counter()

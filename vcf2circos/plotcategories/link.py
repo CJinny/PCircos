@@ -1,5 +1,10 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
-from vcf2circos.utils import generate_hovertext_var, variants_color
+from vcf2circos.utils import (
+    generate_hovertext_var,
+    variants_color,
+    delete_multiple_element,
+    timeit,
+)
 import re
 from pprint import pprint
 from itertools import repeat
@@ -8,6 +13,7 @@ from itertools import repeat
 class Link(Plotconfig):
     def __init__(self, plotconfig) -> None:
         self.plotconfig = plotconfig
+        # self.chr_values_breakend
         # print(self.breakend_record)
         # print(self.breakend_genes)
         # self.merge_options()
@@ -15,6 +21,19 @@ class Link(Plotconfig):
     def __getattr__(self, item):
         if hasattr(self.plotconfig, item):
             return getattr(self.plotconfig, item)
+
+    def correct_chosen_var(self, dico):
+        values = {"chr1_name": [], "chr2_name": []}
+        for key, val in dico.items():
+            if key.endswith("_name"):
+                for i, chrs in enumerate(val):
+                    if chrs not in self.data["Chromosomes"]:
+                        values[key].append(i)
+        # for v in [*values["chr1_name"], [*values["chr2_name"]]]:
+        #    print(v)
+        for key, val in dico.items():
+            delete_multiple_element(val, [*values["chr1_name"], *values["chr2_name"]])
+        return dico
 
     def adapt_data(self):
         data = []
@@ -24,6 +43,8 @@ class Link(Plotconfig):
             tmp[(record.CHROM, record.POS)] = {"record_info": record.INFO, "values": []}
             for alts in record.ALT:
                 chrom_pos = self.extract_chr_pos_hover_from_bnd(alts.__str__(), record)
+                if not chrom_pos[0].startswith("chr"):
+                    chrom_pos[0] = "chr" + chrom_pos[0]
                 tmp[(record.CHROM, record.POS)]["values"].append(chrom_pos)
             data.append(tmp)
         return data
@@ -31,7 +52,7 @@ class Link(Plotconfig):
     def extract_chr_pos_hover_from_bnd(self, string: str, record: object) -> int:
         try:
             return (
-                "chr" + re.search(r"(?<=\[|\])[^:]+", string).group(),
+                re.search(r"(?<=\[|\])[^:]+", string).group(),
                 int(re.search(r"(?<=:)[0-9]+", string).group()),
                 # generate_hovertext_var(record),
             )
@@ -44,6 +65,7 @@ class Link(Plotconfig):
         # chr_tmp = string.split(":")[0]
         # pos_tmp = string.split(":")[1]
 
+    @timeit
     def merge_options(self) -> list:
         plot = {}
         data = {
@@ -62,7 +84,11 @@ class Link(Plotconfig):
         for link in tmp:
             for key, values in link.items():
                 for v in values["values"]:
-                    data["chr1_name"].append(key[0])
+                    if not key[0].startswith("chr"):
+                        chr = "chr" + key[0]
+                    else:
+                        chr = key[0]
+                    data["chr1_name"].append(chr)
                     data["chr1_start"].append(key[1])
                     data["chr1_end"].append(key[1])
                     data["chr2_name"].append(v[0])
@@ -79,7 +105,7 @@ class Link(Plotconfig):
                     data["symbol"].append(0)
         # pprint(data, sort_dicts=False)
 
-        plot["show"] = ("True",)
+        plot["show"] = "True"
         plot["file"] = {
             "path": "",
             "header": "infer",
@@ -108,7 +134,10 @@ class Link(Plotconfig):
             "type": "path",
             "layer": "above",
             "opacity": 0.8,
-            "line": {"color": "gray", "width": 5},
+            "line": {"color": "gray", "width": 2.5},
         }
-
+        #print(data["chr1_name"])
+        #print(data["chr2_name"])
+        # exit()
+        plot["file"]["dataframe"]["data"] = self.correct_chosen_var(data)
         return plot
