@@ -50,16 +50,12 @@ class Datafactory:
         histogram = Histogram_(pc)
         cytoband = Cytoband(pc)
         data_histo = histogram.merge_options(cytoband.data_cytoband())
-        # If snv overlapping only
-        # pc.data = histogram.data
-        # pc.df_data = histogram.df_data
-
-        # pc.data = histogram.data
         ideogram = Ideogram(pc)
         ring = Ring(pc, ["genes"])
-
         scatter = Scatter_(pc, data_histo.copy())
         link = Link(pc)
+
+        # Final dict containing all plots informations
         js = {}
         js["General"] = ideogram.options["General"]
         # print("HISTO\n")

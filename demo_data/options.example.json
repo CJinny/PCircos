@@ -34,7 +34,7 @@
 			"show_none": true
 		},
 		"rings": {
-			"position": 0.5,
+			"position": 0.3,
 			"height": 0.04,
 			"space": 0.01,
 			"nrings": 6
