@@ -4,6 +4,7 @@ import sys
 from vcf2circos.parseargs import Parseargs
 from vcf2circos.datafactory import Datafactory
 from pprint import pprint
+from vcf2circos.utils import launch
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "."))
