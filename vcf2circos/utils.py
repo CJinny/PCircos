@@ -235,7 +235,11 @@ def cast_svtype(svtype):
     """
     In case of pip in svtype
     """
-    return svtype.split("|")[0]
+    svtype = svtype.split("|")[0]
+    if "<" in svtype or ">" in svtype:
+        svtype = svtype.replace("<", "")
+        svtype = svtype.replace(">", "")
+    return svtype
 
 
 def systemcall(command: str) -> list:

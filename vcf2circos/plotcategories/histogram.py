@@ -236,11 +236,16 @@ class Histogram_(Plotconfig):
         d["file"] = d_file
         d["sortbycolor"] = "False"
         d["colorcolumn"] = 7
-        radius = (
-            self.rangescale[cn]
-            + self.rangescale[cn]
-            + self.options["Variants"]["rings"]["height"]
-        ) / 2
+        try:
+            radius = (
+                self.rangescale[cn]
+                + self.rangescale[cn]
+                + self.options["Variants"]["rings"]["height"]
+            ) / 2
+        except TypeError:
+            print(cn)
+            print(d_file)
+            exit()
         d["radius"] = {
             "R0": radius,
             "R1": radius,

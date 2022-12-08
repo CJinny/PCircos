@@ -207,8 +207,16 @@ class Plotconfig:
                     data["Variants"].append(record.INFO)
                     svtype, copynumber = self.get_copynumber_type(record)
                     data["Variants_type"].append(svtype)
-                    data["CopyNumber"].append(copynumber)
-                    data["Color"].append(variants_color[svtype])
+                    try:
+                        data["Color"].append(variants_color[svtype])
+                    except KeyError:
+                        data["Color"].append(variants_color["CNV"])
+                    if copynumber is None:
+                        data["CopyNumber"].append(2)
+                    else:
+                        if copynumber > 6:
+                            copynumber = 6
+                        data["CopyNumber"].append(copynumber)
         # test
         # def replace_(dico):
         #    rep = ""
@@ -236,6 +244,23 @@ class Plotconfig:
         take VCF variant object and return variant type and number of copy in tuple
         REQUIRED monosample vcf
         """
+        # if only copy number in alt....
+        if str(record.ALT[0]).startswith("<CN") and str(record.ALT[0]) != "<CNV>":
+            cn = str(record.ALT[0])
+            cn = cn.replace("<", "")
+            cn = cn.replace(">", "")
+            return ("CNV", int(cn[-1]))
+        # if both copy number and sv type in alt
+        if str(record.ALT[0]).startswith("<"):
+            alt_tmp = str(record.ALT[0]).split(":")
+            if len(alt_tmp) > 1:
+                print(alt_tmp)
+                alt = alt_tmp[0]
+                alt = alt.replace("<", "")
+                cn = alt_tmp[1].replace(">", "")
+                if cn.startswith("CN"):
+                    return (alt, int(cn[-1]))
+        # trying to retrieve usefull informations in info field
         alt = str(record.ALT[0])
         # checking if CopyNumber annotation in info field
         if record.INFO.get("SVTYPE", ""):
@@ -318,6 +343,8 @@ class Plotconfig:
         """
         Greedy, for now need good info in vcf annotations
         """
+        if isinstance(coord[2], list):
+            coord[2] = coord[2].split("|")
         gene_list = []
         # only chr for this variants
         refgene_chr = self.df_genes.loc[self.df_genes["chr_name"] == coord[0]]
@@ -385,12 +412,21 @@ class Plotconfig:
                             ]
                         )
                         return ",".join(gene_name)
-                    except (KeyError, ValueError):
-                        print(
-                            "ERROR missing SVLEN annotation for record ",
-                            record.INFO["SV_length"],
-                        )
-                        exit()
+                    except (KeyError, ValueError, TypeError):
+                        try:
+                            gene_name = self.find_record_gene(
+                                [
+                                    record.CHROM,
+                                    record.POS,
+                                    int(float(record.INFO["SV_end"])),
+                                ]
+                            )
+                        except (KeyError, ValueError, TypeError):
+                            print(
+                                "ERROR missing SVLEN annotation for record ",
+                                record,
+                            )
+                            exit()
             # SNV indel
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
