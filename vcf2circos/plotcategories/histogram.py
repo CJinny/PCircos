@@ -69,7 +69,12 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
+                "marker": {
+                    "size": 0,
+                    "symbol": 0,
+                    "color": None,
+                    "opacity": 0,
+                },  # 8
             },
             "layout": {
                 "type": "path",
@@ -437,7 +442,12 @@ class Histogram_(Plotconfig):
             "uid": "genes",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {"size": 3, "symbol": 0, "color": data["color"], "opacity": 1,},
+            "marker": {
+                "size": 3,
+                "symbol": 0,
+                "color": data["color"],
+                "opacity": 1,
+            },
         }
         dico["layout"] = {
             "type": "path",
@@ -515,7 +525,7 @@ class Histogram_(Plotconfig):
                         "hoverinfo": "text",
                         "mode": "markers",
                         "marker": {"size": 0, "opacity": 0},
-                        "uid": "extra",
+                        "uid": "extra_gc",
                     },
                     "layout": {
                         "type": "path",

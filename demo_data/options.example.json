@@ -12,26 +12,11 @@
 		"list": []
 	},
 	"Genes": {
-		"list": [
-			"targets",
-			"EGFR",
-			"BRCA1",
-			"BRCA2",
-			"TP53",
-			"BBS1",
-			"BBS2",
-			"BBS4",
-			"BBS5"
-		],
 		"only_snv_in_sv_genes": false
-	},
-	"Exons": {
-		"show": false
 	},
 	"Variants": {
 		"annotations": {
-			"fields": [],
-			"show_none": true
+			"fields": []
 		},
 		"rings": {
 			"position": 0.5,
