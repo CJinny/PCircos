@@ -1,7 +1,0 @@
-chr1_name	chr1_start	chr1_end	chr_name	chr2_start	chr2_end	color
-chr8	0	74597480	hs11	0	17433157	green
-chr9	0	66454095	hs10	0	27645771	yellow
-chr12	0	23890962	hs15	100	40336036	purple
-chr13	0	23988527	hs13	60000000	73988527	grey
-chr14	0	10988137	hs14	17000000	33000000	pink
-

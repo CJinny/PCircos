@@ -1,3 +1,0 @@
-chr1_name	chr1_start	chr1_end	chr_name	chr2_start	chr2_end	color
-chr6	10000000	90000000	hs16	0	75708370	green
-chr3	25480551	95480551	hs19	0	56928874	magenta
