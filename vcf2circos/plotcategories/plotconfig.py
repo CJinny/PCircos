@@ -46,7 +46,10 @@ class Plotconfig:
         self.filename = filename
         self.options = options
         self.default_options = json.load(
-            open(osj(self.options["Static"] + "/options.general.json"), "r",)
+            open(
+                osj(self.options["Static"] + "/options.general.json"),
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(filename)
@@ -392,7 +395,11 @@ class Plotconfig:
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [record.CHROM, record.POS, (int(record.POS) + alternate),]
+                    [
+                        record.CHROM,
+                        record.POS,
+                        (int(record.POS) + alternate),
+                    ]
                 )
                 if not gene_name:
                     gene_name = [""]
@@ -406,17 +413,17 @@ class Plotconfig:
                 #        gene_name = [""]
                 #        return ",".join(gene_name)
 
-    def generate_hovertext_var(self, variants_list) -> Generator:
-        # dict containing INFO field for each var
-        for var in variants_list:
-            yield "<br>".join(
-                [
-                    ": ".join(
-                        [
-                            str(value) if not isinstance(value, list) else str(value[0])
-                            for value in pairs
-                        ]
-                    )
-                    for pairs in list(zip(var.keys(), var.values()))
-                ]
-            )
+    # def generate_hovertext_var(self, variants_list) -> Generator:
+    #    # dict containing INFO field for each var
+    #    for var in variants_list:
+    #        yield "<br>".join(
+    #            [
+    #                ": ".join(
+    #                    [
+    #                        str(value) if not isinstance(value, list) else str(value[0])
+    #                        for value in pairs
+    #                    ]
+    #                )
+    #                for pairs in list(zip(var.keys(), var.values()))
+    #            ]
+    #        )
