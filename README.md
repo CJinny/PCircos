@@ -64,37 +64,6 @@ $ python vcf2circos/__main__.py --input config/Static/example.vcf.gz --options c
 
 <br/>
 
-# Help
-
-```
-usage: python vcf2circos.py [-h] -i INPUT -o OUTPUT [-e EXPORT] [-p OPTIONS]
-                         [-n NOTEBOOK_MODE]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        Input file.
-                        Format will be autodetected from file path.
-                        Supported format:
-                           'json', 'vcf'
-  -o OUTPUT, --output OUTPUT
-                        Output file.
-                        Format will be autodetected from file path.
-                        Supported format:
-                           - html (dynamic): 'html'
-                           - images: 'png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps'
-                           - json (plotly): 'json'
-  -e EXPORT, --export EXPORT
-                        Export file.
-                        Format is 'json'.
-                        Generate json file from VCF input file
-  -p OPTIONS, --options OPTIONS
-                        Options file or string.
-                        Format is 'json', either in a file or as a string.
-```
-
-
-<br/>
 
 # Input
 
