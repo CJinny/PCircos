@@ -1,7 +1,7 @@
 from pprint import pprint
 from typing import Generator
 from vcf2circos.plotcategories.plotconfig import Plotconfig
-from vcf2circos.utils import timeit, generate_hovertext_var
+from vcf2circos.utils import timeit, generate_hovertext_var, chr_valid
 
 from os.path import join as osj
 import pandas as pd
@@ -510,8 +510,8 @@ class Histogram_(Plotconfig):
                 )
 
     def generate_extra_plots_from_df(self):
+        extras = []
         if "gc" in self.options["Extra"]:
-            gc = []
             # self.gcplus = pd.DataFrame(osj(self.options["static"], #"histogram_pos_chr"))
             for gc_ in ["histogram_pos_chr.txt", "histogram_neg_chr.txt"]:
                 gc_dict = {
@@ -539,6 +539,49 @@ class Histogram_(Plotconfig):
                         "line": {"color": "blue", "width": 0},
                     },
                 }
-                gc.append(gc_dict)
+                extras.append(gc_dict)
 
-            return gc
+        if "mappability" in self.options["Extra"]:
+            data = pd.read_csv(
+                osj(self.options["Static"], "dukeExcludeRegions.csv"),
+                header=0,
+                sep="\t",
+            )
+            data = data.loc[data["chr_name"].isin(chr_valid())]
+            data["val"] = 2
+            data["color"] = "red"
+            data["ref"] = ""
+            data["alt"] = ""
+            # data["infos"] = ""
+            # data["hovertext"] = ""
+            # data["infos_dict"] = ""
+            mappa_dict = {
+                "show": "True",
+                "customfillcolor": "False",
+                "file": {
+                    "path": "",
+                    "header": "infer",
+                    "sep": "\t",
+                    "dataframe": {"orient": "columns", "data": data.to_dict("list")},
+                },
+                "sortbycolor": "False",
+                "colorcolumn": 7,
+                "radius": {"R0": 0.80, "R1": 0.84},
+                "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Type:{}".format(a[i,0], a[i,1], a[i,2], a[i,6]) ',
+                "trace": {
+                    "hoverinfo": "text",
+                    "mode": "markers",
+                    "marker": {"size": 0, "opacity": 0},
+                    "uid": "extra_mappability",
+                },
+                "layout": {
+                    "type": "path",
+                    "opacity": 1,
+                    "fillcolor": "black",
+                    "line": {"color": "black", "width": 0},
+                },
+            }
+            extras.append(mappa_dict)
+            print(mappa_dict)
+            # exit()
+        return extras

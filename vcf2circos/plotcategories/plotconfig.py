@@ -217,6 +217,7 @@ class Plotconfig:
                         if copynumber > 5 and svtype not in ["SNV", "INDEL", "OTHER"]:
                             copynumber = 5
                         data["CopyNumber"].append(copynumber)
+
         # test
         # def replace_(dico):
         #    rep = ""
@@ -230,6 +231,7 @@ class Plotconfig:
         #    .loc[pd.DataFrame.from_dict(data)["Chromosomes"] == "chr1"]
         #    .to_dict("list")
         # )
+        # exit()
         return data
 
     def chr_adapt(self, record: object) -> str:
@@ -364,6 +366,17 @@ class Plotconfig:
                 break
         return list(set(gene_list))
 
+    def from_gene_to_unique(self, string: str) -> str:
+        """
+        example from IFT140|IFT140 to IFT140 if all values are the same otherwise keep all
+        """
+        if "|" in string:
+            return ",".join(list(set(string.split("|"))))
+        elif "," in string:
+            return ",".join(list(set(string.split(","))))
+        else:
+            return string
+
     def get_genes_var(self, record: object) -> str:
         # refgene_genes = pd.read_csv(
         #    osj(
@@ -381,7 +394,9 @@ class Plotconfig:
         gene_name = record.INFO.get("Gene_name")
         record.CHROM = self.chr_adapt(record)
         if isinstance(gene_name, str):
-            return gene_name
+            return self.from_gene_to_unique(gene_name)
+        elif isinstance(gene_name, list):
+            return ",".join(gene_name)
         # No Gene_name annotation need to find overlapping gene in sv
         if gene_name is None:
             if record.INFO.get("SVTYPE") not in [
