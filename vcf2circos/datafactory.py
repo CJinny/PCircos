@@ -111,58 +111,19 @@ class Datafactory:
             for item in remove:
                 del js["Category"][item]
 
-        # print(js["Category"].keys())
-        # print(js["Category"]["link"]["file"]["dataframe"]["data"])
-        # exit()
-        # with open("example_work", "w+") as out:
-        #   d = json.dumps(js, indent=4)
-        #   out.write(d)
-        # print(js["Category"]["link"])
-        # exit()
-        # print(js["Category"]["scatter"].keys())
-        # exit()
-        # lm = link.merge_options()
-        # sm = scatter.merge_options(data_histo)
-        # if lm["file"]["dataframe"]["data"]["chr1_name"]:
-        #    js["Category"]["link"] = lm
-        #
-        # histo_list = []
-        # scatter_list = []
-        # for hist in data_histo:
-        #    if hist["file"]["dataframe"]["data"]["chr_name"]:
-        #        histo_list.append(hist)
+        # DEBUG dico values
+        # test_ = []
+        # print("\n")
+        # for item in js["Category"]["histogram"]:
+        #    if "dataframe" in item["file"] and item["trace"]["uid"].endswith("level_5"):
+        #        print(item["file"]["dataframe"]["data"])
+        #        print(item["trace"]["uid"])
+        #        print(item["hovertextformat"])
+        #        print("\n")
+        #        test_.append(item)
+        #    elif "dataframe" in item["file"] and item["trace"]["uid"].startswith("cnv"):
+        #        continue
         #    else:
-        #        print(hist["file"]["dataframe"]["data"])
-        #        print(hist)
-        #
-        # if histo_list:
-        #    js["histogram"] = histo_list
-        #
-        # for scatt in sm:
-        #    if scatt["file"]["dataframe"]["data"]["chr_name"]:
-        #        scatter_list.append(scatt)
-        # if scatter_list:
-        #    js["scatter"] = scatter_list
-        ## pprint(js["Category"]["histogram"])
-        # pprint(data_histo)
-
-        # for key, val in js["Category"].items():
-        #    # print(key)
-        #    if isinstance(val, list):
-        #        for dico_field in val:
-
-        #            try:
-        #                if not dico_field["file"]["dataframe"]["data"]:
-        #                    print(key)
-        #            except KeyError:
-        #                print("errorlist", key)
-        #    else:
-        #        if key == "link":
-        #            print(val["file"]["dataframe"]["data"])
-        #        try:
-        #            if not val["file"]["dataframe"]["data"]:
-        #                print(key)
-        #        except KeyError:
-        #            print("error", key)
-        # exit()
+        #        # print(item)
+        #        test_.append(item)
         return js

@@ -214,8 +214,8 @@ class Plotconfig:
                     if copynumber is None:
                         data["CopyNumber"].append(2)
                     else:
-                        if copynumber > 6:
-                            copynumber = 6
+                        if copynumber > 5 and svtype not in ["SNV", "INDEL", "OTHER"]:
+                            copynumber = 5
                         data["CopyNumber"].append(copynumber)
         # test
         # def replace_(dico):
@@ -237,7 +237,10 @@ class Plotconfig:
             re.match(r"[0-9]", record.CHROM).group()
             return "chr" + record.CHROM
         except AttributeError:
-            return record.CHROM
+            if record.CHROM in ["X", "Y", "M"]:
+                return "chr" + record.CHROM
+            else:
+                return record.CHROM
 
     def get_copynumber_type(self, record: object) -> tuple:
         """
@@ -254,7 +257,6 @@ class Plotconfig:
         if str(record.ALT[0]).startswith("<"):
             alt_tmp = str(record.ALT[0]).split(":")
             if len(alt_tmp) > 1:
-                print(alt_tmp)
                 alt = alt_tmp[0]
                 alt = alt.replace("<", "")
                 cn = alt_tmp[1].replace(">", "")
@@ -275,7 +277,7 @@ class Plotconfig:
                 cast_svtype(svtype),
                 self.get_copynumber_values(cast_svtype(svtype), record),
             )
-        # It's SV in ALT field
+        # It's SV in ALT field and not compute before
         elif alt.startswith("<"):
             rep = {"<": "", ">": ""}
             svtype = alt

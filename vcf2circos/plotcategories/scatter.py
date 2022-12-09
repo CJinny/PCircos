@@ -117,8 +117,9 @@ class Scatter_(Plotconfig):
                         )
                     )
                 )
-                if dico["trace"]["uid"] == "cnv_scatter_level_4":
-                    print(od)
+                # DEBUG
+                # if dico["trace"]["uid"] == "cnv_scatter_level_4":
+                #    print(od)
                 # exit()
                 final.append([od, dico["radius"], dico["trace"]["uid"]])
             # Becarefull to not hoverride histogram data
@@ -126,7 +127,11 @@ class Scatter_(Plotconfig):
                 tmp = self.adapt_genes(dico["file"]["dataframe"]["data"])
                 tmp["color"] = list(self.morbid_genes(tmp["gene"]))
                 final.append(
-                    [tmp, dico["radius"], dico["trace"]["uid"],]
+                    [
+                        tmp,
+                        dico["radius"],
+                        dico["trace"]["uid"],
+                    ]
                 )
 
         # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
