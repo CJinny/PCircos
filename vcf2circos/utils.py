@@ -29,6 +29,12 @@ variants_color = {
 }
 
 
+def chr_valid():
+    chr_valid = ["chr" + str(i) for i in range(1, 22)]
+    chr_valid.extend(["chrM", "chrX", "chrY"])
+    return chr_valid
+
+
 def launch():
     """
     https://ascii.co.uk/art/dna
