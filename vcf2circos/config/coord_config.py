@@ -71,7 +71,10 @@ def chr_info(input_file_path,
     '''
 
 
+
     chr_info=np.array(chr_info_pd.iloc[:])
+    
+
 
     assert len(chr_info) > 0
     assert chr_info.shape[1] >= 2
@@ -145,6 +148,7 @@ def chr_info(input_file_path,
     config_dict['chr_spacing'] = chr_spacing
     config_dict['ideogram_bin'] =ideogram_bin
 
+
     return config_dict
 
 
@@ -157,7 +161,7 @@ def ideogram_coord_config(chr_info, npoints=1000,
     '''
     # ideogram_accum_coord_list is used for ideogram patch, so a reversed array is needed, 2X
     config_dict={}
-    
+
     config_dict['chr_label'] = chr_info['chr_label']
 
     SUM = sum(chr_info['chr_size']) + sum(chr_info['chr_spacing'])
@@ -193,7 +197,7 @@ def ideogram_coord_config(chr_info, npoints=1000,
         
         config_dict['tick_label_non_accum_list'] = tick_label_non_accum_list
         config_dict['tick_label_accum_coord_list'] = tick_label_accum_coord_list
-    
+
     return config_dict
 
 
@@ -213,7 +217,7 @@ def read_data(input_file_path, category, chr_info, sep='\t', header='infer'):
         pd_data = pd_data[pd_data.iloc[:,3].isin(chr_info['chr_name'])]
         for i in range(len(pd_data)):
             pd_data.iloc[i,3] = chr_info['chr_label_dict'][pd_data.iloc[i,3]]
-    
+
     return np.array(pd_data.iloc[:])
 
 
@@ -234,7 +238,7 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
     ### The need for sorting is because plotly layout can only take in one color at a time, 
     # so I have to append different colors each time, if data is sorted by color, we would reduce the number of append and save time
     ### for cytoband and heatmap, the default is to sortbycolor, for other plots, unless color is specified by a column, the default is that they have the same color
-    
+
     supported_categories = ['cytoband', 'histogram', 'line', 'area', 'scatter', 'tile', 'heatmap', 'link', 'ribbon', 'twistedribbon', 'connector', 'highlight', 'annotation']
     ## for ring data, we don't need to use this function
     if category not in supported_categories:
@@ -354,3 +358,4 @@ def data_array(input_file_path, category, chr_info, sep='\t', header='infer',
         pass
 
     return data_dict
+    

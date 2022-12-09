@@ -148,7 +148,7 @@ def json2dict(input_dict):
             try:
                 defaultdict = json_dict("/content/vcf2circos/config/default_params.json")
             except FileNotFoundError:
-                print('[WARN] default_params json file not found')
+                print('default_params json file not found')
                 try:
                     defaultdict = defaultdict_json
                 except FileNotFoundError:

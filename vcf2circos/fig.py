@@ -633,12 +633,11 @@ class Figure(Complex):
 
             except Exception:
                 print(f"[WARN] debugging...")
-                # print(self.get_data[key])
+                print(self.get_data[key])
                 print(f"[WARN] end of debugging...")
 
             for j in range(len(data_array_list)):
                 hovertextformat = self.categories[key][j]["hovertextformat"]
-
                 hvtext.append([])
                 a = data_array_list[j]
 

@@ -50,16 +50,12 @@ class Datafactory:
         histogram = Histogram_(pc)
         cytoband = Cytoband(pc)
         data_histo = histogram.merge_options(cytoband.data_cytoband())
-        # If snv overlapping only
-        # pc.data = histogram.data
-        # pc.df_data = histogram.df_data
-
-        # pc.data = histogram.data
         ideogram = Ideogram(pc)
         ring = Ring(pc, ["genes"])
-
         scatter = Scatter_(pc, data_histo.copy())
         link = Link(pc)
+
+        # Final dict containing all plots informations
         js = {}
         js["General"] = ideogram.options["General"]
         # print("HISTO\n")
@@ -89,9 +85,10 @@ class Datafactory:
                 if isinstance(js["Category"][plot_type], list):
                     for i, val in enumerate(js["Category"][plot_type]):
                         # print(val["file"]["dataframe"]["data"]["chr_name"])
-                        if not val["file"]["dataframe"]["data"]["chr_name"]:
-                            # print(val["file"]["dataframe"]["data"]["chr_name"])
-                            remove_under.append((plot_type, i))
+                        if val["trace"]["uid"].startswith("cnv_"):
+                            if not val["file"]["dataframe"]["data"]["chr_name"]:
+                                # print(val["file"]["dataframe"]["data"]["chr_name"])
+                                remove_under.append((plot_type, i))
         ## Could remove only one ore need to build a copy
         if remove_under:
             print("#[INFO] index of category to remove: " + ", ".join(remove_under))
@@ -101,13 +98,6 @@ class Datafactory:
 
         remove = []
         for plot_type in js["Category"]:
-            if isinstance(js["Category"][plot_type], list):
-                print(
-                    js["Category"][plot_type][typ].keys()
-                    for typ in js["Category"][plot_type]
-                )
-            else:
-                print(js["Category"][plot_type].keys())
             if plot_type == "histogram" or plot_type == "scatter":
                 if not js["Category"][plot_type]:
                     remove.append(plot_type)
@@ -121,58 +111,19 @@ class Datafactory:
             for item in remove:
                 del js["Category"][item]
 
-        # print(js["Category"].keys())
-        # print(js["Category"]["link"]["file"]["dataframe"]["data"])
-        # exit()
-        # with open("example_work", "w+") as out:
-        #   d = json.dumps(js, indent=4)
-        #   out.write(d)
-        # print(js["Category"]["link"])
-        # exit()
-        # print(js["Category"]["scatter"].keys())
-        # exit()
-        # lm = link.merge_options()
-        # sm = scatter.merge_options(data_histo)
-        # if lm["file"]["dataframe"]["data"]["chr1_name"]:
-        #    js["Category"]["link"] = lm
-        #
-        # histo_list = []
-        # scatter_list = []
-        # for hist in data_histo:
-        #    if hist["file"]["dataframe"]["data"]["chr_name"]:
-        #        histo_list.append(hist)
+        # DEBUG dico values
+        # test_ = []
+        # print("\n")
+        # for item in js["Category"]["histogram"]:
+        #    if "dataframe" in item["file"] and item["trace"]["uid"].endswith("level_5"):
+        #        print(item["file"]["dataframe"]["data"])
+        #        print(item["trace"]["uid"])
+        #        print(item["hovertextformat"])
+        #        print("\n")
+        #        test_.append(item)
+        #    elif "dataframe" in item["file"] and item["trace"]["uid"].startswith("cnv"):
+        #        continue
         #    else:
-        #        print(hist["file"]["dataframe"]["data"])
-        #        print(hist)
-        #
-        # if histo_list:
-        #    js["histogram"] = histo_list
-        #
-        # for scatt in sm:
-        #    if scatt["file"]["dataframe"]["data"]["chr_name"]:
-        #        scatter_list.append(scatt)
-        # if scatter_list:
-        #    js["scatter"] = scatter_list
-        ## pprint(js["Category"]["histogram"])
-        # pprint(data_histo)
-
-        # for key, val in js["Category"].items():
-        #    # print(key)
-        #    if isinstance(val, list):
-        #        for dico_field in val:
-
-        #            try:
-        #                if not dico_field["file"]["dataframe"]["data"]:
-        #                    print(key)
-        #            except KeyError:
-        #                print("errorlist", key)
-        #    else:
-        #        if key == "link":
-        #            print(val["file"]["dataframe"]["data"])
-        #        try:
-        #            if not val["file"]["dataframe"]["data"]:
-        #                print(key)
-        #        except KeyError:
-        #            print("error", key)
-        # exit()
+        #        # print(item)
+        #        test_.append(item)
         return js

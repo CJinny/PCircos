@@ -46,7 +46,10 @@ class Plotconfig:
         self.filename = filename
         self.options = options
         self.default_options = json.load(
-            open(osj(self.options["Static"] + "/options.general.json"), "r",)
+            open(
+                osj(self.options["Static"] + "/options.general.json"),
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(filename)
@@ -204,8 +207,16 @@ class Plotconfig:
                     data["Variants"].append(record.INFO)
                     svtype, copynumber = self.get_copynumber_type(record)
                     data["Variants_type"].append(svtype)
-                    data["CopyNumber"].append(copynumber)
-                    data["Color"].append(variants_color[svtype])
+                    try:
+                        data["Color"].append(variants_color[svtype])
+                    except KeyError:
+                        data["Color"].append(variants_color["CNV"])
+                    if copynumber is None:
+                        data["CopyNumber"].append(2)
+                    else:
+                        if copynumber > 5 and svtype not in ["SNV", "INDEL", "OTHER"]:
+                            copynumber = 5
+                        data["CopyNumber"].append(copynumber)
         # test
         # def replace_(dico):
         #    rep = ""
@@ -226,13 +237,32 @@ class Plotconfig:
             re.match(r"[0-9]", record.CHROM).group()
             return "chr" + record.CHROM
         except AttributeError:
-            return record.CHROM
+            if record.CHROM in ["X", "Y", "M"]:
+                return "chr" + record.CHROM
+            else:
+                return record.CHROM
 
     def get_copynumber_type(self, record: object) -> tuple:
         """
         take VCF variant object and return variant type and number of copy in tuple
         REQUIRED monosample vcf
         """
+        # if only copy number in alt....
+        if str(record.ALT[0]).startswith("<CN") and str(record.ALT[0]) != "<CNV>":
+            cn = str(record.ALT[0])
+            cn = cn.replace("<", "")
+            cn = cn.replace(">", "")
+            return ("CNV", int(cn[-1]))
+        # if both copy number and sv type in alt
+        if str(record.ALT[0]).startswith("<"):
+            alt_tmp = str(record.ALT[0]).split(":")
+            if len(alt_tmp) > 1:
+                alt = alt_tmp[0]
+                alt = alt.replace("<", "")
+                cn = alt_tmp[1].replace(">", "")
+                if cn.startswith("CN"):
+                    return (alt, int(cn[-1]))
+        # trying to retrieve usefull informations in info field
         alt = str(record.ALT[0])
         # checking if CopyNumber annotation in info field
         if record.INFO.get("SVTYPE", ""):
@@ -247,7 +277,7 @@ class Plotconfig:
                 cast_svtype(svtype),
                 self.get_copynumber_values(cast_svtype(svtype), record),
             )
-        # It's SV in ALT field
+        # It's SV in ALT field and not compute before
         elif alt.startswith("<"):
             rep = {"<": "", ">": ""}
             svtype = alt
@@ -315,6 +345,8 @@ class Plotconfig:
         """
         Greedy, for now need good info in vcf annotations
         """
+        if isinstance(coord[2], list):
+            coord[2] = coord[2].split("|")
         gene_list = []
         # only chr for this variants
         refgene_chr = self.df_genes.loc[self.df_genes["chr_name"] == coord[0]]
@@ -382,17 +414,30 @@ class Plotconfig:
                             ]
                         )
                         return ",".join(gene_name)
-                    except (KeyError, ValueError):
-                        print(
-                            "ERROR missing SVLEN annotation for record ",
-                            record.INFO["SV_length"],
-                        )
-                        exit()
+                    except (KeyError, ValueError, TypeError):
+                        try:
+                            gene_name = self.find_record_gene(
+                                [
+                                    record.CHROM,
+                                    record.POS,
+                                    int(float(record.INFO["SV_end"])),
+                                ]
+                            )
+                        except (KeyError, ValueError, TypeError):
+                            print(
+                                "ERROR missing SVLEN annotation for record ",
+                                record,
+                            )
+                            exit()
             # SNV indel
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [record.CHROM, record.POS, (int(record.POS) + alternate),]
+                    [
+                        record.CHROM,
+                        record.POS,
+                        (int(record.POS) + alternate),
+                    ]
                 )
                 if not gene_name:
                     gene_name = [""]
@@ -406,17 +451,17 @@ class Plotconfig:
                 #        gene_name = [""]
                 #        return ",".join(gene_name)
 
-    def generate_hovertext_var(self, variants_list) -> Generator:
-        # dict containing INFO field for each var
-        for var in variants_list:
-            yield "<br>".join(
-                [
-                    ": ".join(
-                        [
-                            str(value) if not isinstance(value, list) else str(value[0])
-                            for value in pairs
-                        ]
-                    )
-                    for pairs in list(zip(var.keys(), var.values()))
-                ]
-            )
+    # def generate_hovertext_var(self, variants_list) -> Generator:
+    #    # dict containing INFO field for each var
+    #    for var in variants_list:
+    #        yield "<br>".join(
+    #            [
+    #                ": ".join(
+    #                    [
+    #                        str(value) if not isinstance(value, list) else str(value[0])
+    #                        for value in pairs
+    #                    ]
+    #                )
+    #                for pairs in list(zip(var.keys(), var.values()))
+    #            ]
+    #        )

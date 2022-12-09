@@ -30,6 +30,8 @@ class Histogram_(Plotconfig):
         }
         # print("#Range", self.rangescale)
         self.hovertextformat = ' "<b>{}:{}-{}</b><br>{}<br><br>{}".format(a[i,0], a[i,1], a[i,2], a[i,6], a[i,8])'
+
+        # self.hovertextformat = ""
         self.trace = {
             "hoverinfo": "text",
             "mode": "markers",
@@ -63,13 +65,17 @@ class Histogram_(Plotconfig):
             },
             "colorcolumn": 4,
             "radius": {"R0": 1, "R1": 1.1},
-            "hovertextformat": " \"<b>{}:{}-{}<br>{}{}</b>\".format(a[i,0], a[i,1], a[i,2], a[i,0].replace('chr', ''), ''.join(a[i,5:]))",
-            # "hovertextformat": " \"<b>{}</b>\".format(a[i,0])",
+            "hovertextformat": ' "<b>{}:{}-{}<br>{}</b>".format(a[i,0], a[i,1], a[i,2], a[i,5])',
             "trace": {
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
+                "marker": {
+                    "size": 0,
+                    "symbol": 0,
+                    "color": None,
+                    "opacity": 0,
+                },  # 8
             },
             "layout": {
                 "type": "path",
@@ -232,11 +238,16 @@ class Histogram_(Plotconfig):
         d["file"] = d_file
         d["sortbycolor"] = "False"
         d["colorcolumn"] = 7
-        radius = (
-            self.rangescale[cn]
-            + self.rangescale[cn]
-            + self.options["Variants"]["rings"]["height"]
-        ) / 2
+        try:
+            radius = (
+                self.rangescale[cn]
+                + self.rangescale[cn]
+                + self.options["Variants"]["rings"]["height"]
+            ) / 2
+        except TypeError:
+            print(cn)
+            print(d_file)
+            exit()
         d["radius"] = {
             "R0": radius,
             "R1": radius,
@@ -262,11 +273,8 @@ class Histogram_(Plotconfig):
         }
         return d
 
-    def merge_options(self, cytoband_data: dict) -> list:
-        """
-        func handle math and geometry need to take data in specific order
-        chr start stop val OTHERWIS TROUBLE
-        """
+    def cytoband_tile(self, cytoband_data):
+        dico_cyto = self.cytoband_data.copy()
         cyto = {}
         cyto["chr_name"] = cytoband_data["chr_name"]
         cyto["start"] = cytoband_data["start"]
@@ -276,10 +284,19 @@ class Histogram_(Plotconfig):
         cyto["band_color"] = list(repeat("lightgray", len(cytoband_data["chr_name"])))
         cyto["band"] = cytoband_data["band"]
         # Cytoband tiles 3  need fill data
-        self.cytoband_data["file"]["dataframe"]["data"] = cyto
+        dico_cyto["file"]["dataframe"]["data"] = cyto
 
-        self.cytoband_data["layout"]["line"]["color"] = cyto["band_color"]
-        self.cytoband_data["trace"]["marker"]["color"] = cyto["band_color"]
+        dico_cyto["layout"]["line"]["color"] = cyto["band_color"]
+        dico_cyto["trace"]["marker"]["color"] = cyto["band_color"]
+        return dico_cyto
+
+    def merge_options(self, cytoband_data: dict) -> list:
+        """
+        func handle math and geometry need to take data in specific order
+        chr start stop val OTHERWIS TROUBLE
+        """
+        # exit()
+
         whole_cn = []
         # Histo_cnv_level
         for cn in list(set(self.data["CopyNumber"])):
@@ -337,19 +354,14 @@ class Histogram_(Plotconfig):
                             "exons": [],
                         }
                 # remaining_var.append(self.remove_snv_(snv_indel_overlapp))
-        # print(dico["file"]["dataframe"]["data"])
-        # for val in self.data["Record"]:
-        #    print(val)
-        #    print(val.var_type)
-        #    print("\n")
-        # exit()
-        # dico["file"]["dataframe"]["data"]
+        # Extra
+        whole_cn.extend(self.generate_extra_plots_from_df())
 
         # Genes plots
         whole_cn.append(self.histo_genes())
 
         # cytoband tiles
-        whole_cn.append(self.cytoband_data)
+        whole_cn.append(self.cytoband_tile(cytoband_data))
         return whole_cn
 
     def remove_snv_(self, list_to_remove):
@@ -435,7 +447,12 @@ class Histogram_(Plotconfig):
             "uid": "genes",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {"size": 3, "symbol": 0, "color": data["color"], "opacity": 1,},
+            "marker": {
+                "size": 3,
+                "symbol": 0,
+                "color": data["color"],
+                "opacity": 1,
+            },
         }
         dico["layout"] = {
             "type": "path",
@@ -491,3 +508,37 @@ class Histogram_(Plotconfig):
                     record[i].REF,
                     record[i].ALT,
                 )
+
+    def generate_extra_plots_from_df(self):
+        if "gc" in self.options["Extra"]:
+            gc = []
+            # self.gcplus = pd.DataFrame(osj(self.options["static"], #"histogram_pos_chr"))
+            for gc_ in ["histogram_pos_chr.txt", "histogram_neg_chr.txt"]:
+                gc_dict = {
+                    "show": "True",
+                    "customfillcolor": "False",
+                    "file": {
+                        "path": osj(self.options["Static"], gc_),
+                        "header": "infer",
+                        "sep": "\t",
+                    },
+                    "sortbycolor": "False",
+                    "colorcolumn": "None",
+                    "radius": {"R0": 0.90, "R1": 0.94},
+                    "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>LogFC:{}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ',
+                    "trace": {
+                        "hoverinfo": "text",
+                        "mode": "markers",
+                        "marker": {"size": 0, "opacity": 0},
+                        "uid": "extra_gc",
+                    },
+                    "layout": {
+                        "type": "path",
+                        "opacity": 1,
+                        "fillcolor": "blue",
+                        "line": {"color": "blue", "width": 0},
+                    },
+                }
+                gc.append(gc_dict)
+
+            return gc

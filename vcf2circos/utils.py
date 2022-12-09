@@ -6,12 +6,14 @@ from os.path import join as osj
 import os
 import gzip
 from tqdm import tqdm
+import vcf2circos
 
 # from natsort import natsort_keygen
 from typing import Generator
 from functools import wraps
 import time
 import numpy as np
+import pyfiglet
 
 # Globals
 variants_color = {
@@ -25,6 +27,27 @@ variants_color = {
     "INDEL": "gray",
     "OTHER": "gray",
 }
+
+
+def launch():
+    """
+    https://ascii.co.uk/art/dna
+    """
+    print(
+        """
+-._    _.--'"`'--._    _.--'"`'--._    _.--'"`'--._    _   
+    '-:`.'|`|"':-.  '-:`.'|`|"':-.  '-:`.'|`|"':-.  '.` : '.   
+  '.  '.  | |  | |'.  '.  | |  | |'.  '.  | |  | |'.  '.:   '.  '.
+  : '.  '.| |  | |  '.  '.| |  | |  '.  '.| |  | |  '.  '.  : '.  `.
+  '   '.  `.:_ | :_.' '.  `.:_ | :_.' '.  `.:_ | :_.' '.  `.'   `.
+         `-..,..-'       `-..,..-'       `-..,..-'       `         `
+    """
+    )
+    print(pyfiglet.figlet_format("         vcf2circos", font="big"))
+    print("Author: " + vcf2circos.__author__)
+    print("Version: " + vcf2circos.__version__)
+    print("Last update: " + vcf2circos.__date__)
+    print("\n")
 
 
 class Colorpal:
@@ -212,7 +235,11 @@ def cast_svtype(svtype):
     """
     In case of pip in svtype
     """
-    return svtype.split("|")[0]
+    svtype = svtype.split("|")[0]
+    if "<" in svtype or ">" in svtype:
+        svtype = svtype.replace("<", "")
+        svtype = svtype.replace(">", "")
+    return svtype
 
 
 def systemcall(command: str) -> list:
@@ -289,7 +316,16 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
             with gzip.open(output_transcripts, "wb+") as out_t:
                 out_g.write(
                     bytes(
-                        "\t".join(["chr_name", "start", "end", "val", "color", "gene",])
+                        "\t".join(
+                            [
+                                "chr_name",
+                                "start",
+                                "end",
+                                "val",
+                                "color",
+                                "gene",
+                            ]
+                        )
                         + "\n",
                         "UTF-8",
                     )
