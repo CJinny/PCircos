@@ -27,7 +27,7 @@ from fig import Figure
 from time import time
 
 from os.path import join as osj
-
+import plotly.io
 import plotly
 import pathlib
 import json
@@ -139,6 +139,14 @@ def main():
     # Fig
 
     fig = fig_instance.fig()
+    fig.update_layout(legend_title_text="Legend")
+    # needed
+    fig["layout"]["showlegend"] = True
+    with open("layout.dico", "w+") as o:
+        data = json.dumps(plotly.io.to_json(fig["layout"]), indent=4)
+        o.write(data)
+    # pprint(fig.layout)
+    # exit()
 
     try:
         if not output_format:

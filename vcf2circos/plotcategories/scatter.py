@@ -127,11 +127,7 @@ class Scatter_(Plotconfig):
                 tmp = self.adapt_genes(dico["file"]["dataframe"]["data"])
                 tmp["color"] = list(self.morbid_genes(tmp["gene"]))
                 final.append(
-                    [
-                        tmp,
-                        dico["radius"],
-                        dico["trace"]["uid"],
-                    ]
+                    [tmp, dico["radius"], dico["trace"]["uid"],]
                 )
 
         # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
@@ -225,5 +221,7 @@ class Scatter_(Plotconfig):
             },
             "uid": level,
         }
+        d["layout"] = {"showlegend": "True"}
+        d["name"] = d["trace"]["uid"]
         # check_data_plot(data)
         return d
