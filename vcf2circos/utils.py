@@ -23,9 +23,9 @@ variants_color = {
     "DUP": "blue",
     "CNV": "brown",
     "BND": "blue",
-    "SNV": "gray",
-    "INDEL": "gray",
-    "OTHER": "gray",
+    "SNV": "dimgray",
+    "INDEL": "dimgray",
+    "OTHER": "dimgray",
 }
 
 # variants_color = {

@@ -37,20 +37,62 @@ def convert_rgb_to_names(rgb_tuple):
     return names[index]
 
 
+def process_legend(tr, trace_dict):
+    if isinstance(tr["marker"]["color"], str):
+        tr["marker"]["color"] = [tr["marker"]["color"]]
+    for j, color in enumerate(tr["marker"]["color"]):
+        # trace_dict.update(process_legend(color, tr, trace_dict))
+        color = color_to_name(color)
+        # For each item in dot
+        for key, val in vars(tr)["_orphan_props"].items():
+            # print(key, val)
+            if isinstance(val, str):
+                if key not in trace_dict[color]:
+                    trace_dict[color][key] = val
+            elif isinstance(val, np.ndarray):
+                if key not in trace_dict[color]:
+                    trace_dict[color][key] = []
+                trace_dict[color][key].append(val[j])
+            elif isinstance(val, list):
+                if key not in trace_dict[color]:
+                    trace_dict[color][key] = []
+                trace_dict[color][key].append(val[j])
+            elif isinstance(val, dict):
+                if key not in trace_dict[color]:
+                    trace_dict[color][key] = {}
+                for k, v in val.items():
+                    if isinstance(v, str) or isinstance(v, int) or isinstance(v, float):
+                        if k not in trace_dict[color][key]:
+                            trace_dict[color][key][k] = v
+                    elif isinstance(v, np.ndarray):
+                        if k not in trace_dict[color][key]:
+                            trace_dict[color][key][k] = []
+                        trace_dict[color][key][k].append(v[j])
+                    elif isinstance(v, list):
+                        if k not in trace_dict[color][key]:
+                            trace_dict[color][key][k] = []
+                        trace_dict[color][key][k].append(v[j])
+        return trace_dict
+
+
 # input_json_path = sys.argv[1]
 def color_to_name(input):
-    if isinstance(input, list) or isinstance(input, np.ndarray):
+    if (
+        isinstance(input, list)
+        or isinstance(input, np.ndarray)
+        or isinstance(input, tuple)
+    ):
         l = []
         for colors in input:
             if colors.startswith("rgb"):
                 # print(colors.replace("rgb", ""))
                 col = literal_eval(colors.replace("rgb", ""))
-                print(colors)
-                print(col)
+                # print(colors)
+                # print(col)
                 l.append(convert_rgb_to_names(col))
             else:
                 l.append(colors)
-        print(l)
+        # print(l)
         return l
     elif isinstance(input, str):
         if input.startswith("rgb"):
@@ -873,54 +915,67 @@ class Figure(Complex):
             # print(tr["uid"])
             # print(tr["marker"]["color"])
             # print(type(tr["marker"]["color"]))
-            if tr["uid"] not in ["genes, cytoband_tiles, transloc"] and isinstance(
-                tr["marker"]["color"], np.ndarray
+            # if tr["uid"] not in ["genes, cytoband_tiles, transloc"] and isinstance(
+            #    tr["marker"]["color"], np.ndarray
+            # ):
+            # print(tr["uid"])
+            if isinstance(tr["marker"]["color"], list) or isinstance(
+                tr["marker"]["color"], tuple
             ):
-                # print(tr["uid"])
+                number_trace.extend(tr["marker"]["color"])
+            elif isinstance(tr["marker"]["color"], np.ndarray):
                 number_trace.extend(tr["marker"]["color"].tolist())
+            else:
+                number_trace.append(tr["marker"]["color"])
         number_trace = color_to_name(list(set(number_trace)))
+        print(number_trace)
+        # exit()
         trace_dict = {key: {} for key in number_trace}
         # For all CNV level dot
         for tr in trace:
-            if tr["uid"] not in ["genes, cytoband_tiles, transloc"]:
-                # Becarefull a value alone for SNV indels
-                if isinstance(tr["marker"]["color"], np.ndarray):
-                    # For each dot per trace
-                    for j, color in enumerate(tr["marker"]["color"]):
-                        color = color_to_name(color)
-                        # For each item in dot
-                        for key, val in vars(tr)["_orphan_props"].items():
-                            # print(key, val)
-                            if isinstance(val, str):
-                                if key not in trace_dict[color]:
-                                    trace_dict[color][key] = val
-                            elif isinstance(val, np.ndarray):
-                                if key not in trace_dict[color]:
-                                    trace_dict[color][key] = []
-                                trace_dict[color][key].append(val[j])
-                            elif isinstance(val, list):
-                                if key not in trace_dict[color]:
-                                    trace_dict[color][key] = []
-                                trace_dict[color][key].append(val[j])
-                            elif isinstance(val, dict):
-                                if key not in trace_dict[color]:
-                                    trace_dict[color][key] = {}
-                                for k, v in val.items():
-                                    if (
-                                        isinstance(v, str)
-                                        or isinstance(v, int)
-                                        or isinstance(v, float)
-                                    ):
-                                        if k not in trace_dict[color][key]:
-                                            trace_dict[color][key][k] = v
-                                    elif isinstance(v, np.ndarray):
-                                        if k not in trace_dict[color][key]:
-                                            trace_dict[color][key][k] = []
-                                        trace_dict[color][key][k].append(v[j])
-                                    elif isinstance(v, list):
-                                        if k not in trace_dict[color][key]:
-                                            trace_dict[color][key][k] = []
-                                        trace_dict[color][key][k].append(v[j])
+            # if tr["uid"] not in ["genes, cytoband_tiles, transloc"]:
+            # Becarefull a value alone for SNV indels
+            # if isinstance(tr["marker"]["color"], np.ndarray):
+            # For each dot per trace
+            if isinstance(tr["marker"]["color"], str):
+                tr["marker"]["color"] = [tr["marker"]["color"]]
+            for j, color in enumerate(tr["marker"]["color"]):
+                # trace_dict.update(process_legend(color, tr, trace_dict))
+                color = color_to_name(color)
+                # For each item in dot
+                for key, val in vars(tr)["_orphan_props"].items():
+                    # print(key, val)
+                    if isinstance(val, str):
+                        if key not in trace_dict[color]:
+                            trace_dict[color][key] = val
+                    elif isinstance(val, np.ndarray):
+                        if key not in trace_dict[color]:
+                            trace_dict[color][key] = []
+                        trace_dict[color][key].append(val[j])
+                    elif isinstance(val, list):
+                        if key not in trace_dict[color]:
+                            trace_dict[color][key] = []
+                        trace_dict[color][key].append(val[j])
+                    elif isinstance(val, dict):
+                        if key not in trace_dict[color]:
+                            trace_dict[color][key] = {}
+                        for k, v in val.items():
+                            if (
+                                isinstance(v, str)
+                                or isinstance(v, int)
+                                or isinstance(v, float)
+                            ):
+                                if k not in trace_dict[color][key]:
+                                    trace_dict[color][key][k] = v
+                            elif isinstance(v, np.ndarray):
+                                if k not in trace_dict[color][key]:
+                                    trace_dict[color][key][k] = []
+                                trace_dict[color][key][k].append(v[j])
+                            elif isinstance(v, list):
+                                if k not in trace_dict[color][key]:
+                                    trace_dict[color][key][k] = []
+                                trace_dict[color][key][k].append(v[j])
+
         # print(trace_dict)
         # exit()
         # except ValueError:
@@ -928,18 +983,25 @@ class Figure(Complex):
         # exit()
         # print(trace_dict)
         # exit()
+
         cast_color = {
             "brown": "CNV",
             "mediumorchid": "INV",
             "royalblue": "DUP",
             "crimson": "INS",
-            "lightgray": "SNV/INDELS",
+            "dimgray": "SNV/INDELS",
             "darkorange": "DEL",
+            "lightgray": "Genes",
+            "gray": "intermediary",
+            "blue": "transloc",
+            "firebrick": "Morbid genes",
         }
         trace_ = []
         for clrs, values in trace_dict.items():
             # values["uid"] = cast_color[clrs]
             values["name"] = cast_color[clrs]
+            if clrs == "blue":
+                print(values)
             trace_.append(go.Scatter(values))
         return trace_
 

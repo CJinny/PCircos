@@ -136,7 +136,7 @@ class Scatter_(Plotconfig):
     def morbid_genes(self, genes: list) -> Generator:
         for g in genes:
             if g in self.df_morbid["genes"].to_list():
-                yield "red"
+                yield "firebrick"
             else:
                 yield "lightgray"
 
