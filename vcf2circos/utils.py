@@ -28,6 +28,18 @@ variants_color = {
     "OTHER": "gray",
 }
 
+# variants_color = {
+#    "INS": "#A52A2A",
+#    "INV": "#9B30FF",
+#    "DEL": "#FF8000",
+#    "DUP": "#0000FF",
+#    "CNV": "#A52A2A",
+#    "BND": "#0000FF",
+#    "SNV": "#808080",
+#    "INDEL": "#808080",
+#    "OTHER": "#808080",
+# }
+
 
 def chr_valid():
     chr_valid = ["chr" + str(i) for i in range(1, 22)]
@@ -322,16 +334,7 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
             with gzip.open(output_transcripts, "wb+") as out_t:
                 out_g.write(
                     bytes(
-                        "\t".join(
-                            [
-                                "chr_name",
-                                "start",
-                                "end",
-                                "val",
-                                "color",
-                                "gene",
-                            ]
-                        )
+                        "\t".join(["chr_name", "start", "end", "val", "color", "gene",])
                         + "\n",
                         "UTF-8",
                     )

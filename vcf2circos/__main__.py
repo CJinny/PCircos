@@ -3,6 +3,7 @@ import os
 import sys
 from vcf2circos.parseargs import Parseargs
 from vcf2circos.datafactory import Datafactory
+from vcf2circos.legend import Legend
 from pprint import pprint
 from vcf2circos.utils import launch
 
@@ -136,17 +137,10 @@ def main():
 
         print("[ERROR] input format not supported")
 
-    # Fig
-
     fig = fig_instance.fig()
-    fig.update_layout(legend_title_text="Legend")
-    # needed
     fig["layout"]["showlegend"] = True
-    with open("layout.dico", "w+") as o:
-        data = json.dumps(plotly.io.to_json(fig["layout"]), indent=4)
-        o.write(data)
-    # pprint(fig.layout)
-    # exit()
+    # Fig
+    # legend = Legend(fig)
 
     try:
         if not output_format:
