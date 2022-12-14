@@ -14,7 +14,7 @@ import pandas as pd
 # from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
 from tqdm import tqdm
-from vcf2circos.utils import variants_color, timeit, cast_svtype
+from vcf2circos.utils import timeit, cast_svtype
 from pprint import pprint
 import vcf
 
@@ -46,7 +46,10 @@ class Plotconfig:
         self.filename = filename
         self.options = options
         self.default_options = json.load(
-            open(osj(self.options["Static"] + "/options.general.json"), "r",)
+            open(
+                osj(self.options["Static"] + "/options.general.json"),
+                "r",
+            )
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(filename)
@@ -63,6 +66,7 @@ class Plotconfig:
         self.vcf_reader = vcf.Reader(
             filename=filename, strict_whitespace=True, encoding="utf-8"
         )
+        self.colors = self.options["Color"]
         # self.refgene_genes = osj(
         #    self.options["Static"],
         #    "Assembly",
@@ -205,9 +209,9 @@ class Plotconfig:
                     svtype, copynumber = self.get_copynumber_type(record)
                     data["Variants_type"].append(svtype)
                     try:
-                        data["Color"].append(variants_color[svtype])
+                        data["Color"].append(self.colors[svtype])
                     except KeyError:
-                        data["Color"].append(variants_color["CNV"])
+                        data["Color"].append(self.colors["CNV"])
                     if copynumber is None:
                         data["CopyNumber"].append(2)
                     else:
@@ -437,14 +441,19 @@ class Plotconfig:
                             )
                         except (KeyError, ValueError, TypeError):
                             print(
-                                "ERROR missing SVLEN annotation for record ", record,
+                                "ERROR missing SVLEN annotation for record ",
+                                record,
                             )
                             exit()
             # SNV indel
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [record.CHROM, record.POS, (int(record.POS) + alternate),]
+                    [
+                        record.CHROM,
+                        record.POS,
+                        (int(record.POS) + alternate),
+                    ]
                 )
                 if not gene_name:
                     gene_name = [""]

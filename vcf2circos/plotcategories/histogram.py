@@ -35,13 +35,18 @@ class Histogram_(Plotconfig):
         self.trace = {
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {"size": 5, "symbol": 0, "color": "gray", "opacity": 0.1},
+            "marker": {
+                "size": 5,
+                "symbol": 0,
+                "color": self.colors["INTERMEDIATE"],
+                "opacity": 0.1,
+            },
         }
         self.layout = {
             "type": "path",
             "opacity": 1,
-            "fillcolor": "gray",
-            "line": {"color": "gray", "width": 5},
+            "fillcolor": self.colors["INTERMEDIATE"],
+            "line": {"color": self.colors["INTERMEDIATE"], "width": 5},
         }
         # TODO tile same as cytobandinfo in vfreader
         self.cytoband_conf = pd.read_csv(
@@ -201,7 +206,9 @@ class Histogram_(Plotconfig):
         data["ref"].extend(ref)
         data["alt"].extend(alt)
         data["type"].extend(df_data["Variants_type"].to_list())
-        data["color"].extend(list(repeat("grey", len(df_data.index))))
+        data["color"].extend(
+            list(repeat(self.colors["INTERMEDIATE"], len(df_data.index)))
+        )
         # data["hovertext"].extend(list(itertools.repeat("", len(df_data.index))))
         data["hovertext"].extend(
             list(
@@ -259,7 +266,7 @@ class Histogram_(Plotconfig):
             "marker": {
                 "size": 5,
                 "symbol": d_file["dataframe"]["data"]["symbol"],
-                "color": "gray",
+                "color": self.colors["INTERMEDIATE"],
                 "opacity": 0.1,
             },
             "uid": "cnv_scatter_level_" + str(cn),
@@ -269,7 +276,7 @@ class Histogram_(Plotconfig):
             "layer": "above",
             "opacity": 0.1,
             "fillcolor": "red",
-            "line": {"color": "lightgray", "width": 5},
+            "line": {"color": self.colors["INTERMEDIATE"], "width": 5},
         }
         return d
 
@@ -281,7 +288,9 @@ class Histogram_(Plotconfig):
         cyto["end"] = cytoband_data["end"]
         # Remember to have val column in data otherwise it leads to crash]
         cyto["val"] = list(repeat(1, len(cytoband_data["chr_name"])))
-        cyto["band_color"] = list(repeat("lightgray", len(cytoband_data["chr_name"])))
+        cyto["band_color"] = list(
+            repeat(self.colors["CYTOBAND"], len(cytoband_data["chr_name"]))
+        )
         cyto["band"] = cytoband_data["band"]
         # Cytoband tiles 3  need fill data
         dico_cyto["file"]["dataframe"]["data"] = cyto
@@ -427,7 +436,9 @@ class Histogram_(Plotconfig):
             if fields != "transcript":
                 if fields == "color":
                     # data[fields] = list(self.morbid_genes(df_filter["gene"]))
-                    data[fields] = list(repeat("lightgray", len(df_filter.index)))
+                    data[fields] = list(
+                        repeat(self.colors["GENES"], len(df_filter.index))
+                    )
                 else:
                     data[fields] = df_filter[fields].to_list()
         # pprint(data, sort_dicts=False)

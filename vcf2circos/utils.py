@@ -16,17 +16,17 @@ import numpy as np
 import pyfiglet
 
 # Globals
-variants_color = {
-    "INS": "red",
-    "INV": "purple",
-    "DEL": "orange",
-    "DUP": "blue",
-    "CNV": "brown",
-    "BND": "blue",
-    "SNV": "dimgray",
-    "INDEL": "dimgray",
-    "OTHER": "dimgray",
-}
+# variants_color = {
+#    "INS": "red",
+#    "INV": "purple",
+#    "DEL": "orange",
+#    "DUP": "blue",
+#    "CNV": "brown",
+#    "BND": "blue",
+#    "SNV": "dimgray",
+#    "INDEL": "dimgray",
+#    "OTHER": "dimgray",
+# }
 
 # variants_color = {
 #    "INS": "#A52A2A",
@@ -39,6 +39,11 @@ variants_color = {
 #    "INDEL": "#808080",
 #    "OTHER": "#808080",
 # }
+def get_swap_dict(d):
+    """
+    https://note.nkmk.me/en/python-dict-swap-key-value/
+    """
+    return {v: k for k, v in d.items()}
 
 
 def chr_valid():
@@ -334,7 +339,16 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
             with gzip.open(output_transcripts, "wb+") as out_t:
                 out_g.write(
                     bytes(
-                        "\t".join(["chr_name", "start", "end", "val", "color", "gene",])
+                        "\t".join(
+                            [
+                                "chr_name",
+                                "start",
+                                "end",
+                                "val",
+                                "color",
+                                "gene",
+                            ]
+                        )
                         + "\n",
                         "UTF-8",
                     )

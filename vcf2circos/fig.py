@@ -13,8 +13,7 @@ import io
 import os
 import base64
 from html import escape, unescape
-from vcf2circos.utils import timeit
-from webcolors import rgb_to_name
+from vcf2circos.utils import timeit, get_swap_dict
 from ast import literal_eval
 from scipy.spatial import KDTree
 from webcolors import CSS3_HEX_TO_NAMES, hex_to_rgb
@@ -130,7 +129,8 @@ def merge_dict(basedict, *extradict):
 class Figure(Complex):
     def __init__(self, *args, **kwargs):
         # not able to read dash_dict twice for some reason
-
+        if "options" in kwargs:
+            self.options = kwargs["options"].copy()
         if "input_json_path" in kwargs:
             self.input_json_path = kwargs["input_json_path"]
 
@@ -984,24 +984,23 @@ class Figure(Complex):
         # print(trace_dict)
         # exit()
 
-        cast_color = {
-            "brown": "CNV",
-            "mediumorchid": "INV",
-            "royalblue": "DUP",
-            "crimson": "INS",
-            "dimgray": "SNV/INDELS",
-            "darkorange": "DEL",
-            "lightgray": "Genes",
-            "gray": "intermediary",
-            "blue": "transloc",
-            "firebrick": "Morbid genes",
-        }
+        # cast_color = {
+        #    "brown": "CNV",
+        #    "mediumorchid": "INV",
+        #    "royalblue": "DUP",
+        #    "crimson": "INS",
+        #    "dimgray": "SNV/INDELS",
+        #    "darkorange": "DEL",
+        #    "lightgray": "Genes",
+        #    "gray": "intermediary",
+        #    "blue": "transloc",
+        #    "firebrick": "Morbid genes",
+        # }
+        cast_color = get_swap_dict(self.options["Color"])
         trace_ = []
         for clrs, values in trace_dict.items():
             # values["uid"] = cast_color[clrs]
             values["name"] = cast_color[clrs]
-            if clrs == "blue":
-                print(values)
             trace_.append(go.Scatter(values))
         return trace_
 
@@ -1527,4 +1526,3 @@ class Figure(Complex):
                 ),
                 layout=self.layout(),
             )
-

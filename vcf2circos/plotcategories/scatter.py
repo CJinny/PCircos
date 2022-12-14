@@ -1,6 +1,6 @@
 from typing import Generator
 from vcf2circos.plotcategories.plotconfig import Plotconfig
-from vcf2circos.utils import variants_color, check_data_plot
+from vcf2circos.utils import check_data_plot
 from collections import OrderedDict
 from os.path import join as osj
 import numpy as np
@@ -83,7 +83,7 @@ class Scatter_(Plotconfig):
                 # print(dico.keys())
                 # print(dico["trace"]["uid"])
                 tmp["color"] = [
-                    variants_color[var]
+                    self.options["Color"][var]
                     for var in dico["file"]["dataframe"]["data"]["type"]
                 ]
                 for key, val in tmp.items():
@@ -127,7 +127,11 @@ class Scatter_(Plotconfig):
                 tmp = self.adapt_genes(dico["file"]["dataframe"]["data"])
                 tmp["color"] = list(self.morbid_genes(tmp["gene"]))
                 final.append(
-                    [tmp, dico["radius"], dico["trace"]["uid"],]
+                    [
+                        tmp,
+                        dico["radius"],
+                        dico["trace"]["uid"],
+                    ]
                 )
 
         # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))

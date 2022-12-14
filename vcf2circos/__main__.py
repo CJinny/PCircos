@@ -3,7 +3,6 @@ import os
 import sys
 from vcf2circos.parseargs import Parseargs
 from vcf2circos.datafactory import Datafactory
-from vcf2circos.legend import Legend
 from pprint import pprint
 from vcf2circos.utils import launch
 
@@ -119,7 +118,7 @@ def main():
         print("\n")
         # print(type(js["Category"]["cytoband"]))
         js = Datafactory(input_file, options).plot_dict()
-        fig_instance = Figure(dash_dict=js)
+        fig_instance = Figure(dash_dict=js, options=options)
 
         # Export in vcf2circos JSON
         if export_file:
@@ -131,7 +130,7 @@ def main():
 
     elif input_format in ["json"]:
 
-        fig_instance = Figure(input_json_path=input_file)
+        fig_instance = Figure(dash_dict=js, options=options)
 
     else:
 
@@ -139,6 +138,9 @@ def main():
 
     fig = fig_instance.fig()
     fig["layout"]["showlegend"] = True
+    fig.update_layout(legend_title="Legend")
+    fig.update_layout(legend_xanchor="right")
+    fig.update_layout(legend_x=1.1)
     # Fig
     # legend = Legend(fig)
 
