@@ -31,19 +31,79 @@ class Scatter_(Plotconfig):
             return getattr(self.plotconfig, item)
 
     def adapt_genes(self, dico: dict) -> dict:
-        gene_scatter = {}
-        gene_scatter["chr_name"] = dico["chr_name"] + dico["chr_name"]
-        gene_scatter["start"] = dico["start"] + dico["end"]
-        gene_scatter["val"] = dico["val"] + dico["val"]
-        gene_scatter["color"] = dico["color"] + dico["color"]
-        gene_scatter["gene"] = dico["gene"] + dico["gene"]
-        gene_scatter["infos"] = list(repeat("", len(gene_scatter["chr_name"])))
+        # TODO zip comme dans adapt data
+        # gene_scatter = {}
+        # gene_scatter["chr_name"] = dico["chr_name"] + dico["chr_name"]
+        # gene_scatter["start"] = dico["start"] + dico["end"]
+        # gene_scatter["val"] = dico["val"] + dico["val"]
+        # gene_scatter["color"] = dico["color"] + dico["color"]
+        # gene_scatter["gene"] = dico["gene"] + dico["gene"]
+        # gene_scatter["infos"] = list(repeat("", len(gene_scatter["chr_name"])))
+        #
+        ## pprint(gene_scatter)
+        ## gene_scatter["hovertext"] = dico["gene"] + dico["gene"]
+        # gene_scatter["hovertext"] = list(repeat("", len(gene_scatter["chr_name"])))
+        ## print(gene_scatter.keys())
+        tmp = {}
+        od = OrderedDict()
+        tmp["chr_name"] = list(
+            chain(
+                *zip(
+                    dico["chr_name"],
+                    dico["chr_name"],
+                )
+            )
+        )
+        tmp["start"] = []
+        for s, e in zip(
+            dico["start"],
+            dico["end"],
+        ):
+            tmp["start"].append(s)
+            tmp["start"].append(e)
+        tmp["val"] = list(chain(*zip(dico["val"], dico["val"])))
+        # print(dico.keys())
+        # print(dico["trace"]["uid"])
+        tmp["color"] = [var for var in dico["color"]]
+        for key, val in tmp.items():
+            if key != "color":
+                od[key] = val
+        for key, val in dico.items():
+            if key not in od.keys() and key not in [
+                "genes",
+                "end",
+                "exons",
+                "hovertext",
+                "symbol",
+            ]:
+                od[key] = list(chain(*zip(val, val)))
+        od["color"] = list(
+            self.morbid_genes(list(chain(*zip(dico["gene"], dico["gene"]))))
+        )
+        od["infos"] = list(repeat("", len(od["chr_name"])))
+        od["hovertext"] = list(repeat("", len(od["chr_name"])))
 
-        # pprint(gene_scatter)
-        # gene_scatter["hovertext"] = dico["gene"] + dico["gene"]
-        gene_scatter["hovertext"] = list(repeat("", len(gene_scatter["chr_name"])))
-        # print(gene_scatter.keys())
-        return gene_scatter
+        def get_index_positions(list_of_elems, element):
+            """Returns the indexes of all occurrences of give element in
+            the list- listOfElements"""
+            index_pos_list = []
+            index_pos = 0
+            while True:
+                try:
+                    # Search for item in list from indexPos to the end of list
+                    index_pos = list_of_elems.index(element, index_pos)
+                    # Add the index position in list
+                    index_pos_list.append(index_pos)
+                    index_pos += 1
+                except ValueError as e:
+                    break
+            return index_pos_list
+
+        for key, val in od.items():
+            # print(key, get_index_positions(val, "BRCA2"))
+            print(key, [val[32], val[33]])
+        # exit()
+        return od
 
     def val_data_col(self, dico):
         for key, val in dico["file"]["dataframe"]["data"].items():
@@ -140,9 +200,9 @@ class Scatter_(Plotconfig):
     def morbid_genes(self, genes: list) -> Generator:
         for g in genes:
             if g in self.df_morbid["genes"].to_list():
-                yield "firebrick"
+                yield self.options["Color"]["MORBID_GENES"]
             else:
-                yield "lightgray"
+                yield self.options["Color"]["GENES"]
 
     def merge_options(self):
         final = []

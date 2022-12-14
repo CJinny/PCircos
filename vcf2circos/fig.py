@@ -928,15 +928,25 @@ class Figure(Complex):
             else:
                 number_trace.append(tr["marker"]["color"])
         number_trace = color_to_name(list(set(number_trace)))
-        print(number_trace)
+        # print(number_trace)
         # exit()
         trace_dict = {key: {} for key in number_trace}
+
+        # Dont know why but some dot are in double needed to fix that look above
+        # (fix_dico = {"genes": {"size": 5}, "cnv_level": {}})
         # For all CNV level dot
         for tr in trace:
+            if tr["uid"] == "genes" and tr["marker"]["size"] != 5:
+                continue
+            if tr["uid"].startswith("cnv_scatter") and tr["marker"]["opacity"] != 1:
+                continue
             # if tr["uid"] not in ["genes, cytoband_tiles, transloc"]:
             # Becarefull a value alone for SNV indels
             # if isinstance(tr["marker"]["color"], np.ndarray):
             # For each dot per trace
+            # if tr["uid"] in uid_list:
+            #    continue
+            # print(tr["uid"])
             if isinstance(tr["marker"]["color"], str):
                 tr["marker"]["color"] = [tr["marker"]["color"]]
             for j, color in enumerate(tr["marker"]["color"]):
@@ -975,7 +985,8 @@ class Figure(Complex):
                                 if k not in trace_dict[color][key]:
                                     trace_dict[color][key][k] = []
                                 trace_dict[color][key][k].append(v[j])
-
+            # uid_list.append(tr["uid"])
+        # exit()
         # print(trace_dict)
         # exit()
         # except ValueError:
@@ -999,9 +1010,9 @@ class Figure(Complex):
         cast_color = get_swap_dict(self.options["Color"])
         trace_ = []
         for clrs, values in trace_dict.items():
-            # values["uid"] = cast_color[clrs]
             values["name"] = cast_color[clrs]
             trace_.append(go.Scatter(values))
+        # exit()
         return trace_
 
     def get_paths_dict(self, key):
