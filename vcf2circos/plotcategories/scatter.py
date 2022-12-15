@@ -46,19 +46,9 @@ class Scatter_(Plotconfig):
         ## print(gene_scatter.keys())
         tmp = {}
         od = OrderedDict()
-        tmp["chr_name"] = list(
-            chain(
-                *zip(
-                    dico["chr_name"],
-                    dico["chr_name"],
-                )
-            )
-        )
+        tmp["chr_name"] = list(chain(*zip(dico["chr_name"], dico["chr_name"],)))
         tmp["start"] = []
-        for s, e in zip(
-            dico["start"],
-            dico["end"],
-        ):
+        for s, e in zip(dico["start"], dico["end"],):
             tmp["start"].append(s)
             tmp["start"].append(e)
         tmp["val"] = list(chain(*zip(dico["val"], dico["val"])))
@@ -99,9 +89,9 @@ class Scatter_(Plotconfig):
                     break
             return index_pos_list
 
-        for key, val in od.items():
-            # print(key, get_index_positions(val, "BRCA2"))
-            print(key, [val[32], val[33]])
+        # for key, val in od.items():
+        #    # print(key, get_index_positions(val, "BRCA2"))
+        #    print(key, [val[32], val[33]])
         # exit()
         return od
 
@@ -187,11 +177,7 @@ class Scatter_(Plotconfig):
                 tmp = self.adapt_genes(dico["file"]["dataframe"]["data"])
                 tmp["color"] = list(self.morbid_genes(tmp["gene"]))
                 final.append(
-                    [
-                        tmp,
-                        dico["radius"],
-                        dico["trace"]["uid"],
-                    ]
+                    [tmp, dico["radius"], dico["trace"]["uid"],]
                 )
 
         # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))

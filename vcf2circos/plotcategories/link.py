@@ -137,7 +137,7 @@ class Link(Plotconfig):
             "type": "path",
             "layer": "above",
             "opacity": 0.8,
-            "line": {"color": "gray", "width": 2.5},
+            "line": {"color": data["color"], "width": 2.5},
         }
         # print(data["chr1_name"])
         # print(data["chr2_name"])

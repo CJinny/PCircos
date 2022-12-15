@@ -46,5 +46,12 @@ class Parseargs:
             required=False,
             help="""Notebook mode.\nDefault False""",
         )
+        parser.add_argument(
+            "-a",
+            "--assembly",
+            type=str,
+            required=False,
+            help="""Genome assembly to use for now values available (hg19, hg39)"""
+        )
         # Parse args
         return parser.parse_args()

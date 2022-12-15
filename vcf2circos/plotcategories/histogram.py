@@ -4,6 +4,7 @@ from vcf2circos.plotcategories.plotconfig import Plotconfig
 from vcf2circos.utils import timeit, generate_hovertext_var, chr_valid
 
 from os.path import join as osj
+import os
 import pandas as pd
 from itertools import chain, repeat
 from collections import OrderedDict, Counter
@@ -75,12 +76,7 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {
-                    "size": 0,
-                    "symbol": 0,
-                    "color": None,
-                    "opacity": 0,
-                },  # 8
+                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
             },
             "layout": {
                 "type": "path",
@@ -458,12 +454,7 @@ class Histogram_(Plotconfig):
             "uid": "genes",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {
-                "size": 3,
-                "symbol": 0,
-                "color": data["color"],
-                "opacity": 1,
-            },
+            "marker": {"size": 3, "symbol": 0, "color": data["color"], "opacity": 1,},
         }
         dico["layout"] = {
             "type": "path",
@@ -524,6 +515,10 @@ class Histogram_(Plotconfig):
         extras = []
         if "gc" in self.options["Extra"]:
             # self.gcplus = pd.DataFrame(osj(self.options["static"], #"histogram_pos_chr"))
+            for f in ["histogram_pos_chr.txt", "histogram_neg_chr.txt"]:
+                assert os.path.exists(osj(self.options["Static"], f)), (
+                    f + " file does not exists, add in Static folder"
+                )
             for gc_ in ["histogram_pos_chr.txt", "histogram_neg_chr.txt"]:
                 gc_dict = {
                     "show": "True",
@@ -553,6 +548,9 @@ class Histogram_(Plotconfig):
                 extras.append(gc_dict)
 
         if "mappability" in self.options["Extra"]:
+            assert os.path.exists(
+                osj(self.options["Static"], "dukeExcludeRegions.csv")
+            ), "Mappability Exclude Region file not in Static folder"
             data = pd.read_csv(
                 osj(self.options["Static"], "dukeExcludeRegions.csv"),
                 header=0,
@@ -593,6 +591,71 @@ class Histogram_(Plotconfig):
                 },
             }
             extras.append(mappa_dict)
-            print(mappa_dict)
+            # print(mappa_dict)
             # exit()
+        if "repeatmasker" in self.options["Extra"]:
+            assert os.path.exists(
+                osj(
+                    self.options["Static"],
+                    "Assembly",
+                    self.options["Assembly"],
+                    self.options["Assembly"] + ".repeatmasker.csv",
+                )
+            ), (
+                "Repeat Masker file "
+                + self.options["Assembly"]
+                + ".repeatmasker.csv"
+                + " not in Static folder"
+            )
+            dat = pd.read_csv(
+                osj(
+                    self.options["Static"],
+                    "Assembly",
+                    self.options["Assembly"],
+                    self.options["Assembly"] + ".repeatmasker.csv",
+                ),
+                header=0,
+                sep="\t",
+            )
+            data = dat.loc[dat["chr_name"].isin(chr_valid())]
+            data["val"] = 2
+            data["color"] = "green"
+            data["ref"] = ""
+            data["alt"] = ""
+            # data["infos"] = ""
+            # data["hovertext"] = ""
+            # data["infos_dict"] = ""
+            data_filter = data.loc[
+                :, ["chr_name", "start", "stop", "val", "color", "ref", "alt", "type"]
+            ]
+            repeat_dict = {
+                "show": "True",
+                "customfillcolor": "False",
+                "file": {
+                    "path": "",
+                    "header": "infer",
+                    "sep": "\t",
+                    "dataframe": {
+                        "orient": "columns",
+                        "data": data_filter.to_dict("list"),
+                    },
+                },
+                "sortbycolor": "False",
+                "colorcolumn": 7,
+                "radius": {"R0": 0.75, "R1": 0.79},
+                "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Type:{}".format(a[i,0], a[i,1], a[i,2], a[i,6]) ',
+                "trace": {
+                    "hoverinfo": "text",
+                    "mode": "markers",
+                    "marker": {"size": 0, "opacity": 0},
+                    "uid": "extra_repeatmasker",
+                },
+                "layout": {
+                    "type": "path",
+                    "opacity": 1,
+                    "fillcolor": "black",
+                    "line": {"color": "black", "width": 0},
+                },
+            }
+            extras.append(repeat_dict)
         return extras

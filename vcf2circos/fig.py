@@ -912,6 +912,11 @@ class Figure(Complex):
 
         number_trace = []
         for tr in trace:
+            if tr["uid"] in ["cytoband_tile", "transloc"] or tr["uid"].startswith(
+                "extra_"
+            ):
+                # print(tr)
+                continue
             # print(tr["uid"])
             # print(tr["marker"]["color"])
             # print(type(tr["marker"]["color"]))
@@ -931,7 +936,7 @@ class Figure(Complex):
         # print(number_trace)
         # exit()
         trace_dict = {key: {} for key in number_trace}
-
+        graph_obj = []
         # Dont know why but some dot are in double needed to fix that look above
         # (fix_dico = {"genes": {"size": 5}, "cnv_level": {}})
         # For all CNV level dot
@@ -939,6 +944,17 @@ class Figure(Complex):
             if tr["uid"] == "genes" and tr["marker"]["size"] != 5:
                 continue
             if tr["uid"].startswith("cnv_scatter") and tr["marker"]["opacity"] != 1:
+                continue
+            if tr["uid"] == "transloc":
+                tr["name"] = "BND"
+                graph_obj.append(tr)
+                continue
+            if tr["uid"] == "cytoband_tile":
+                tr["name"] = "CYTOBAND"
+                graph_obj.append(tr)
+                continue
+            if tr["uid"].startswith("extra_"):
+                # graph_obj.append(tr)
                 continue
             # if tr["uid"] not in ["genes, cytoband_tiles, transloc"]:
             # Becarefull a value alone for SNV indels
@@ -950,11 +966,11 @@ class Figure(Complex):
             if isinstance(tr["marker"]["color"], str):
                 tr["marker"]["color"] = [tr["marker"]["color"]]
             for j, color in enumerate(tr["marker"]["color"]):
+                # Issues with cytoband only chr1 and 11 displayed
                 # trace_dict.update(process_legend(color, tr, trace_dict))
                 color = color_to_name(color)
                 # For each item in dot
                 for key, val in vars(tr)["_orphan_props"].items():
-                    # print(key, val)
                     if isinstance(val, str):
                         if key not in trace_dict[color]:
                             trace_dict[color][key] = val
@@ -1013,6 +1029,13 @@ class Figure(Complex):
             values["name"] = cast_color[clrs]
             trace_.append(go.Scatter(values))
         # exit()
+        for val in graph_obj:
+            if not "name" in val:
+                val["name"] = val["uid"]
+            if "name" not in ["BND", "CYTOBAND"]:
+                val["showlegend"] = False
+            trace_.append(val)
+            # print(val)
         return trace_
 
     def get_paths_dict(self, key):
