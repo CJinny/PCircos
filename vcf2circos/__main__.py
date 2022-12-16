@@ -27,7 +27,7 @@ from fig import Figure
 from time import time
 
 from os.path import join as osj
-
+import plotly.io
 import plotly
 import pathlib
 import json
@@ -100,6 +100,19 @@ def main():
     if options:
         print(f"[INFO] Options provided.")
         options["File"] = options_input
+        if args.assembly:
+            assert args.assembly in os.listdir(osj(options["Static"], "Assembly")), (
+                "ERROR genome assembly "
+                + args.assembly
+                + " is not available update \n your config or choose an available among this list "
+                + ", ".join(
+                    [
+                        assemb
+                        for assemb in os.listdir(osj(options["Static"], "Assembly"))
+                    ]
+                )
+            )
+            options["Assembly"] = args.assembly
     else:
         print(f"[INFO] Options not provided.")
 
@@ -118,7 +131,7 @@ def main():
         print("\n")
         # print(type(js["Category"]["cytoband"]))
         js = Datafactory(input_file, options).plot_dict()
-        fig_instance = Figure(dash_dict=js)
+        fig_instance = Figure(dash_dict=js, options=options)
 
         # Export in vcf2circos JSON
         if export_file:
@@ -130,15 +143,24 @@ def main():
 
     elif input_format in ["json"]:
 
-        fig_instance = Figure(input_json_path=input_file)
+        fig_instance = Figure(dash_dict=js, options=options)
 
     else:
 
         print("[ERROR] input format not supported")
 
-    # Fig
-
     fig = fig_instance.fig()
+    fig["layout"]["showlegend"] = True
+    fig.update_layout(legend_title="Legend")
+    fig.update_layout(legend_xanchor="right")
+    fig.update_layout(legend_x=1.1)
+    # with open("15122022_config.json", "w+") as js:
+    #    data = plotly.io.to_json(fig, pretty=True)
+    #    js.write(data)
+    ## print(fig)
+    # exit()
+    # Fig
+    # legend = Legend(fig)
 
     try:
         if not output_format:

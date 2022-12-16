@@ -14,7 +14,7 @@ import pandas as pd
 # from vcf2circos.vcfreader import VcfReader
 from os.path import join as osj
 from tqdm import tqdm
-from vcf2circos.utils import variants_color, timeit, cast_svtype
+from vcf2circos.utils import timeit, cast_svtype
 from pprint import pprint
 import vcf
 
@@ -66,6 +66,7 @@ class Plotconfig:
         self.vcf_reader = vcf.Reader(
             filename=filename, strict_whitespace=True, encoding="utf-8"
         )
+        self.colors = self.options["Color"]
         # self.refgene_genes = osj(
         #    self.options["Static"],
         #    "Assembly",
@@ -208,15 +209,16 @@ class Plotconfig:
                     svtype, copynumber = self.get_copynumber_type(record)
                     data["Variants_type"].append(svtype)
                     try:
-                        data["Color"].append(variants_color[svtype])
+                        data["Color"].append(self.colors[svtype])
                     except KeyError:
-                        data["Color"].append(variants_color["CNV"])
+                        data["Color"].append(self.colors["CNV"])
                     if copynumber is None:
                         data["CopyNumber"].append(2)
                     else:
                         if copynumber > 5 and svtype not in ["SNV", "INDEL", "OTHER"]:
                             copynumber = 5
                         data["CopyNumber"].append(copynumber)
+
         # test
         # def replace_(dico):
         #    rep = ""
@@ -230,6 +232,7 @@ class Plotconfig:
         #    .loc[pd.DataFrame.from_dict(data)["Chromosomes"] == "chr1"]
         #    .to_dict("list")
         # )
+        # exit()
         return data
 
     def chr_adapt(self, record: object) -> str:
@@ -364,6 +367,17 @@ class Plotconfig:
                 break
         return list(set(gene_list))
 
+    def from_gene_to_unique(self, string: str) -> str:
+        """
+        example from IFT140|IFT140 to IFT140 if all values are the same otherwise keep all
+        """
+        if "|" in string:
+            return ",".join(list(set(string.split("|"))))
+        elif "," in string:
+            return ",".join(list(set(string.split(","))))
+        else:
+            return string
+
     def get_genes_var(self, record: object) -> str:
         # refgene_genes = pd.read_csv(
         #    osj(
@@ -381,7 +395,9 @@ class Plotconfig:
         gene_name = record.INFO.get("Gene_name")
         record.CHROM = self.chr_adapt(record)
         if isinstance(gene_name, str):
-            return gene_name
+            return self.from_gene_to_unique(gene_name)
+        elif isinstance(gene_name, list):
+            return ",".join(gene_name)
         # No Gene_name annotation need to find overlapping gene in sv
         if gene_name is None:
             if record.INFO.get("SVTYPE") not in [

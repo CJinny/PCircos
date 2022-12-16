@@ -1,5 +1,6 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from os.path import join as osj
+from itertools import repeat
 import pandas as pd
 import os
 
@@ -44,13 +45,13 @@ class Cytoband(Plotconfig):
             "uid": "cytoband",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {"size": 1, "symbol": 0, "color": "black", "opacity": 1,},  # 8
+            "marker": {"size": 1, "symbol": 0, "color": None, "opacity": 1},  # 8
         }
         self.layout = {
             "type": "path",
             "layer": "below",
             "opacity": 1.0,
-            "line": {"color": "black", "width": 0},
+            "line": {"color": None, "width": 0},
         }
 
     def __getattr__(self, item):
@@ -89,5 +90,16 @@ class Cytoband(Plotconfig):
         dico["hovertextformat"] = self.hovertextformat
         dico["trace"] = self.trace
         dico["layout"] = self.layout
-
+        dico["trace"]["marker"]["color"] = list(
+            repeat(
+                self.options["Color"]["CYTOBAND"],
+                len(dico["file"]["dataframe"]["data"]["chr_name"]),
+            )
+        )
+        dico["layout"]["line"]["color"] = list(
+            repeat(
+                self.options["Color"]["CYTOBAND"],
+                len(dico["file"]["dataframe"]["data"]["chr_name"]),
+            )
+        )
         return dico

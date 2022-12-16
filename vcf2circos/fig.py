@@ -13,14 +13,94 @@ import io
 import os
 import base64
 from html import escape, unescape
-from vcf2circos.utils import timeit
+from vcf2circos.utils import timeit, get_swap_dict
+from ast import literal_eval
+from scipy.spatial import KDTree
+from webcolors import CSS3_HEX_TO_NAMES, hex_to_rgb
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
 # from dash_dict import *
+def convert_rgb_to_names(rgb_tuple):
+
+    # a dictionary of all the hex and their respective names in css3
+    css3_db = CSS3_HEX_TO_NAMES
+    names = []
+    rgb_values = []
+    for color_hex, color_name in css3_db.items():
+        names.append(color_name)
+        rgb_values.append(hex_to_rgb(color_hex))
+
+    kdt_db = KDTree(rgb_values)
+    distance, index = kdt_db.query(rgb_tuple)
+    return names[index]
+
+
+def process_legend(tr, trace_dict):
+    if isinstance(tr["marker"]["color"], str):
+        tr["marker"]["color"] = [tr["marker"]["color"]]
+    for j, color in enumerate(tr["marker"]["color"]):
+        # trace_dict.update(process_legend(color, tr, trace_dict))
+        color = color_to_name(color)
+        # For each item in dot
+        for key, val in vars(tr)["_orphan_props"].items():
+            # print(key, val)
+            if isinstance(val, str):
+                if key not in trace_dict[color]:
+                    trace_dict[color][key] = val
+            elif isinstance(val, np.ndarray):
+                if key not in trace_dict[color]:
+                    trace_dict[color][key] = []
+                trace_dict[color][key].append(val[j])
+            elif isinstance(val, list):
+                if key not in trace_dict[color]:
+                    trace_dict[color][key] = []
+                trace_dict[color][key].append(val[j])
+            elif isinstance(val, dict):
+                if key not in trace_dict[color]:
+                    trace_dict[color][key] = {}
+                for k, v in val.items():
+                    if isinstance(v, str) or isinstance(v, int) or isinstance(v, float):
+                        if k not in trace_dict[color][key]:
+                            trace_dict[color][key][k] = v
+                    elif isinstance(v, np.ndarray):
+                        if k not in trace_dict[color][key]:
+                            trace_dict[color][key][k] = []
+                        trace_dict[color][key][k].append(v[j])
+                    elif isinstance(v, list):
+                        if k not in trace_dict[color][key]:
+                            trace_dict[color][key][k] = []
+                        trace_dict[color][key][k].append(v[j])
+        return trace_dict
 
 
 # input_json_path = sys.argv[1]
+def color_to_name(input):
+    if (
+        isinstance(input, list)
+        or isinstance(input, np.ndarray)
+        or isinstance(input, tuple)
+    ):
+        l = []
+        for colors in input:
+            if colors.startswith("rgb"):
+                # print(colors.replace("rgb", ""))
+                col = literal_eval(colors.replace("rgb", ""))
+                # print(colors)
+                # print(col)
+                l.append(convert_rgb_to_names(col))
+            else:
+                l.append(colors)
+        # print(l)
+        return l
+    elif isinstance(input, str):
+        if input.startswith("rgb"):
+            col = literal_eval(input.replace("rgb", ""))
+            return convert_rgb_to_names(col)
+        else:
+            return input
+    else:
+        return input
 
 
 def merge_dict(basedict, *extradict):
@@ -49,7 +129,8 @@ def merge_dict(basedict, *extradict):
 class Figure(Complex):
     def __init__(self, *args, **kwargs):
         # not able to read dash_dict twice for some reason
-
+        if "options" in kwargs:
+            self.options = kwargs["options"].copy()
         if "input_json_path" in kwargs:
             self.input_json_path = kwargs["input_json_path"]
 
@@ -721,6 +802,7 @@ class Figure(Complex):
                                 x=Complex[i].real,
                                 y=Complex[i].imag,
                                 text=next(hovertext_generator),
+                                name=item["name"],
                             )
                         )
                         trace[-1].update(item["trace"])
@@ -757,9 +839,10 @@ class Figure(Complex):
                         if i % 6 in [0, 1, 4, 5]:
                             index.append(i)
                     Complex = Complex[index]
-
+                # if not "name" in item:
+                #    item["name"] = "nolegend"
+                #    item["showlegend"] = "False"
                 trace = go.Scatter(x=Complex.real, y=Complex.imag, text=hovertext)
-                # print(trace)
                 # print(item['trace'])
                 trace.update(item["trace"])
 
@@ -782,7 +865,17 @@ class Figure(Complex):
                         color = item["trace"]["marker"]["color"]
 
                     trace["marker"].update(color=color)
-
+            # try:
+            #    if isinstance(trace["marker"]["color"], str):
+            #        if trace["marker"]["color"] != "gray":
+            #            trace["name"] = trace["uid"]
+            #    else:
+            #        if not "gray" in trace["marker"]["color"]:
+            #            trace["name"] = trace["uid"]
+            # except ValueError:
+            #    print(item)
+            #    print(trace)
+            #    exit()
             return trace
 
         if isinstance(items, dict):
@@ -817,7 +910,133 @@ class Figure(Complex):
 
                 trace += self.get_traces(key)
 
-        return trace
+        number_trace = []
+        for tr in trace:
+            if tr["uid"] in ["cytoband_tile", "transloc"] or tr["uid"].startswith(
+                "extra_"
+            ):
+                # print(tr)
+                continue
+            # print(tr["uid"])
+            # print(tr["marker"]["color"])
+            # print(type(tr["marker"]["color"]))
+            # if tr["uid"] not in ["genes, cytoband_tiles, transloc"] and isinstance(
+            #    tr["marker"]["color"], np.ndarray
+            # ):
+            # print(tr["uid"])
+            if isinstance(tr["marker"]["color"], list) or isinstance(
+                tr["marker"]["color"], tuple
+            ):
+                number_trace.extend(tr["marker"]["color"])
+            elif isinstance(tr["marker"]["color"], np.ndarray):
+                number_trace.extend(tr["marker"]["color"].tolist())
+            else:
+                number_trace.append(tr["marker"]["color"])
+        number_trace = color_to_name(list(set(number_trace)))
+        # print(number_trace)
+        # exit()
+        trace_dict = {key: {} for key in number_trace}
+        graph_obj = []
+        # Dont know why but some dot are in double needed to fix that look above
+        # (fix_dico = {"genes": {"size": 5}, "cnv_level": {}})
+        # For all CNV level dot
+        for tr in trace:
+            if tr["uid"] == "genes" and tr["marker"]["size"] != 5:
+                continue
+            if tr["uid"].startswith("cnv_scatter") and tr["marker"]["opacity"] != 1:
+                continue
+            if tr["uid"] == "transloc":
+                tr["name"] = "BND"
+                graph_obj.append(tr)
+                continue
+            if tr["uid"] == "cytoband_tile":
+                tr["name"] = "CYTOBAND"
+                graph_obj.append(tr)
+                continue
+            if tr["uid"].startswith("extra_"):
+                graph_obj.append(tr)
+                continue
+            # if tr["uid"] not in ["genes, cytoband_tiles, transloc"]:
+            # Becarefull a value alone for SNV indels
+            # if isinstance(tr["marker"]["color"], np.ndarray):
+            # For each dot per trace
+            # if tr["uid"] in uid_list:
+            #    continue
+            # print(tr["uid"])
+            if isinstance(tr["marker"]["color"], str):
+                tr["marker"]["color"] = [tr["marker"]["color"]]
+            for j, color in enumerate(tr["marker"]["color"]):
+                # Issues with cytoband only chr1 and 11 displayed
+                # trace_dict.update(process_legend(color, tr, trace_dict))
+                color = color_to_name(color)
+                # For each item in dot
+                for key, val in vars(tr)["_orphan_props"].items():
+                    if isinstance(val, str):
+                        if key not in trace_dict[color]:
+                            trace_dict[color][key] = val
+                    elif isinstance(val, np.ndarray):
+                        if key not in trace_dict[color]:
+                            trace_dict[color][key] = []
+                        trace_dict[color][key].append(val[j])
+                    elif isinstance(val, list):
+                        if key not in trace_dict[color]:
+                            trace_dict[color][key] = []
+                        trace_dict[color][key].append(val[j])
+                    elif isinstance(val, dict):
+                        if key not in trace_dict[color]:
+                            trace_dict[color][key] = {}
+                        for k, v in val.items():
+                            if (
+                                isinstance(v, str)
+                                or isinstance(v, int)
+                                or isinstance(v, float)
+                            ):
+                                if k not in trace_dict[color][key]:
+                                    trace_dict[color][key][k] = v
+                            elif isinstance(v, np.ndarray):
+                                if k not in trace_dict[color][key]:
+                                    trace_dict[color][key][k] = []
+                                trace_dict[color][key][k].append(v[j])
+                            elif isinstance(v, list):
+                                if k not in trace_dict[color][key]:
+                                    trace_dict[color][key][k] = []
+                                trace_dict[color][key][k].append(v[j])
+            # uid_list.append(tr["uid"])
+        # exit()
+        # print(trace_dict)
+        # exit()
+        # except ValueError:
+        # print(trace_dict)
+        # exit()
+        # print(trace_dict)
+        # exit()
+
+        # cast_color = {
+        #    "brown": "CNV",
+        #    "mediumorchid": "INV",
+        #    "royalblue": "DUP",
+        #    "crimson": "INS",
+        #    "dimgray": "SNV/INDELS",
+        #    "darkorange": "DEL",
+        #    "lightgray": "Genes",
+        #    "gray": "intermediary",
+        #    "blue": "transloc",
+        #    "firebrick": "Morbid genes",
+        # }
+        cast_color = get_swap_dict(self.options["Color"])
+        trace_ = []
+        for clrs, values in trace_dict.items():
+            values["name"] = cast_color[clrs]
+            trace_.append(go.Scatter(values))
+        # exit()
+        for val in graph_obj:
+            if not "name" in val:
+                val["name"] = val["uid"]
+            if "name" not in ["BND", "CYTOBAND"]:
+                val["showlegend"] = False
+            trace_.append(val)
+            # print(val)
+        return trace_
 
     def get_paths_dict(self, key):
         # will join path_list into a path string if sortbycolor
@@ -1341,4 +1560,3 @@ class Figure(Complex):
                 ),
                 layout=self.layout(),
             )
-

@@ -1,7 +1,6 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
 from vcf2circos.utils import (
     generate_hovertext_var,
-    variants_color,
     delete_multiple_element,
     timeit,
 )
@@ -105,7 +104,7 @@ class Link(Plotconfig):
                     data["hovertext"].extend(
                         list(generate_hovertext_var([values["record_info"]]))
                     )
-                    data["color"].append(variants_color["BND"])
+                    data["color"].append(self.options["Color"]["BND"])
                     data["symbol"].append(0)
         # pprint(data, sort_dicts=False)
 
@@ -138,7 +137,7 @@ class Link(Plotconfig):
             "type": "path",
             "layer": "above",
             "opacity": 0.8,
-            "line": {"color": "gray", "width": 2.5},
+            "line": {"color": data["color"], "width": 2.5},
         }
         # print(data["chr1_name"])
         # print(data["chr2_name"])

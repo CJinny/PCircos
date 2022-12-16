@@ -16,17 +16,40 @@ import numpy as np
 import pyfiglet
 
 # Globals
-variants_color = {
-    "INS": "red",
-    "INV": "purple",
-    "DEL": "orange",
-    "DUP": "blue",
-    "CNV": "brown",
-    "BND": "blue",
-    "SNV": "gray",
-    "INDEL": "gray",
-    "OTHER": "gray",
-}
+# variants_color = {
+#    "INS": "red",
+#    "INV": "purple",
+#    "DEL": "orange",
+#    "DUP": "blue",
+#    "CNV": "brown",
+#    "BND": "blue",
+#    "SNV": "dimgray",
+#    "INDEL": "dimgray",
+#    "OTHER": "dimgray",
+# }
+
+# variants_color = {
+#    "INS": "#A52A2A",
+#    "INV": "#9B30FF",
+#    "DEL": "#FF8000",
+#    "DUP": "#0000FF",
+#    "CNV": "#A52A2A",
+#    "BND": "#0000FF",
+#    "SNV": "#808080",
+#    "INDEL": "#808080",
+#    "OTHER": "#808080",
+# }
+def get_swap_dict(d):
+    """
+    https://note.nkmk.me/en/python-dict-swap-key-value/
+    """
+    return {v: k for k, v in d.items()}
+
+
+def chr_valid():
+    chr_valid = ["chr" + str(i) for i in range(1, 22)]
+    chr_valid.extend(["chrM", "chrX", "chrY"])
+    return chr_valid
 
 
 def launch():
