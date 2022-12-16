@@ -954,7 +954,7 @@ class Figure(Complex):
                 graph_obj.append(tr)
                 continue
             if tr["uid"].startswith("extra_"):
-                # graph_obj.append(tr)
+                graph_obj.append(tr)
                 continue
             # if tr["uid"] not in ["genes, cytoband_tiles, transloc"]:
             # Becarefull a value alone for SNV indels

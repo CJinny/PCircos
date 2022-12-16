@@ -102,7 +102,11 @@ class Ideogram(Plotconfig):
                 "xref": "x",
                 "yref": "y",
                 "showarrow": False,
-                "font": {"family": "Times New Roman", "size": 8, "color": "black",},
+                "font": {
+                    "family": "Times New Roman",
+                    "size": 8,
+                    "color": "black",
+                },
             },
         }
 

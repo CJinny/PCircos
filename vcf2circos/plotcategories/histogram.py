@@ -76,7 +76,12 @@ class Histogram_(Plotconfig):
                 "uid": "cytoband_tile",
                 "hoverinfo": "text",
                 "mode": "markers",
-                "marker": {"size": 0, "symbol": 0, "color": None, "opacity": 0,},  # 8
+                "marker": {
+                    "size": 0,
+                    "symbol": 0,
+                    "color": None,
+                    "opacity": 0,
+                },  # 8
             },
             "layout": {
                 "type": "path",
@@ -454,7 +459,12 @@ class Histogram_(Plotconfig):
             "uid": "genes",
             "hoverinfo": "text",
             "mode": "markers",
-            "marker": {"size": 3, "symbol": 0, "color": data["color"], "opacity": 1,},
+            "marker": {
+                "size": 3,
+                "symbol": 0,
+                "color": data["color"],
+                "opacity": 1,
+            },
         }
         dico["layout"] = {
             "type": "path",
@@ -515,82 +525,113 @@ class Histogram_(Plotconfig):
         extras = []
         if "gc" in self.options["Extra"]:
             # self.gcplus = pd.DataFrame(osj(self.options["static"], #"histogram_pos_chr"))
-            for f in ["histogram_pos_chr.txt", "histogram_neg_chr.txt"]:
-                assert os.path.exists(osj(self.options["Static"], f)), (
-                    f + " file does not exists, add in Static folder"
+            gc_pos = osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                self.options["Assembly"] + ".histogram_pos_chr.txt",
+            )
+            gc_neg = osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                self.options["Assembly"] + ".histogram_neg_chr.txt",
+            )
+            # for f in [gc_pos, gc_neg]:
+            #    assert os.path.exists(f), (
+            #        f + " file does not exists, add in Static folder"
+            #    )
+            for gc_ in [gc_pos, gc_neg]:
+                if os.path.exists(gc_):
+                    gc_dict = {
+                        "show": "True",
+                        "customfillcolor": "False",
+                        "file": {
+                            "path": gc_,
+                            "header": "infer",
+                            "sep": "\t",
+                        },
+                        "sortbycolor": "False",
+                        "colorcolumn": "None",
+                        "radius": {"R0": 0.90, "R1": 0.94},
+                        "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}    <br>LogFC:{}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ',
+                        "trace": {
+                            "hoverinfo": "text",
+                            "mode": "markers",
+                            "marker": {"size": 0, "opacity": 0},
+                            "uid": "extra_gc",
+                        },
+                        "layout": {
+                            "type": "path",
+                            "opacity": 1,
+                            "fillcolor": "blue",
+                            "line": {"color": "blue", "width": 0},
+                        },
+                    }
+                    extras.append(gc_dict)
+                else:
+                    print(
+                        "[WARN GC file don't exist for assembly "
+                        + self.options["Assembly"]
+                    )
+
+        if "mappability" in self.options["Extra"]:
+            mapp_file = osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                self.options["Assembly"] + ".dukeExcludeRegions.csv",
+            )
+            if not os.path.exists(mapp_file):
+
+                print(
+                    "[WARN] Mappability Exclude Region file not in Static folder for assembly "
+                    + self.options["Assembly"]
                 )
-            for gc_ in ["histogram_pos_chr.txt", "histogram_neg_chr.txt"]:
-                gc_dict = {
+            else:
+                data = pd.read_csv(
+                    mapp_file,
+                    header=0,
+                    sep="\t",
+                )
+                data = data.loc[data["chr_name"].isin(chr_valid())]
+                data["val"] = 2
+                data["color"] = "red"
+                data["ref"] = ""
+                data["alt"] = ""
+                # data["infos"] = ""
+                # data["hovertext"] = ""
+                # data["infos_dict"] = ""
+                mappa_dict = {
                     "show": "True",
                     "customfillcolor": "False",
                     "file": {
-                        "path": osj(self.options["Static"], gc_),
+                        "path": "",
                         "header": "infer",
                         "sep": "\t",
+                        "dataframe": {
+                            "orient": "columns",
+                            "data": data.to_dict("list"),
+                        },
                     },
                     "sortbycolor": "False",
-                    "colorcolumn": "None",
-                    "radius": {"R0": 0.90, "R1": 0.94},
-                    "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>LogFC:{}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ',
+                    "colorcolumn": 7,
+                    "radius": {"R0": 0.80, "R1": 0.84},
+                    "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Type:   {}".format(a[i,0], a[i,1], a[i,2], a[i,6]) ',
                     "trace": {
                         "hoverinfo": "text",
                         "mode": "markers",
                         "marker": {"size": 0, "opacity": 0},
-                        "uid": "extra_gc",
+                        "uid": "extra_mappability",
                     },
                     "layout": {
                         "type": "path",
                         "opacity": 1,
-                        "fillcolor": "blue",
-                        "line": {"color": "blue", "width": 0},
+                        "fillcolor": "black",
+                        "line": {"color": "black", "width": 0},
                     },
                 }
-                extras.append(gc_dict)
-
-        if "mappability" in self.options["Extra"]:
-            assert os.path.exists(
-                osj(self.options["Static"], "dukeExcludeRegions.csv")
-            ), "Mappability Exclude Region file not in Static folder"
-            data = pd.read_csv(
-                osj(self.options["Static"], "dukeExcludeRegions.csv"),
-                header=0,
-                sep="\t",
-            )
-            data = data.loc[data["chr_name"].isin(chr_valid())]
-            data["val"] = 2
-            data["color"] = "red"
-            data["ref"] = ""
-            data["alt"] = ""
-            # data["infos"] = ""
-            # data["hovertext"] = ""
-            # data["infos_dict"] = ""
-            mappa_dict = {
-                "show": "True",
-                "customfillcolor": "False",
-                "file": {
-                    "path": "",
-                    "header": "infer",
-                    "sep": "\t",
-                    "dataframe": {"orient": "columns", "data": data.to_dict("list")},
-                },
-                "sortbycolor": "False",
-                "colorcolumn": 7,
-                "radius": {"R0": 0.80, "R1": 0.84},
-                "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Type:{}".format(a[i,0], a[i,1], a[i,2], a[i,6]) ',
-                "trace": {
-                    "hoverinfo": "text",
-                    "mode": "markers",
-                    "marker": {"size": 0, "opacity": 0},
-                    "uid": "extra_mappability",
-                },
-                "layout": {
-                    "type": "path",
-                    "opacity": 1,
-                    "fillcolor": "black",
-                    "line": {"color": "black", "width": 0},
-                },
-            }
-            extras.append(mappa_dict)
+                extras.append(mappa_dict)
             # print(mappa_dict)
             # exit()
         if "repeatmasker" in self.options["Extra"]:
@@ -619,7 +660,7 @@ class Histogram_(Plotconfig):
             )
             data = dat.loc[dat["chr_name"].isin(chr_valid())]
             data["val"] = 2
-            data["color"] = "green"
+            data["color"] = self.options["Color"]["MAPPABILITY"]
             data["ref"] = ""
             data["alt"] = ""
             # data["infos"] = ""
