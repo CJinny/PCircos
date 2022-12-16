@@ -1,0 +1,3 @@
+recursive-include plotcategories *
+recursive-include dash *
+recursive-include assets *
