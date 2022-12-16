@@ -1,3 +1,4 @@
-recursive-include plotcategories *
-recursive-include dash *
-recursive-include assets *
+recursive-include vcf2circos/plotcategories *
+recursive-include vcf2circos/config *
+recursive-include vcf2circos/assets *
+recursive-include vcf2circos/dash *
