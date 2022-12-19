@@ -46,14 +46,13 @@ class Datafactory:
 
         # Ugly as hell, if we wanna take only snv indel overlapping SV
         # Create plot object
-
+        link = Link(pc)
         histogram = Histogram_(pc)
         cytoband = Cytoband(pc)
         data_histo = histogram.merge_options(cytoband.data_cytoband())
         ideogram = Ideogram(pc)
         ring = Ring(pc, ["genes"])
         scatter = Scatter_(pc, data_histo.copy())
-        link = Link(pc)
 
         # Final dict containing all plots informations
         js = {}
@@ -61,14 +60,15 @@ class Datafactory:
         # print("HISTO\n")
         # for ite in data_histo:
         #    print(ite["file"]["dataframe"]["data"].keys())
+        link_me, chr_values = link.merge_options()
 
         js["Category"] = {
-            "ideogram": ideogram.merge_options(),
+            "ideogram": ideogram.merge_options(chr_values),
             "ring": ring.create_ring(),
             "cytoband": cytoband.merge_options(),
             "histogram": data_histo,
             "scatter": scatter.merge_options(),
-            "link": link.merge_options(),
+            "link": link_me,
         }
 
         # DEBUg
@@ -76,7 +76,6 @@ class Datafactory:
         #    data = json.dumps(js, indent=4)
         #    o.write(data)
         # exit()
-
         # Adjustement in case of no data for example when use overlapping snv only
         remove_under = []
         for plot_type in js["Category"]:

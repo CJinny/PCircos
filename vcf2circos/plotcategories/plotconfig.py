@@ -46,10 +46,7 @@ class Plotconfig:
         self.filename = filename
         self.options = options
         self.default_options = json.load(
-            open(
-                osj(self.options["Static"] + "/options.general.json"),
-                "r",
-            )
+            open(osj(self.options["Static"] + "/options.general.json"), "r",)
         )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(filename)
@@ -207,6 +204,18 @@ class Plotconfig:
                     data["Record"].append(record)
                     data["Variants"].append(record.INFO)
                     svtype, copynumber = self.get_copynumber_type(record)
+                    assert svtype in self.options["Color"], (
+                        "Wrong svtype in record "
+                        + ", ".join(
+                            [
+                                str(record.CHROM),
+                                str(record.POS),
+                                str(record.REF),
+                                str(record.ALT),
+                            ]
+                        )
+                        + " check your vcf Exit"
+                    )
                     data["Variants_type"].append(svtype)
                     try:
                         data["Color"].append(self.colors[svtype])
@@ -251,6 +260,8 @@ class Plotconfig:
         REQUIRED monosample vcf
         """
         # if only copy number in alt....
+        if "]" in str(record.ALT[0]) or "[" in str(record.ALT[0]):
+            return ("BND", 2)
         if str(record.ALT[0]).startswith("<CN") and str(record.ALT[0]) != "<CNV>":
             cn = str(record.ALT[0])
             cn = cn.replace("<", "")
@@ -265,6 +276,7 @@ class Plotconfig:
                 cn = alt_tmp[1].replace(">", "")
                 if cn.startswith("CN"):
                     return (alt, int(cn[-1]))
+
         # trying to retrieve usefull informations in info field
         alt = str(record.ALT[0])
         # checking if CopyNumber annotation in info field
@@ -441,19 +453,14 @@ class Plotconfig:
                             )
                         except (KeyError, ValueError, TypeError):
                             print(
-                                "ERROR missing SVLEN annotation for record ",
-                                record,
+                                "ERROR missing SVLEN annotation for record ", record,
                             )
                             exit()
             # SNV indel
             else:
                 alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
                 gene_name = self.find_record_gene(
-                    [
-                        record.CHROM,
-                        record.POS,
-                        (int(record.POS) + alternate),
-                    ]
+                    [record.CHROM, record.POS, (int(record.POS) + alternate),]
                 )
                 if not gene_name:
                     gene_name = [""]

@@ -50,6 +50,9 @@ class Link(Plotconfig):
                     chrom_pos = (chrom_pos_tmp[0], chrom_pos_tmp[1])
                 tmp[(record.CHROM, record.POS)]["values"].append(chrom_pos)
             data.append(tmp)
+        # for val in data:
+        #    print(val.keys())
+        #    print(val[list(val.keys())[0]]["values"])
         return data
 
     def extract_chr_pos_hover_from_bnd(self, string: str, record: object) -> int:
@@ -142,5 +145,11 @@ class Link(Plotconfig):
         # print(data["chr1_name"])
         # print(data["chr2_name"])
         # exit()
-        plot["file"]["dataframe"]["data"] = self.correct_chosen_var(data)
-        return plot
+        # In case of chromosomes selections
+        # plot["file"]["dataframe"]["data"] = self.correct_chosen_var(data)
+        chr_values = data["chr1_name"].copy()
+        chr_values.extend(data["chr2_name"])
+        # pprint(data)
+        # pprint(self.correct_chosen_var(data))
+
+        return plot, list(set(chr_values))
