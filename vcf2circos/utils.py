@@ -262,7 +262,10 @@ def cast_svtype(svtype):
     if "<" in svtype or ">" in svtype:
         svtype = svtype.replace("<", "")
         svtype = svtype.replace(">", "")
-    return svtype
+    if ":" in svtype:
+        return svtype.split(":")[0]
+    else:
+        return svtype
 
 
 def systemcall(command: str) -> list:
@@ -339,16 +342,7 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
             with gzip.open(output_transcripts, "wb+") as out_t:
                 out_g.write(
                     bytes(
-                        "\t".join(
-                            [
-                                "chr_name",
-                                "start",
-                                "end",
-                                "val",
-                                "color",
-                                "gene",
-                            ]
-                        )
+                        "\t".join(["chr_name", "start", "end", "val", "color", "gene",])
                         + "\n",
                         "UTF-8",
                     )

@@ -102,11 +102,7 @@ class Ideogram(Plotconfig):
                 "xref": "x",
                 "yref": "y",
                 "showarrow": False,
-                "font": {
-                    "family": "Times New Roman",
-                    "size": 8,
-                    "color": "black",
-                },
+                "font": {"family": "Times New Roman", "size": 8, "color": "black",},
             },
         }
 
@@ -114,10 +110,12 @@ class Ideogram(Plotconfig):
         if hasattr(self.plotconfig, item):
             return getattr(self.plotconfig, item)
 
-    def data_ideogram(self):
-        tmp = self.chr_conf.loc[
-            self.chr_conf["chr_name"].isin(self.data["Chromosomes"])
-        ]
+    def data_ideogram(self, chr_link):
+        # need to know if BND have chr mate in no called chromosome
+        true_chr = self.data["Chromosomes"]
+        true_chr.extend(chr_link)
+        chromosomes = list(set(true_chr))
+        tmp = self.chr_conf.loc[self.chr_conf["chr_name"].isin(true_chr)]
         data = {
             "chr_name": tmp["chr_name"].to_list(),
             "chr_size": tmp["size"].to_list(),
@@ -125,9 +123,10 @@ class Ideogram(Plotconfig):
             "chr_color": list(Colorpal(len(tmp["chr_name"].to_list()))),
         }
         # exit()
+        print(tmp)
         return data
 
-    def merge_options(self):
+    def merge_options(self, chr_link):
         dico = {}
         dico["patch"] = {}
         # ideo = Ideogram()
@@ -135,7 +134,7 @@ class Ideogram(Plotconfig):
             "path": "",
             "header": "infer",
             "sep": "\t",
-            "dataframe": {"orient": "columns", "data": self.data_ideogram()},
+            "dataframe": {"orient": "columns", "data": self.data_ideogram(chr_link)},
         }
         dico["patch"]["show"] = self.show
         dico["patch"]["degreerange"] = self.degreerange
