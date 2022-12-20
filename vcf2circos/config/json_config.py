@@ -7,6 +7,7 @@ from typing import Dict
 sys.path.append('../')
 import pandas as pd
 import json
+import os
 
 defaultdict_json={
     "General": {
@@ -146,7 +147,7 @@ def json2dict(input_dict):
             defaultdict = json_dict("config/default_params.json")
         except FileNotFoundError:
             try:
-                defaultdict = json_dict("/content/vcf2circos/config/default_params.json")
+                defaultdict = json_dict(os.path.join(os.path.dirname(__file__), "default_params.json"))
             except FileNotFoundError:
                 print('default_params json file not found')
                 try:
