@@ -51,7 +51,7 @@ class Parseargs:
             "--assembly",
             type=str,
             required=False,
-            help="""Genome assembly to use for now values available (hg19, hg39)"""
+            help="""Genome assembly to use for now values available (hg19, hg38)"""
         )
         # Parse args
         return parser.parse_args()

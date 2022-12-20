@@ -7,7 +7,7 @@ See documentation and code in [GitHub vcf2circos](https://github.com/bioinfo-chr
 This package is based on [PCircos](https://github.com/CJinnny/PCircos) code
 
 
-![Doc Circos](docs/dna_circos.png)
+![Doc Circos](docs/circos_help.png)
 <br/>
 
 # Installation
