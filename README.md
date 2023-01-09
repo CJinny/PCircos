@@ -36,6 +36,14 @@ Build docker image "vcf2circos:latest"
 $ docker-compose build
 ```
 
+## Configuration folder
+Configuration files could be download here: [vcf2circos-config](http://www.lbgi.fr/~lamouche/vcf2circos/) (do not forget to uncompress tarball). <br><br>
+
+```
+tar -xzf <tarballname> <folder>
+```
+Regarding where you place your configuration folder previously downloaded, you need to specify the absolute path of the Static folder in "Static" json key (which will replace default value "config/Static")<br><br>
+An <b>example VCF</b> is also available in the configuration folder called example.vcf
 
 <br/>
 
