@@ -13,6 +13,7 @@ sys.path.append(os.path.abspath(os.path.join("../", "demo_data")))
 
 from itertools import count
 import numpy as np
+from collections import defaultdict
 
 # import colorlover as cl
 
@@ -154,6 +155,32 @@ def main():
     fig.update_layout(legend_title="Legend")
     fig.update_layout(legend_xanchor="right")
     fig.update_layout(legend_x=1.1)
+    # Order of the legend test
+    dico = defaultdict(
+        int,
+        {
+            k: v
+            for k, v in {
+                "GENES": 1,
+                "MORBID_GENES": 2,
+                "CNV": 3,
+                "DEL": 4,
+                "DUP": 5,
+                "INS": 6,
+                "INV": 7,
+                "BND": 8,
+                "SNV": 9,
+            }.items()
+        },
+    )
+    for scatter in fig["data"]:
+        if scatter.name == "CYTOBAND":
+            print(scatter.text)
+            print(scatter.marker)
+            exit()
+        if scatter.showlegend is None and hasattr(scatter, "name"):
+            if scatter.name is not None:
+                scatter.legendrank = dico[scatter.name]
     # with open("15122022_config.json", "w+") as js:
     #    data = plotly.io.to_json(fig, pretty=True)
     #    js.write(data)
