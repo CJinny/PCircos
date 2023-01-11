@@ -46,9 +46,19 @@ class Scatter_(Plotconfig):
         ## print(gene_scatter.keys())
         tmp = {}
         od = OrderedDict()
-        tmp["chr_name"] = list(chain(*zip(dico["chr_name"], dico["chr_name"],)))
+        tmp["chr_name"] = list(
+            chain(
+                *zip(
+                    dico["chr_name"],
+                    dico["chr_name"],
+                )
+            )
+        )
         tmp["start"] = []
-        for s, e in zip(dico["start"], dico["end"],):
+        for s, e in zip(
+            dico["start"],
+            dico["end"],
+        ):
             tmp["start"].append(s)
             tmp["start"].append(e)
         tmp["val"] = list(chain(*zip(dico["val"], dico["val"])))
@@ -177,7 +187,11 @@ class Scatter_(Plotconfig):
                 tmp = self.adapt_genes(dico["file"]["dataframe"]["data"])
                 tmp["color"] = list(self.morbid_genes(tmp["gene"]))
                 final.append(
-                    [tmp, dico["radius"], dico["trace"]["uid"],]
+                    [
+                        tmp,
+                        dico["radius"],
+                        dico["trace"]["uid"],
+                    ]
                 )
 
         # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
@@ -274,4 +288,13 @@ class Scatter_(Plotconfig):
         d["layout"] = {"showlegend": "True"}
         d["name"] = d["trace"]["uid"]
         # check_data_plot(data)
+        # pprint(d["file"]["dataframe"]["data"])
+        # cut if ref or alt size is longer than 15 char
+        for key, items in d["file"]["dataframe"]["data"].items():
+            if key == "ref" or key == "alt":
+                for j, var in enumerate(items):
+                    if len(var) > 15:
+                        items[j] = var[:15] + "..."
+        # print(d["file"]["dataframe"]["data"]["ref"])
+        # print(d["file"]["dataframe"]["data"]["alt"])
         return d
