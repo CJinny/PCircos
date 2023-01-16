@@ -268,14 +268,14 @@ class Histogram_(Plotconfig):
                 "size": 5,
                 "symbol": d_file["dataframe"]["data"]["symbol"],
                 "color": self.colors["INTERMEDIATE"],
-                "opacity": 0.1,
+                "opacity": 0.3,
             },
             "uid": "cnv_scatter_level_" + str(cn),
         }
         d["layout"] = {
             "type": "path",
             "layer": "above",
-            "opacity": 0.1,
+            "opacity": 0.3,
             "fillcolor": "red",
             "line": {"color": self.colors["INTERMEDIATE"], "width": 5},
         }
