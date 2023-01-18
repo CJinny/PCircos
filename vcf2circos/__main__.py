@@ -174,10 +174,6 @@ def main():
         },
     )
     for scatter in fig["data"]:
-        if scatter.name == "CYTOBAND":
-            print(scatter.text)
-            print(scatter.marker)
-            exit()
         if scatter.showlegend is None and hasattr(scatter, "name"):
             if scatter.name is not None:
                 scatter.legendrank = dico[scatter.name]
@@ -207,7 +203,10 @@ def main():
             "eps",
             "json",
         ]:
-            if not os.path.exists(os.path.dirname(output_file)):
+            if (
+                not os.path.exists(os.path.dirname(output_file))
+                and os.path.dirname(output_file) != ""
+            ):
                 os.mkdir(os.path.dirname(output_file))
             plotly.io.write_image(fig, output_file, format=output_format)
         else:
