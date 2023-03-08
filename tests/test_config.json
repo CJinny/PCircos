@@ -1,0 +1,49 @@
+{
+	"General": {
+		"title": "",
+		"width": 1000,
+		"height": 1000,
+		"plot_bgcolor": "white"
+	},
+	"Static": "/home1/BAS/lamouchj/config_vcf2circos_09012023/Static",
+	"Assembly": "hg19",
+	"Chromosomes": {
+		"cytoband": "True",
+		"list": []
+	},
+	"Genes": {
+		"only_snv_in_sv_genes": false
+	},
+	"Variants": {
+		"annotations": {
+			"fields": []
+		},
+		"rings": {
+			"position": 0.4,
+			"height": 0.04,
+			"space": 0.01,
+			"nrings": 6
+		}
+	},
+	"Extra": [
+		"gc",
+		"mappability"
+	],
+	"Color": {
+		"INS": "mediumorchid",
+		"INV": "darkorange",
+		"DEL": "crimson",
+		"DUP": "royalblue",
+		"CNV": "limegreen",
+		"BND": "gold",
+		"SNV": "lightslategray",
+		"INDEL": "slategray",
+		"OTHER": "silver",
+		"MORBID_GENES": "firebrick",
+		"GENES": "darkgray",
+		"CYTOBAND": "gray",
+		"INTERMEDIATE": "dimgrey",
+		"GC": "darkblue",
+		"MAPPABILITY": "indianred"
+	}
+}
