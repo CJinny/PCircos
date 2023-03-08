@@ -37,18 +37,6 @@ import copy
 import argparse
 
 
-__author__ = "Jin Cui, Antony Le Bechec, Jean-Baptiste Lamouche"
-__version__ = "2.1.0"
-__date__ = "November 14 2022"
-
-if sys.version_info[0] != 3:
-    raise Exception(
-        "vcf2circos requires Python 3, your current Python version is {}.{}.{}".format(
-            sys.version_info[0], sys.version_info[1], sys.version_info[2]
-        )
-    )
-
-
 def main():
     t = time()
     args = Parseargs().parseargs()
@@ -125,12 +113,7 @@ def main():
     # Input
 
     if input_format in ["vcf", "gz"]:
-
-        # js["Category"]["histogram"].append(histogram.merge_options())
-        # pprint(ideogram.merge_options())
-        # exit()
         print("\n")
-        # print(type(js["Category"]["cytoband"]))
         js = Datafactory(input_file, options).plot_dict()
         fig_instance = Figure(dash_dict=js, options=options)
 
@@ -177,14 +160,6 @@ def main():
         if scatter.showlegend is None and hasattr(scatter, "name"):
             if scatter.name is not None:
                 scatter.legendrank = dico[scatter.name]
-    # with open("15122022_config.json", "w+") as js:
-    #    data = plotly.io.to_json(fig, pretty=True)
-    #    js.write(data)
-    ## print(fig)
-    # exit()
-    # Fig
-    # legend = Legend(fig)
-
     try:
         if not output_format:
             plot(fig)
