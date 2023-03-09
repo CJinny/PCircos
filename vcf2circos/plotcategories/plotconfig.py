@@ -17,6 +17,7 @@ from tqdm import tqdm
 from vcf2circos.utils import timeit, cast_svtype
 from pprint import pprint
 import vcf
+import time
 
 
 class Plotconfig:
@@ -67,18 +68,6 @@ class Plotconfig:
             filename=filename, strict_whitespace=True, encoding="utf-8"
         )
         self.colors = self.options["Color"]
-        # self.refgene_genes = osj(
-        #    self.options["Static"],
-        #    "Assembly",
-        #    self.options["Assembly"],
-        #    "genes." + self.options["Assembly"] + "sorted.txt",
-        # )
-        # self.refgene_exons = osj(
-        #    self.options["Static"],
-        #    "Assembly",
-        #    self.options["Assembly"],
-        #    "exons." + self.options["Assembly"] + ".txt.gz",
-        # )
         # In case of non coding genes (even in coding genes but same CDS) multiple lines, keep only the first to have non redundant file
         self.df_genes = pd.read_csv(
             osj(
@@ -118,18 +107,7 @@ class Plotconfig:
         )
         # Last function to be called to generate class attribute
         self.data = self.process_vcf()
-        self.df_data = pd.DataFrame.from_dict(self.data)  # .astype(
-        #    {
-        #        "Chromosomes": str,
-        #        "Genes": str,
-        #        "Exons": str,
-        #        "Variants": object,
-        #        "Variants_type": str,
-        #        "CopyNumber": int,
-        #        "Color": str,
-        #    }
-        # )
-        # self.df_data = self.data_nan_formatting()
+        self.df_data = pd.DataFrame.from_dict(self.data)
 
     def data_nan_formatting(self):
         df_tmp = pd.DataFrame.from_dict(self.data)
@@ -189,6 +167,7 @@ class Plotconfig:
         self.breakend_record = []
         # self.breakend_genes = []
         for record in self.vcf_reader:
+            print(record)
             # Could now do filter to only plot some specific gene or chromosomes
             if (
                 self.chr_adapt(record) in self.options["Chromosomes"]["list"]
@@ -232,21 +211,7 @@ class Plotconfig:
                         if copynumber > 5 and svtype not in ["SNV", "INDEL", "OTHER"]:
                             copynumber = 5
                         data["CopyNumber"].append(copynumber)
-
-        # test
-        # def replace_(dico):
-        #    rep = ""
-        #    excl = ["None", None]
-        #    for
-
-        # TESTTTTTTTTT
-        # self.breakend_record = []
-        # return (
-        #    pd.DataFrame.from_dict(data)
-        #    .loc[pd.DataFrame.from_dict(data)["Chromosomes"] == "chr1"]
-        #    .to_dict("list")
-        # )
-        # exit()
+                time.sleep(5)
         return data
 
     def chr_adapt(self, record: object) -> str:
@@ -382,6 +347,9 @@ class Plotconfig:
             # SV all size done
             if coord[1] <= rows["start"] and coord[2] <= rows["end"]:
                 break
+        print(coord)
+        print(list(set(gene_list)))
+
         return list(set(gene_list))
 
     def from_gene_to_unique(self, string: str) -> str:
@@ -396,24 +364,13 @@ class Plotconfig:
             return string
 
     def get_genes_var(self, record: object) -> str:
-        # refgene_genes = pd.read_csv(
-        #    osj(
-        #        self.options["Static"],
-        #        "Assembly",
-        #        self.options["Assembly"],
-        #        "genes." + self.options["Assembly"] + ".sorted.txt",
-        #    ),
-        #    sep="\t",
-        #    header=0,
-        #    # compression="infer",
-        # )
-        # print(*refgene_genes.columns)
-        # .drop_duplicates(subset=["gene"], keep="first")
         gene_name = record.INFO.get("Gene_name")
         record.CHROM = self.chr_adapt(record)
         if isinstance(gene_name, str):
+            print(gene_name)
             return self.from_gene_to_unique(gene_name)
         elif isinstance(gene_name, list):
+            print(gene_name)
             return ",".join(gene_name)
         # No Gene_name annotation need to find overlapping gene in sv
         if gene_name is None:
@@ -423,9 +380,6 @@ class Plotconfig:
                 None,
             ] or record.INFO.get("SV_type") not in ["BND, TRA", "INV", None]:
                 # if record.INFO.get("SVTYPE") != None or record.INFO.get("SV_type") != None:
-                # assert "SVLEN" in record.INFO
-
-                # print(record.INFO["SVLEN"])
                 try:
                     # print(record.INFO["SVLEN"])
                     gene_name = self.find_record_gene(
@@ -475,26 +429,3 @@ class Plotconfig:
                 if not gene_name:
                     gene_name = [""]
                 return ",".join(gene_name)
-                # if record.INFO.get("SVTYPE") is None:
-                #    # print(record)
-                #    # print(
-                #    #    record.CHROM, record.POS, (int(record.POS) + alternate),
-                #    # )
-                #    if not gene_name:
-                #        gene_name = [""]
-                #        return ",".join(gene_name)
-
-    # def generate_hovertext_var(self, variants_list) -> Generator:
-    #    # dict containing INFO field for each var
-    #    for var in variants_list:
-    #        yield "<br>".join(
-    #            [
-    #                ": ".join(
-    #                    [
-    #                        str(value) if not isinstance(value, list) else str(value[0])
-    #                        for value in pairs
-    #                    ]
-    #                )
-    #                for pairs in list(zip(var.keys(), var.values()))
-    #            ]
-    #        )
