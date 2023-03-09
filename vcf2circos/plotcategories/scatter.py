@@ -31,19 +31,6 @@ class Scatter_(Plotconfig):
             return getattr(self.plotconfig, item)
 
     def adapt_genes(self, dico: dict) -> dict:
-        # TODO zip comme dans adapt data
-        # gene_scatter = {}
-        # gene_scatter["chr_name"] = dico["chr_name"] + dico["chr_name"]
-        # gene_scatter["start"] = dico["start"] + dico["end"]
-        # gene_scatter["val"] = dico["val"] + dico["val"]
-        # gene_scatter["color"] = dico["color"] + dico["color"]
-        # gene_scatter["gene"] = dico["gene"] + dico["gene"]
-        # gene_scatter["infos"] = list(repeat("", len(gene_scatter["chr_name"])))
-        #
-        ## pprint(gene_scatter)
-        ## gene_scatter["hovertext"] = dico["gene"] + dico["gene"]
-        # gene_scatter["hovertext"] = list(repeat("", len(gene_scatter["chr_name"])))
-        ## print(gene_scatter.keys())
         tmp = {}
         od = OrderedDict()
         tmp["chr_name"] = list(
@@ -62,8 +49,6 @@ class Scatter_(Plotconfig):
             tmp["start"].append(s)
             tmp["start"].append(e)
         tmp["val"] = list(chain(*zip(dico["val"], dico["val"])))
-        # print(dico.keys())
-        # print(dico["trace"]["uid"])
         tmp["color"] = [var for var in dico["color"]]
         for key, val in tmp.items():
             if key != "color":
@@ -82,46 +67,17 @@ class Scatter_(Plotconfig):
         )
         od["infos"] = list(repeat("", len(od["chr_name"])))
         od["hovertext"] = list(repeat("", len(od["chr_name"])))
-
-        def get_index_positions(list_of_elems, element):
-            """Returns the indexes of all occurrences of give element in
-            the list- listOfElements"""
-            index_pos_list = []
-            index_pos = 0
-            while True:
-                try:
-                    # Search for item in list from indexPos to the end of list
-                    index_pos = list_of_elems.index(element, index_pos)
-                    # Add the index position in list
-                    index_pos_list.append(index_pos)
-                    index_pos += 1
-                except ValueError as e:
-                    break
-            return index_pos_list
-
-        # for key, val in od.items():
-        #    # print(key, get_index_positions(val, "BRCA2"))
-        #    print(key, [val[32], val[33]])
-        # exit()
         return od
 
     def val_data_col(self, dico):
         for key, val in dico["file"]["dataframe"]["data"].items():
             if key not in ["start", "end", "color", "genes", "exons"]:
-                # tmp[key] = list(np.repeat(val, 2))
-                # utils color match en fonciton du type
-                #    tmp_se.append(val)
-
                 yield key, list(np.repeat(val, 2))
 
     def adapt_data(self) -> list:
         final = []
         # list of dico from histo class
         for dico in self.data_histo:
-            # key val in each dico
-            # if dico["trace"]["uid"] == "cnv_scatter_level_6":
-            #    pprint(dico["file"]["dataframe"]["data"])
-            #    exit()
             if dico["trace"]["uid"].startswith("cnv_"):
                 tmp = {}
                 od = OrderedDict()
@@ -140,8 +96,6 @@ class Scatter_(Plotconfig):
                 ):
                     tmp["start"].append(s)
                     tmp["start"].append(e)
-                # print(dico.keys())
-                # print(dico["trace"]["uid"])
                 tmp["color"] = [
                     self.options["Color"][var]
                     for var in dico["file"]["dataframe"]["data"]["type"]
@@ -160,7 +114,6 @@ class Scatter_(Plotconfig):
                     ]:
                         od[key] = list(chain(*zip(val, val)))
                 od["color"] = list(chain(*zip(tmp["color"], tmp["color"])))
-                # od["hovertext"] = list(np.repeat("", len(od["color"])))
                 od["hovertext"] = list(
                     chain(
                         *zip(
@@ -177,10 +130,6 @@ class Scatter_(Plotconfig):
                         )
                     )
                 )
-                # DEBUG
-                # if dico["trace"]["uid"] == "cnv_scatter_level_4":
-                #    print(od)
-                # exit()
                 final.append([od, dico["radius"], dico["trace"]["uid"]])
             # Becarefull to not hoverride histogram data
             elif dico["trace"]["uid"] == "genes":
@@ -193,8 +142,6 @@ class Scatter_(Plotconfig):
                         dico["trace"]["uid"],
                     ]
                 )
-
-        # check_data_plot(self.adapt_genes(dico["file"]["dataframe"]["data"]))
         return final
 
     def morbid_genes(self, genes: list) -> Generator:
@@ -207,10 +154,6 @@ class Scatter_(Plotconfig):
     def merge_options(self):
         final = []
         data_list_list = self.adapt_data()
-
-        # return self.scatter_cnv_level(
-        #    data_list_list[0], data_list_list[1], data_list_list[2]
-        # )
         for data, radius, level in data_list_list:
             # if no more mutations in copy number level remove dict
             if data["chr_name"]:
@@ -225,32 +168,13 @@ class Scatter_(Plotconfig):
                     )
                 else:
                     final.append(self.scatter_cnv_level(data, radius, level))
-
-        # CHECK
-        # for dico_data in final:
-        #    check_data_plot(dico_data)
-        # final[-1]["trace"]["marker"]["symbol"] = 0
-
-        # pprint(final, sort_dicts=False)
-        # exit
         for dico in final:
             check_data_plot(dico["file"]["dataframe"]["data"])
-            # print(dico["trace"]["uid"])
-            # print(dico["file"]["dataframe"]["data"].keys())
-            # print("\n")
         return final
-        # if len(final) == 1:
-        #    return final[0]
-        # else:
-        #    return final
 
     def scatter_cnv_level(
         self, data, radius, level, hovertextformat=None, symbol=None, colorcolumn=None
     ):
-        # if data.get("symbol") is not None:
-        #    symbol = data.get("symbol")
-        # else:
-        #    symbol = data.get("val")
         if hovertextformat is None:
             hovertextformat = self.hovertextformat
         if symbol is None:
@@ -287,14 +211,9 @@ class Scatter_(Plotconfig):
         }
         d["layout"] = {"showlegend": "True"}
         d["name"] = d["trace"]["uid"]
-        # check_data_plot(data)
-        # pprint(d["file"]["dataframe"]["data"])
-        # cut if ref or alt size is longer than 15 char
         for key, items in d["file"]["dataframe"]["data"].items():
             if key == "ref" or key == "alt":
                 for j, var in enumerate(items):
                     if len(var) > 15:
                         items[j] = var[:15] + "..."
-        # print(d["file"]["dataframe"]["data"]["ref"])
-        # print(d["file"]["dataframe"]["data"]["alt"])
         return d
