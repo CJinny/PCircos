@@ -253,8 +253,7 @@ class Histogram_(Plotconfig):
                 + self.options["Variants"]["rings"]["height"]
             ) / 2
         except TypeError:
-            print(cn)
-            print(d_file)
+            print("ERROR radius cnv level")
             exit()
         d["radius"] = {
             "R0": radius,
@@ -413,10 +412,6 @@ class Histogram_(Plotconfig):
         dico = {}
         # remove empty gene, df_data attribute of class basic data from plot config Parents class
         # gene_list = list(filter(lambda x: x != "", self.df_data["Genes"]))
-        print(self.df_data["Genes"])
-        t = []
-        [t.extend(d.split(",")) for d in self.df_data["Genes"].to_list()]
-        print(len(t))
         gene_list = list(
             set(
                 list(
@@ -433,7 +428,6 @@ class Histogram_(Plotconfig):
         # print(self.df_genes.head())
         ## select genes in or batch of variations (from refeseq assembly)
         df_filter = self.df_genes.loc[self.df_genes["gene"].isin(gene_list)]
-        print(len(df_filter))
 
         # print(*gene_list)
         # print(self.df_data["Genes"].head())
@@ -478,7 +472,6 @@ class Histogram_(Plotconfig):
             "opacity": 0.2,
             "line": {"color": data["color"], "width": 3},
         }
-        print(len(dico["file"]["dataframe"]["data"]["gene"]))
         return dico
 
     def genes_omim_morbid(self):

@@ -102,7 +102,11 @@ class Ideogram(Plotconfig):
                 "xref": "x",
                 "yref": "y",
                 "showarrow": False,
-                "font": {"family": "Times New Roman", "size": 8, "color": "black",},
+                "font": {
+                    "family": "Times New Roman",
+                    "size": 8,
+                    "color": "black",
+                },
             },
         }
 
@@ -122,8 +126,6 @@ class Ideogram(Plotconfig):
             "chr_label": tmp["chr_name"].to_list(),
             "chr_color": list(Colorpal(len(tmp["chr_name"].to_list()))),
         }
-        # exit()
-        print(tmp)
         return data
 
     def merge_options(self, chr_link):

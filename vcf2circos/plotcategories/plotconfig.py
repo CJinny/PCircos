@@ -357,68 +357,68 @@ class Plotconfig:
             return string
 
     def get_genes_var(self, record: object) -> str:
+        bad_values = [None, "", "."]
         gene_name = record.INFO.get("Gene_name")
         record.CHROM = self.chr_adapt(record)
-        if isinstance(gene_name, str):
-            print(gene_name)
+        if gene_name not in bad_values and isinstance(gene_name, str):
             return self.from_gene_to_unique(gene_name)
-        elif isinstance(gene_name, list):
-            print(gene_name)
+        elif gene_name[0] not in bad_values and isinstance(gene_name, list):
             return ",".join(gene_name)
         # No Gene_name annotation need to find overlapping gene in sv
-        if gene_name is None:
-            if record.INFO.get("SVTYPE") not in [
-                "BND, TRA",
-                "INV",
-                None,
-            ] or record.INFO.get("SV_type") not in ["BND, TRA", "INV", None]:
-                # if record.INFO.get("SVTYPE") != None or record.INFO.get("SV_type") != None:
-                try:
-                    # print(record.INFO["SVLEN"])
-                    gene_name = self.find_record_gene(
-                        [
-                            record.CHROM,
-                            record.POS,
-                            int(record.POS) + int(float(record.INFO["SVLEN"][0])),
-                        ]
-                    )
-                    return ",".join(gene_name)
-                except (KeyError, ValueError):
-                    try:
-                        # print(record.INFO["SV_length"])
-                        gene_name = self.find_record_gene(
-                            [
-                                record.CHROM,
-                                record.POS,
-                                int(record.POS) + int(float(record.INFO["SV_length"])),
-                            ]
-                        )
-                        return ",".join(gene_name)
-                    except (KeyError, ValueError, TypeError):
-                        try:
-                            gene_name = self.find_record_gene(
-                                [
-                                    record.CHROM,
-                                    record.POS,
-                                    int(float(record.INFO["SV_end"])),
-                                ]
-                            )
-                        except (KeyError, ValueError, TypeError):
-                            print(
-                                "ERROR missing SVLEN annotation for record ",
-                                record,
-                            )
-                            exit()
-            # SNV indel
-            else:
-                alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
+        # if gene_name is None or (isinstance(gene_name, list) and gene_name[0] == None):
+        if record.INFO.get("SVTYPE") not in [
+            "BND, TRA",
+            "INV",
+            None,
+        ] or record.INFO.get("SV_type") not in ["BND, TRA", "INV", None]:
+            # if record.INFO.get("SVTYPE") != None or record.INFO.get("SV_type") != None:
+            try:
+                # print(record.INFO["SVLEN"])
                 gene_name = self.find_record_gene(
                     [
                         record.CHROM,
                         record.POS,
-                        (int(record.POS) + alternate),
+                        int(record.POS) + int(float(record.INFO["SVLEN"][0])),
                     ]
                 )
-                if not gene_name:
-                    gene_name = [""]
                 return ",".join(gene_name)
+            except (KeyError, ValueError):
+                try:
+                    # print(record.INFO["SV_length"])
+                    gene_name = self.find_record_gene(
+                        [
+                            record.CHROM,
+                            record.POS,
+                            int(record.POS) + int(float(record.INFO["SV_length"])),
+                        ]
+                    )
+                    return ",".join(gene_name)
+                except (KeyError, ValueError, TypeError):
+                    try:
+                        gene_name = self.find_record_gene(
+                            [
+                                record.CHROM,
+                                record.POS,
+                                int(float(record.INFO["SV_end"])),
+                            ]
+                        )
+                        return ",".join(gene_name)
+                    except (KeyError, ValueError, TypeError):
+                        print(
+                            "ERROR missing SVLEN annotation for record ",
+                            record,
+                        )
+                        exit()
+        # SNV indel
+        else:
+            alternate = int(str(max([len(alt) for alt in list(str(record.ALT))])))
+            gene_name = self.find_record_gene(
+                [
+                    record.CHROM,
+                    record.POS,
+                    (int(record.POS) + alternate),
+                ]
+            )
+            if not gene_name:
+                gene_name = [""]
+            return ",".join(gene_name)
