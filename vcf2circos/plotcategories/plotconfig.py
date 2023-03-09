@@ -167,7 +167,6 @@ class Plotconfig:
         self.breakend_record = []
         # self.breakend_genes = []
         for record in self.vcf_reader:
-            print(record)
             # Could now do filter to only plot some specific gene or chromosomes
             if (
                 self.chr_adapt(record) in self.options["Chromosomes"]["list"]
@@ -176,9 +175,7 @@ class Plotconfig:
                 # particular process for breakend
                 if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
                     self.breakend_record.append(record)
-                    # self.breakend_genes.append(self.get_genes_var(record))
                 else:
-                    # print(record.INFO["SV"])
                     data["Chromosomes"].append(self.chr_adapt(record))
                     data["Genes"].append(self.get_genes_var(record))
                     data["Exons"].append("")
@@ -211,7 +208,6 @@ class Plotconfig:
                         if copynumber > 5 and svtype not in ["SNV", "INDEL", "OTHER"]:
                             copynumber = 5
                         data["CopyNumber"].append(copynumber)
-                time.sleep(5)
         return data
 
     def chr_adapt(self, record: object) -> str:
@@ -347,9 +343,6 @@ class Plotconfig:
             # SV all size done
             if coord[1] <= rows["start"] and coord[2] <= rows["end"]:
                 break
-        print(coord)
-        print(list(set(gene_list)))
-
         return list(set(gene_list))
 
     def from_gene_to_unique(self, string: str) -> str:
