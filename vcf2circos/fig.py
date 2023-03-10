@@ -916,13 +916,6 @@ class Figure(Complex):
                     "uid"
                 ].startswith("extra_"):
                     continue
-                # print(tr["uid"])
-                # print(tr["marker"]["color"])
-                # print(type(tr["marker"]["color"]))
-                # if tr["uid"] not in ["genes, cytoband_tiles, transloc"] and isinstance(
-                #    tr["marker"]["color"], np.ndarray
-                # ):
-                # print(tr["uid"])
                 if isinstance(tr["marker"]["color"], list) or isinstance(
                     tr["marker"]["color"], tuple
                 ):
@@ -937,7 +930,6 @@ class Figure(Complex):
             trace_dict = {key: {} for key in number_trace}
             graph_obj = []
             # Dont know why but some dot are in double needed to fix that look above
-            # (fix_dico = {"genes": {"size": 5}, "cnv_level": {}})
             # For all CNV level dot
             for tr in trace:
                 if tr["uid"] is not None:
@@ -961,11 +953,6 @@ class Figure(Complex):
                         continue
                     # if tr["uid"] not in ["genes, cytoband_tiles, transloc"]:
                     # Becarefull a value alone for SNV indels
-                    # if isinstance(tr["marker"]["color"], np.ndarray):
-                    # For each dot per trace
-                    # if tr["uid"] in uid_list:
-                    #    continue
-                    # print(tr["uid"])
                     if isinstance(tr["marker"]["color"], str):
                         tr["marker"]["color"] = [tr["marker"]["color"]]
                     for j, color in enumerate(tr["marker"]["color"]):
@@ -1004,28 +991,6 @@ class Figure(Complex):
                                         if k not in trace_dict[color][key]:
                                             trace_dict[color][key][k] = []
                                         trace_dict[color][key][k].append(v[j])
-                # uid_list.append(tr["uid"])
-            # exit()
-            # print(trace_dict)
-            # exit()
-            # except ValueError:
-            # print(trace_dict)
-            # exit()
-            # print(trace_dict)
-            # exit()
-
-            # cast_color = {
-            #    "brown": "CNV",
-            #    "mediumorchid": "INV",
-            #    "royalblue": "DUP",
-            #    "crimson": "INS",
-            #    "dimgray": "SNV/INDELS",
-            #    "darkorange": "DEL",
-            #    "lightgray": "Genes",
-            #    "gray": "intermediary",
-            #    "blue": "transloc",
-            #    "firebrick": "Morbid genes",
-            # }
             cast_color = get_swap_dict(self.options["Color"])
             trace_ = []
             for clrs, values in trace_dict.items():
@@ -1038,8 +1003,6 @@ class Figure(Complex):
                 if "name" not in ["BND", "CYTOBAND"]:
                     val["showlegend"] = False
                 trace_.append(val)
-                # print(val)
-            print("USE _TRACE")
             return trace_
         else:
             return trace
