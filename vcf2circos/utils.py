@@ -47,7 +47,7 @@ def get_swap_dict(d):
 
 
 def chr_valid():
-    chr_valid = ["chr" + str(i) for i in range(1, 22)]
+    chr_valid = ["chr" + str(i) for i in range(1, 23)]
     chr_valid.extend(["chrM", "chrX", "chrY"])
     return chr_valid
 
@@ -342,7 +342,16 @@ def formatted_refgene(refgene: str, assembly: str, ts=None) -> str:
             with gzip.open(output_transcripts, "wb+") as out_t:
                 out_g.write(
                     bytes(
-                        "\t".join(["chr_name", "start", "end", "val", "color", "gene",])
+                        "\t".join(
+                            [
+                                "chr_name",
+                                "start",
+                                "end",
+                                "val",
+                                "color",
+                                "gene",
+                            ]
+                        )
                         + "\n",
                         "UTF-8",
                     )
