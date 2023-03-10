@@ -1,4 +1,5 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
+from vcf2circos.utils import chr_valid
 from os.path import join as osj
 from itertools import repeat
 import pandas as pd
@@ -38,6 +39,16 @@ class Cytoband(Plotconfig):
             header=0,
             compression="infer",
         )
+        self.chr_conf = pd.read_csv(
+            osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                "chr." + self.options["Assembly"] + ".sorted.txt",
+            ),
+            sep="\t",
+            header=0,
+        )
         self.colorcolumn = 3
         self.sortbycolor = "True"
         self.hovertextformat = ' "<b>{}</b>".format(a[i,0])'
@@ -62,9 +73,15 @@ class Cytoband(Plotconfig):
         """
         histo band which will contains cytoband annotations, do not forget chromosomes carrying BND
         """
-        chr_list = self.data["Chromosomes"]
-        chr_list.extend([chrs_rec for chrs_rec in chr_bnd])
-        chr_list = list(set(chr_list))
+        if self.options["Chromosomes"]["all"] is True:
+            chr_list = self.chr_conf.loc[self.chr_conf["chr_name"].isin(chr_valid())][
+                "chr_name"
+            ].to_list()
+        else:
+            chr_list = self.data["Chromosomes"]
+            chr_list.extend([chrs_rec for chrs_rec in chr_bnd])
+            chr_list = list(set(chr_list))
+
         tmp = self.cytoband_conf.loc[self.cytoband_conf["chr_name"].isin(chr_list)]
         data = {
             "chr_name": tmp["chr_name"].to_list(),

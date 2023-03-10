@@ -1,5 +1,5 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
-from vcf2circos.utils import Colorpal
+from vcf2circos.utils import Colorpal, chr_valid
 import pandas as pd
 from os.path import join as osj
 import os
@@ -119,7 +119,10 @@ class Ideogram(Plotconfig):
         true_chr = self.data["Chromosomes"]
         true_chr.extend(chr_link)
         chromosomes = list(set(true_chr))
-        tmp = self.chr_conf.loc[self.chr_conf["chr_name"].isin(true_chr)]
+        if self.options["Chromosomes"]["all"] is True:
+            tmp = self.chr_conf.loc[self.chr_conf["chr_name"].isin(chr_valid())]
+        else:
+            tmp = self.chr_conf.loc[self.chr_conf["chr_name"].isin(chromosomes)]
         data = {
             "chr_name": tmp["chr_name"].to_list(),
             "chr_size": tmp["size"].to_list(),
