@@ -148,7 +148,6 @@ def chr_info(
 
     if custom_color:
         try:
-            print(chr_info)
             chr_color = colors.to_rgb(chr_info[:, 3])
         except (IndexError, TypeError):
             print(
