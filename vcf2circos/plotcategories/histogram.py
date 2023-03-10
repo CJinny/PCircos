@@ -281,6 +281,9 @@ class Histogram_(Plotconfig):
         return d
 
     def cytoband_tile(self, cytoband_data):
+        """
+        Needed to have annotations in cytoband ring, invisible histogram in background of each band
+        """
         dico_cyto = self.cytoband_data.copy()
         cyto = {}
         cyto["chr_name"] = cytoband_data["chr_name"]
@@ -297,6 +300,8 @@ class Histogram_(Plotconfig):
 
         dico_cyto["layout"]["line"]["color"] = cyto["band_color"]
         dico_cyto["trace"]["marker"]["color"] = cyto["band_color"]
+        # print(dico_cyto)
+        # exit()
         return dico_cyto
 
     def merge_options(self, cytoband_data: dict) -> list:

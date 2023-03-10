@@ -58,10 +58,14 @@ class Cytoband(Plotconfig):
         if hasattr(self.plotconfig, item):
             return getattr(self.plotconfig, item)
 
-    def data_cytoband(self):
-        tmp = self.cytoband_conf.loc[
-            self.cytoband_conf["chr_name"].isin(self.data["Chromosomes"])
-        ]
+    def data_cytoband(self, chr_bnd):
+        """
+        histo band which will contains cytoband annotations, do not forget chromosomes carrying BND
+        """
+        chr_list = self.data["Chromosomes"]
+        chr_list.extend([chrs_rec for chrs_rec in chr_bnd])
+        chr_list = list(set(chr_list))
+        tmp = self.cytoband_conf.loc[self.cytoband_conf["chr_name"].isin(chr_list)]
         data = {
             "chr_name": tmp["chr_name"].to_list(),
             "start": tmp["start"].tolist(),
@@ -71,7 +75,7 @@ class Cytoband(Plotconfig):
         }
         return data
 
-    def merge_options(self):
+    def merge_options(self, chr_bnd):
         """
         cytoband then histogram in list guess for the color
         """
@@ -83,7 +87,7 @@ class Cytoband(Plotconfig):
             "path": "",
             "header": "infer",
             "sep": "\t",
-            "dataframe": {"orient": "columns", "data": self.data_cytoband()},
+            "dataframe": {"orient": "columns", "data": self.data_cytoband(chr_bnd)},
         }
         dico["sortbycolor"] = self.sortbycolor
         dico["colorcolumn"] = self.colorcolumn

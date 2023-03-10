@@ -52,7 +52,7 @@ class Link(Plotconfig):
             data.append(tmp)
         # for val in data:
         #    print(val.keys())
-        #    print(val[list(val.keys())[0]]["values"])
+        #    print(val[list(val.keys())[0]]["values"]
         return data
 
     def extract_chr_pos_hover_from_bnd(self, string: str, record: object) -> int:

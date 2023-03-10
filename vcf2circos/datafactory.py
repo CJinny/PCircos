@@ -49,7 +49,8 @@ class Datafactory:
         link = Link(pc)
         histogram = Histogram_(pc)
         cytoband = Cytoband(pc)
-        data_histo = histogram.merge_options(cytoband.data_cytoband())
+        link_me, chr_values = link.merge_options()
+        data_histo = histogram.merge_options(cytoband.data_cytoband(chr_values))
         ideogram = Ideogram(pc)
         ring = Ring(pc, ["genes"])
         scatter = Scatter_(pc, data_histo.copy())
@@ -60,12 +61,11 @@ class Datafactory:
         # print("HISTO\n")
         # for ite in data_histo:
         #    print(ite["file"]["dataframe"]["data"].keys())
-        link_me, chr_values = link.merge_options()
 
         js["Category"] = {
             "ideogram": ideogram.merge_options(chr_values),
             "ring": ring.create_ring(),
-            "cytoband": cytoband.merge_options(),
+            "cytoband": cytoband.merge_options(chr_values),
             "histogram": data_histo,
             "scatter": scatter.merge_options(),
             "link": link_me,
