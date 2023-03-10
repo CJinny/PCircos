@@ -116,19 +116,16 @@ def main():
         print("\n")
         js = Datafactory(input_file, options).plot_dict()
         fig_instance = Figure(dash_dict=js, options=options)
-
         # Export in vcf2circos JSON
         if export_file:
-            if not os.path.exists(os.path.dirname(export_file)):
+            if not os.path.exists(os.path.dirname(os.path.abspath(export_file))):
                 os.mkdir(os.path.dirname(export_file))
-            f = open(export_file, "w")
-            f.write(json.dumps(copy.deepcopy(js)), indent=4)
-            f.close()
+            with open(export_file, "w") as ef:
+                ef.write(json.dumps(copy.deepcopy(js), indent=4))
+                ef.close()
 
     elif input_format in ["json"]:
-
-        fig_instance = Figure(dash_dict=js, options=options)
-
+        fig_instance = Figure(input_json_path=input_file, options=options)
     else:
 
         print("[ERROR] input format not supported")
@@ -160,13 +157,13 @@ def main():
         if scatter.showlegend is None and hasattr(scatter, "name"):
             if scatter.name is not None:
                 scatter.legendrank = dico[scatter.name]
+
     try:
         if not output_format:
             plot(fig)
+        if not os.path.exists(os.path.dirname(os.path.abspath(output_file))):
+            os.mkdir(os.path.dirname(output_file))
         elif output_format in ["html"]:
-            if "/" in output_file:
-                if not os.path.exists(os.path.dirname(output_file)):
-                    os.mkdir(os.path.dirname(output_file))
             plot(fig, filename=output_file)
         elif output_format in [
             "png",
@@ -178,11 +175,6 @@ def main():
             "eps",
             "json",
         ]:
-            if (
-                not os.path.exists(os.path.dirname(output_file))
-                and os.path.dirname(output_file) != ""
-            ):
-                os.mkdir(os.path.dirname(output_file))
             plotly.io.write_image(fig, output_file, format=output_format)
         else:
             print("[ERROR] output format not supported")
