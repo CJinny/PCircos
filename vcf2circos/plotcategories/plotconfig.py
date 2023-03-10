@@ -211,6 +211,9 @@ class Plotconfig:
         return data
 
     def chr_adapt(self, record: object) -> str:
+        """
+        from PyVCF record return chromosome with 'chr'
+        """
         try:
             re.match(r"[0-9]", record.CHROM).group()
             return "chr" + record.CHROM
