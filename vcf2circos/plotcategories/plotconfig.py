@@ -348,16 +348,25 @@ class Plotconfig:
                 break
         return list(set(gene_list))
 
-    def from_gene_to_unique(self, string: str) -> str:
-        """
-        example from IFT140|IFT140 to IFT140 if all values are the same otherwise keep all
-        """
+    def string_to_unique(self, string):
         if "|" in string:
             return ",".join(list(set(string.split("|"))))
         elif "," in string:
             return ",".join(list(set(string.split(","))))
         else:
             return string
+
+    def from_gene_to_unique(self, values: str) -> str:
+        """
+        example from IFT140|IFT140 to IFT140 if all values are the same otherwise keep all
+        """
+        if isinstance(values, str):
+            return self.string_to_unique(values)
+        elif isinstance(values, list):
+            return ",".join([self.string_to_unique(f) for f in values])
+        else:
+            print("ERROR in Gene_name ", values)
+            exit()
 
     def get_genes_var(self, record: object) -> str:
         bad_values = [None, "", "."]
@@ -366,7 +375,7 @@ class Plotconfig:
         if gene_name not in bad_values and isinstance(gene_name, str):
             return self.from_gene_to_unique(gene_name)
         elif gene_name[0] not in bad_values and isinstance(gene_name, list):
-            return ",".join(gene_name)
+            return self.from_gene_to_unique(gene_name)
         # No Gene_name annotation need to find overlapping gene in sv
         # if gene_name is None or (isinstance(gene_name, list) and gene_name[0] == None):
         if record.INFO.get("SVTYPE") not in [
