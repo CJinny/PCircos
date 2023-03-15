@@ -106,9 +106,9 @@ def main():
         print(f"[INFO] Options not provided.")
 
     # Notebook mode
-    notebook_mode = args.notebook_mode
-    if notebook_mode:
-        init_notebook_mode(connected=True)
+    # notebook_mode = args.notebook_mode
+    # if notebook_mode:
+    #    init_notebook_mode(connected=True)
 
     # Input
 
