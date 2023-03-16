@@ -17,6 +17,7 @@ from html import escape, unescape
 from vcf2circos.utils import timeit, get_swap_dict
 from ast import literal_eval
 from scipy.spatial import KDTree
+import inspect
 from webcolors import CSS3_HEX_TO_NAMES, hex_to_rgb
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -1410,33 +1411,21 @@ class Figure(Complex):
 
     @timeit
     def fig(self):
-        # print(go.Figure(data=self.trace(), layout=self.layout())["layout"])
-        # print(type(self.layout().__dict__))
         try:
-            # with open("trace_layout.json", "w+") as trace:
-            #    js = plotly.io.to_json(
-            #        go.Figure(data=self.trace(), layout=self.layout()), pretty=True
-            #    )
-            #    trace.write(js)
             trace_obj = self.trace()
             for datas in trace_obj:
-                if datas["name"] == "CYTOBAND":
-                    print(len(datas["marker"]["color"]))
-                    print(len(datas["text"]))
-                    if len(datas["marker"]["color"]) != len(datas["text"]):
-                        print("MODIF")
-                        datas["marker"]["color"] = np.repeat(
-                            datas["marker"]["color"][0], len(datas["text"])
-                        )
-            print(trace_obj[8]["name"])
-            print(len(trace_obj[8]["marker"]["color"]))
-            print(trace_obj[8]["marker"]["color"][:5])
+                if hasattr(datas, "marker") and hasattr(datas, "text"):
+                    if datas["marker"]["color"] is not None:
+                        if len(datas["marker"]["color"]) != len(datas["text"]):
+                            datas["marker"]["color"] = np.repeat(
+                                self.options["Color"][datas["name"]], len(datas["text"])
+                            )
             with open("trace_layout_new.json", "w+") as trace:
                 js = plotly.io.to_json(go.Figure(data=trace_obj, layout=self.layout()), pretty=True)
                 trace.write(js)
 
             return go.Figure(data=trace_obj, layout=self.layout())
-        except Exception:
+        except IndexError:
             # to deal with an issue like this when using dash (specifically line plot):
             ## self.trace() => [Scatter(x0), [Scatter(x1), Scatter(x2), Scatter(x3),]]
             return go.Figure(
