@@ -2,36 +2,15 @@ from vcf2circos.plotcategories.plotconfig import Plotconfig
 from vcf2circos.utils import Colorpal, chr_valid
 import pandas as pd
 from os.path import join as osj
-import os
 
 # space, space between ring in option.example.json
 # height hauteur du ring
 # positon position from center
 
-# just for test
-# data = {
-#    "chr_name": ["chr1", "chr2", "chr3"],
-#    "chr_size": [249250621, 243199373, 198022430],
-#    "chr_label": ["chr1", "chr2", "chr3"],
-#    "chr_color": ["pink", "rosybrown", "firebrick"],
-# }
-
-list_graph_type = ["majortick", "minortick", "ticklabel"]
-
 
 class Ideogram(Plotconfig):
-    """
-    "scatter":{
-        "pattern":{
-        ...
-    },  "data":{
-        ...
-    }}
-    """
-
     def __init__(self, plotconfig):
         self.plotconfig = plotconfig
-        # assert os.path.exists(osj(self.options["Static"], "chr_size.txt"))
         self.chr_conf = pd.read_csv(
             osj(
                 self.options["Static"],
@@ -168,4 +147,3 @@ class Ideogram(Plotconfig):
         dico["minortick"] = self.minortick
         dico["ticklabel"] = self.ticklabel
         return dico
-        # Loopable as fuck
