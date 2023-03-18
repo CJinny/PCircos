@@ -43,15 +43,8 @@ class Plotconfig:
         rangescale: list,
         config_ring: dict,
     ):
-        # super().__init__(filename, options)
         self.filename = filename
         self.options = options
-        self.default_options = json.load(
-            open(
-                osj(self.options["Static"] + "/options.general.json"),
-                "r",
-            )
-        )
         if not self.options.get("General", {}).get("title", None):
             self.options["General"]["title"] = os.path.basename(filename)
         self.show = self.cast_bool(show)
@@ -64,9 +57,7 @@ class Plotconfig:
         self.layout = layout
         self.rangescale = rangescale
         self.config_ring = config_ring
-        self.vcf_reader = vcf.Reader(
-            filename=filename, strict_whitespace=True, encoding="utf-8"
-        )
+        self.vcf_reader = vcf.Reader(filename=filename, strict_whitespace=True, encoding="utf-8")
         self.colors = self.options["Color"]
         # In case of non coding genes (even in coding genes but same CDS) multiple lines, keep only the first to have non redundant file
         self.df_genes = pd.read_csv(
@@ -137,21 +128,11 @@ class Plotconfig:
         else:
             return "False"
 
-    def get_file_features():
-        pass
-
-    def get_snvindels_overlapping_sv(self):
-        pass
-
-    def vcf_options_default(self):
-        pass
-
     @timeit
     def process_vcf(self) -> dict:
         """
         Process Just one time vcf variants in a dict which contains all required informations for all type of var used after,
         Act as a plotconfig main\n
-        From vcfreader antony explode_category_file_dict_into_dataframe
         """
         data = {
             "Chromosomes": [],
@@ -327,13 +308,25 @@ class Plotconfig:
 
     def find_record_gene(self, coord: list) -> list:
         """
-        Greedy, for now need good info in vcf annotations
+        From genomic coordinate, return a list of overlapping gene (if genes are not provided in info field)\n
+        Greedy for now
         """
         if isinstance(coord[2], list):
             coord[2] = coord[2].split("|")
         gene_list = []
         # only chr for this variants
         refgene_chr = self.df_genes.loc[self.df_genes["chr_name"] == coord[0]]
+        # 1Mb up and downstream
+        if self.options["Genes"]["extend"]:
+            # print(coord)
+            # print(*[type(f) for f in coord])
+            coord[1] = coord[1] - 1000000
+            coord[2] = coord[2] + 1000000
+            # if 1Mb down reach 0 in genomic position
+            if coord[1] < 0:
+                coord[1] = 0
+            # print(coord)
+            # exit()
         for j, rows in refgene_chr.iterrows():
             # variant start begin before a gene and stop inside or after
             if coord[1] <= rows["start"] and (
@@ -368,52 +361,74 @@ class Plotconfig:
             print("ERROR in Gene_name ", values)
             exit()
 
+    def get_sv_length_annotations(self, record, field):
+
+        if field == "SV_end":
+            gene_name = self.find_record_gene(
+                [
+                    record.CHROM,
+                    record.POS,
+                    int(float(self.string_to_unique(record.INFO["SV_end"])[0])),
+                ]
+            )
+            return gene_name
+        if isinstance(record.INFO[field], int):
+            gene_name = self.find_record_gene(
+                [record.CHROM, record.POS, int(record.POS) + record.INFO[field]]
+            )
+        elif isinstance(record.INFO[field], list):
+            gene_name = self.find_record_gene(
+                [
+                    record.CHROM,
+                    record.POS,
+                    int(record.POS) + int(float(self.string_to_unique(record.INFO[field][0]))),
+                ]
+            )
+        else:
+            gene_name = self.find_record_gene(
+                [
+                    record.CHROM,
+                    record.POS,
+                    int(record.POS) + int(float(self.string_to_unique(record.INFO[field])[0])),
+                ]
+            )
+        return gene_name
+
     def get_genes_var(self, record: object) -> str:
+        """
+        From PyVCF record return str containing list of overlapping genes\n
+        Translocation have a different process, conf link class
+        If extend options in config (get all genes located in 1Mb up and downstream of sv boundaries)
+        """
         bad_values = [None, "", "."]
+        bad_svtype = ["BND", "TRA", None]
+
         gene_name = record.INFO.get("Gene_name")
+        # Add chr if missing
         record.CHROM = self.chr_adapt(record)
-        if gene_name not in bad_values and isinstance(gene_name, str):
-            return self.from_gene_to_unique(gene_name)
-        elif gene_name[0] not in bad_values and isinstance(gene_name, list):
-            return self.from_gene_to_unique(gene_name)
-        # No Gene_name annotation need to find overlapping gene in sv
-        # if gene_name is None or (isinstance(gene_name, list) and gene_name[0] == None):
-        if record.INFO.get("SVTYPE") not in [
-            "BND, TRA",
-            "INV",
-            None,
-        ] or record.INFO.get("SV_type") not in ["BND, TRA", "INV", None]:
-            # if record.INFO.get("SVTYPE") != None or record.INFO.get("SV_type") != None:
+        if not self.options["Genes"]["extend"]:
+            # get overlapping genes in Gene_name INFO field
+            if gene_name not in bad_values and isinstance(gene_name, str):
+                return self.from_gene_to_unique(gene_name)
+            elif gene_name[0] not in bad_values and isinstance(gene_name, list):
+                return self.from_gene_to_unique(gene_name)
+            # No Gene_name annotation need to find overlapping gene in sv
+            # if gene_name is None or (isinstance(gene_name, list) and gene_name[0] == None):
+        if (
+            record.INFO.get("SVTYPE") not in bad_svtype
+            or record.INFO.get("SV_type") not in bad_svtype
+        ):
             try:
-                # print(record.INFO["SVLEN"])
-                gene_name = self.find_record_gene(
-                    [
-                        record.CHROM,
-                        record.POS,
-                        int(record.POS) + int(float(record.INFO["SVLEN"][0])),
-                    ]
-                )
+                gene_name = self.get_sv_length_annotations(record, "SVLEN")
                 return ",".join(gene_name)
             except (KeyError, ValueError):
                 try:
                     # print(record.INFO["SV_length"])
-                    gene_name = self.find_record_gene(
-                        [
-                            record.CHROM,
-                            record.POS,
-                            int(record.POS) + int(float(record.INFO["SV_length"])),
-                        ]
-                    )
+                    gene_name = self.get_sv_length_annotations(record, "SV_length")
                     return ",".join(gene_name)
                 except (KeyError, ValueError, TypeError):
                     try:
-                        gene_name = self.find_record_gene(
-                            [
-                                record.CHROM,
-                                record.POS,
-                                int(float(record.INFO["SV_end"])),
-                            ]
-                        )
+                        gene_name = self.get_sv_length_annotations(record, "SV_end")
                         return ",".join(gene_name)
                     except (KeyError, ValueError, TypeError):
                         print(
