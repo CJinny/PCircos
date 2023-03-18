@@ -38,7 +38,6 @@ class Datafactory:
             config_ring=self.options["Variants"]["rings"],
         )
 
-        # Ugly as hell, if we wanna take only snv indel overlapping SV
         # Create plot object
         link = Link(pc)
         histogram = Histogram_(pc)
@@ -52,9 +51,6 @@ class Datafactory:
         # Final dict containing all plots informations
         js = {}
         js["General"] = ideogram.options["General"]
-        # print("HISTO\n")
-        # for ite in data_histo:
-        #    print(ite["file"]["dataframe"]["data"].keys())
 
         js["Category"] = {
             "ideogram": ideogram.merge_options(chr_values),
