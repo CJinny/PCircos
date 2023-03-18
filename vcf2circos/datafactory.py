@@ -14,16 +14,10 @@ class Datafactory:
         self.input_file = input_file
         self.options = options
         self.rangescale = []
-        val = (
-            options["Variants"]["rings"]["position"]
-            + options["Variants"]["rings"]["space"]
-        )
+        val = options["Variants"]["rings"]["position"] + options["Variants"]["rings"]["space"]
         self.rangescale.append(val)
         for i in range(options["Variants"]["rings"]["nrings"]):
-            val += (
-                options["Variants"]["rings"]["height"]
-                + options["Variants"]["rings"]["space"]
-            )
+            val += options["Variants"]["rings"]["height"] + options["Variants"]["rings"]["space"]
             self.rangescale.append(val)
 
     # Read vcf and process raw data to feed child class
@@ -78,37 +72,46 @@ class Datafactory:
         # exit()
         # Adjustement in case of no data for example when use overlapping snv only
         remove_under = []
+        plot_check = ["histogram", "scatter"]
         for plot_type in js["Category"]:
-            if plot_type == "histogram" or plot_type == "scatter":
+            if plot_type in plot_check:
                 # Only for list
                 if isinstance(js["Category"][plot_type], list):
                     for i, val in enumerate(js["Category"][plot_type]):
                         # print(val["file"]["dataframe"]["data"]["chr_name"])
-                        if val["trace"]["uid"].startswith("cnv_"):
+                        if val["trace"]["uid"].startswith("cnv_") or val["trace"]["uid"].startswith(
+                            "genes"
+                        ):  # genes in cases of only translocation
                             if not val["file"]["dataframe"]["data"]["chr_name"]:
                                 # print(val["file"]["dataframe"]["data"]["chr_name"])
                                 remove_under.append((plot_type, i))
         ## Could remove only one ore need to build a copy
         if remove_under:
-            print("#[INFO] index of category to remove: " + ", ".join(remove_under))
-            # print("DELETE empty")
-            del js["Category"][remove_under[0][0]][remove_under[0][1]]
-            # print(js["Category"][remove_under[0][0]])
-
+            for fields in remove_under:
+                print(
+                    "#[INFO] index of category to remove: "
+                    + ", ".join([items[0] for items in remove_under])
+                )
+                # print("DELETE empty")
+                del js["Category"][fields[0]][fields[1]]
+                # print(js["Category"][remove_under[0][0]])
         remove = []
         for plot_type in js["Category"]:
-            if plot_type == "histogram" or plot_type == "scatter":
+            if plot_type in plot_check:
                 if not js["Category"][plot_type]:
                     remove.append(plot_type)
             elif plot_type == "link":
-                if not js["Category"][plot_type]["file"]["dataframe"]["data"][
-                    "chr1_name"
-                ]:
+                # exit()
+                if not js["Category"][plot_type]["file"]["dataframe"]["data"]["chr1_name"]:
                     remove.append(plot_type)
         if remove:
             print("#[INFO] Whole category to remove: " + ", ".join(remove))
             for item in remove:
                 del js["Category"][item]
+                # mean only transloc or no variants
+            if "scatter" in remove and not "link" in remove:
+                del js["Category"]["ring"]
+                js["Category"]["link"]["radius"] = {"R0": 0, "R1": 0.98}
 
         # DEBUG dico values
         # test_ = []
