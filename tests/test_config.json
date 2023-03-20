@@ -8,12 +8,12 @@
 	"Static": "/home1/BAS/lamouchj/config_vcf2circos_09012023/Static",
 	"Assembly": "hg19",
 	"Chromosomes": {
-		"cytoband": "True",
-		"list": []
+		"list": [],
+		"all": false
 	},
 	"Genes": {
 		"only_snv_in_sv_genes": false,
-		"extend": true
+		"extend": false
 	},
 	"Variants": {
 		"annotations": {
@@ -26,10 +26,7 @@
 			"nrings": 6
 		}
 	},
-	"Extra": [
-		"gc",
-		"mappability"
-	],
+	"Extra": [],
 	"Color": {
 		"INS": "mediumorchid",
 		"INV": "darkorange",
