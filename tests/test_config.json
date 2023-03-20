@@ -12,7 +12,8 @@
 		"list": []
 	},
 	"Genes": {
-		"only_snv_in_sv_genes": false
+		"only_snv_in_sv_genes": false,
+		"extend": true
 	},
 	"Variants": {
 		"annotations": {
