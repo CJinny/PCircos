@@ -37,7 +37,9 @@ class Datafactory:
             rangescale=self.rangescale,
             config_ring=self.options["Variants"]["rings"],
         )
-
+        if not pc.data['Variants'] and not pc.breakend_record:
+            print("No variants in "+pc.filename+" EXIT")
+            exit()
         # Create plot object
         link = Link(pc)
         histogram = Histogram_(pc)
