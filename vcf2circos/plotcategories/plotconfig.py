@@ -377,13 +377,22 @@ class Plotconfig:
                 [record.CHROM, record.POS, int(record.POS) + record.INFO[field]]
             )
         elif isinstance(record.INFO[field], list):
-            gene_name = self.find_record_gene(
-                [
-                    record.CHROM,
-                    record.POS,
-                    int(record.POS) + int(float(self.string_to_unique(record.INFO[field][0]))),
-                ]
-            )
+            if isinstance(record.INFO[field][0], int):
+                gene_name = self.find_record_gene(
+                    [
+                        record.CHROM,
+                        record.POS,
+                        int(record.POS) + int(float(record.INFO[field][0])),
+                    ]
+                )
+            else:
+                gene_name = self.find_record_gene(
+                    [
+                        record.CHROM,
+                        record.POS,
+                        int(record.POS) + int(float(self.string_to_unique(record.INFO[field][0]))),
+                    ]
+                )
         else:
             gene_name = self.find_record_gene(
                 [
@@ -421,7 +430,7 @@ class Plotconfig:
             try:
                 gene_name = self.get_sv_length_annotations(record, "SVLEN")
                 return ",".join(gene_name)
-            except (KeyError, ValueError):
+            except (KeyError, ValueError, TypeError):
                 try:
                     # print(record.INFO["SV_length"])
                     gene_name = self.get_sv_length_annotations(record, "SV_length")
@@ -431,7 +440,11 @@ class Plotconfig:
                         gene_name = self.get_sv_length_annotations(record, "SV_end")
                         return ",".join(gene_name)
                     except (KeyError, ValueError, TypeError):
-                        print(
+                        try:
+                            gene_name = self.get_sv_length_annotations(record, "END")
+                            return ",".join(gene_name)
+                        except (KeyError, ValueError, TypeError):
+                            print(
                             "ERROR missing SVLEN annotation for record ",
                             record,
                         )
