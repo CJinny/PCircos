@@ -419,7 +419,7 @@ class Plotconfig:
             # get overlapping genes in Gene_name INFO field
             if gene_name not in bad_values and isinstance(gene_name, str):
                 return self.from_gene_to_unique(gene_name)
-            elif gene_name[0] not in bad_values and isinstance(gene_name, list):
+            elif isinstance(gene_name, list) and gene_name[0] not in bad_values:
                 return self.from_gene_to_unique(gene_name)
             # No Gene_name annotation need to find overlapping gene in sv
             # if gene_name is None or (isinstance(gene_name, list) and gene_name[0] == None):
