@@ -580,7 +580,7 @@ class Histogram_(Plotconfig):
                         + self.options["Assembly"]
                     )
 
-        if "mappability" in self.options["Extra"]:
+        if "mappability_old" in self.options["Extra"]:
             mapp_file = osj(
                 self.options["Static"],
                 "Assembly",
@@ -636,9 +636,73 @@ class Histogram_(Plotconfig):
                         "line": {"color": "black", "width": 0},
                     },
                 }
+                print(data)
                 extras.append(mappa_dict)
             # print(mappa_dict)
             # exit()
+        if "mappability" in self.options["Extra"]:
+            filename = [
+                bfiles
+                for bfiles in os.listdir(
+                    osj(self.options["Static"], "Assembly", self.options["Assembly"])
+                )
+                if bfiles.startswith(self.options["Assembly"] + ".blacklist")
+            ][0]
+            mapp_file = osj(
+                self.options["Static"], "Assembly", self.options["Assembly"], filename
+            )
+            if not os.path.exists(mapp_file):
+                print(
+                    "[WARN] Blacklist Region file not in Static folder for assembly "
+                    + self.options["Assembly"]
+                )
+            else:
+                data = pd.read_csv(
+                    mapp_file, header=None, sep="\t", compression="infer"
+                )
+                data.columns = ["chr_name", "start", "end", "type"]
+                data = data.loc[data["chr_name"].isin(chr_valid())]
+                data["val"] = 2
+                data["color"] = "red"
+                data["ref"] = ""
+                data["alt"] = ""
+                mappa_dict = {
+                    "show": "True",
+                    "customfillcolor": "False",
+                    "file": {
+                        "path": "",
+                        "header": "infer",
+                        "sep": "\t",
+                        "dataframe": {
+                            "orient": "columns",
+                            "data": data.to_dict("list"),
+                        },
+                    },
+                    "sortbycolor": "False",
+                    "colorcolumn": 7,
+                    "radius": {"R0": 0.80, "R1": 0.84},
+                    "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Type:   {}".format(a[i,0], a[i,1], a[i,2], a[i,6]) ',
+                    "trace": {
+                        "hoverinfo": "text",
+                        "mode": "markers",
+                        "marker": {"size": 0, "opacity": 0},
+                        "uid": "extra_mappability",
+                    },
+                    "layout": {
+                        "type": "path",
+                        "opacity": 1,
+                        "fillcolor": "black",
+                        "line": {"color": "black", "width": 0},
+                    },
+                }
+                data = data.loc[
+                    :,
+                    ["chr_name", "start", "end", "val", "ref", "alt", "type", "color"],
+                ]
+                print(data)
+                # exit()
+                # extras.append(mappa_dict)
+
         if "repeatmasker" in self.options["Extra"]:
             assert os.path.exists(
                 osj(
