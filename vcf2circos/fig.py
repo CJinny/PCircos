@@ -1420,9 +1420,9 @@ class Figure(Complex):
                             datas["marker"]["color"] = np.repeat(
                                 self.options["Color"][datas["name"]], len(datas["text"])
                             )
-            with open("trace_layout_new.json", "w+") as trace:
-                js = plotly.io.to_json(go.Figure(data=trace_obj, layout=self.layout()), pretty=True)
-                trace.write(js)
+            #with open("trace_layout_new.json", "w+") as trace:
+            #    js = plotly.io.to_json(go.Figure(data=trace_obj, layout=self.layout()), pretty=True)
+            #    trace.write(js)
 
             return go.Figure(data=trace_obj, layout=self.layout())
         except IndexError:
