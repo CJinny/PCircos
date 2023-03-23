@@ -250,6 +250,8 @@ def cast_svtype(svtype):
     """
     In case of pip in svtype
     """
+    if isinstance(svtype, list) and len(svtype) == 1:
+        svtype = svtype[0]
     svtype = svtype.split("|")[0]
     if "<" in svtype or ">" in svtype:
         svtype = svtype.replace("<", "")
@@ -491,51 +493,140 @@ def _gc(filedata, span, length, out):
     dico = {}
     tmp = []
     val = []
-    chr_valid = []
+
+    #200 000
     lim = span
     threshold = span
     with open(out, "w+") as o:
         o.write("\t".join(["chr_name", "start", "end", "val", "color"]) + "\n")
         for i, lines in tqdm(
-            enumerate(filedata),
-            total=int(length[0]),
+            enumerate(filedata), total=int(length[0]),
             desc="INFO GC percent, bins length: " + str(span) + "",
         ):
             if not isinstance(lines, str):
                 lines = lines.decode("utf-8").strip()
             else:
                 lines = lines.strip()
+            # for each chrom
             if lines.startswith("variableStep"):
                 chr = lines.split()[1].split("=")[1]
+                lim = span
+                tmp.clear()
+                val.clear()
                 continue
-            if chr not in chr_valid:
-            # 500 000
-            start = int(lines.split()[0])
-            stop = int(lines.split()[0]) + 5
-            tmp.append(start)
-            val.append(float(lines.split()[1]) / 20)
-            if lim < start:
-                # first time only
-                lim = start + lim
-            if start >= lim:
-                dico[chr + ":" + str(tmp[0]) + "-" + str(tmp[-1])] = round(
-                    (sum(val) / ((stop - tmp[0]))), 2
-                )
-                o.write(
-                    "\t".join(
-                        [
-                            str(chr),
-                            str(tmp[0]),
-                            str(tmp[-1]),
-                            str(round((sum(val) / ((stop - tmp[0]))), 2)),
-                            "pink",
-                        ]
+            else:
+                #Process data
+                start = int(lines.split()[0]) #10001
+                stop = int(lines.split()[0]) + 5 #10006
+                #POS
+                tmp.append(start)
+                #Cast to real value, 40 = 2  60 = 3 etc
+                val.append(float(lines.split()[1]) / 20)
+            if chr not in chr_valid():
+                continue
+
+            
+            #if lim < start: #it Start chr 1 10001
+            #    # first time only
+            #    lim = start + lim
+            if start >= lim or (lines.startswith("variableStep") and chr != "chr1"):
+                gc_val = round(
+                    (sum(val) / (stop - tmp[0])), 2) #nombre de gc tout les 5 diviser par le nombres de bases tot
+                
+                #dico[chr + ":" + str(tmp[0]) + "-" + str(tmp[-1])] = gc_val 
+                if gc_val < 0:
+                    color = "lightblue"
+                else:
+                    color = "blue"
+                #If miss gc for example due to repeat regions
+                if len(tmp) > 1:
+                    o.write(
+                        "\t".join(
+                            [
+                                str(chr),
+                                str(tmp[0]),
+                                str(tmp[-1]),
+                                str(gc_val),
+                                color,
+                            ]
+                        )
+                        + "\n"
                     )
-                    + "\n"
-                )
                 tmp.clear()
                 val.clear()
                 lim += threshold
+                #if chr == "chr3":
+                #    print(dico)
+                #    print(len(tmp))
+                #    print(len(val))
+                #    print(lim)
+                #    print(lim)
+                #    print(dict)
+                #    exit()
+
+def _gc_hg38(filedata, span, length, out):
+    dico = {}
+    tmp = []
+    #200 000
+    val = []
+    lim = span
+    threshold = span
+    chr_current = []
+    with open(out, "w+") as o:
+        o.write("\t".join(["chr_name", "start", "end", "val", "color"]) + "\n")
+        for i, lines in tqdm(
+            enumerate(filedata), total=int(length[0]),
+            desc="INFO GC percent, bins length: " + str(span) + "",
+        ):
+            if not isinstance(lines, str):
+                lines = lines.decode("utf-8").strip()
+            else:
+                lines = lines.strip()
+
+            chrom = lines.split()[0]
+            if chrom not in dico:
+                dico[chrom] = {"start": [], "stop": [], "val": []}
+
+            if chrom not in chr_valid():
+                continue
+
+            #Process data
+            start = int(lines.split()[1])
+            stop = int(lines.split()[2])
+            dico[chrom]["start"].append(start)
+            dico[chrom]["stop"].append(start)
+            #POS
+            #tmp.append(start)
+            #Cast to real value, 40 = 2  60 = 3 etc
+            #val.append(float(lines.split()[3]) / 20)
+            dico[chrom]["val"].append(float(lines.split()[3]) / 20)
+            if start >= lim:
+                gc_val = round(
+                    (sum(val) / (dico[chrom][stop][-1] - dico[chrom][start][0])), 2) #nombre de gc tout les stop-start diviser par le nombres de bases tot
+                
+                #dico[chr + ":" + str(tmp[0]) + "-" + str(tmp[-1])] = gc_val 
+                #if gc_val < 0:
+                #    color = "lightblue"
+                #else:
+                #    color = "blue"
+                #If miss gc for example due to repeat regions
+                if len(tmp) > 1:
+                    o.write(
+                        "\t".join(
+                            [
+                                str(chrom),
+                                str(dico[chrom][start]),
+                                str(dico[chrom][stop]),
+                                str(gc_val),
+                                "blue",
+                            ]
+                        )
+                        + "\n"
+                    )
+                tmp.clear()
+                val.clear()
+                lim += threshold
+            #chr_current.append(chrom)
 
 
 def process_gc_percent(filename: str, out: str) -> str:
@@ -545,8 +636,27 @@ def process_gc_percent(filename: str, out: str) -> str:
     if filename.endswith(".gz"):
         with gzip.open(filename, "rb") as bf:
             length = systemcall("zcat " + filename + " | wc -l")
-            _gc(bf, 200000, length, out)
+            _gc_hg38(bf, 5000000, length, out)
     else:
         f = open(filename, "r")
         length = systemcall("wc -l " + filename)
-        _gc(f, 200000, length, out)
+        length = length[0].split()
+        _gc_hg38(f, 5000000, length, out)
+
+
+def pick(file):
+    df = pd.read_csv(file, sep="\t", header=None, low_memory=False, compression='infer', names=['pos', 'values'], nrows=60000000)
+    #filter = df.iloc[:3000000, :]
+    #print(filter.iloc[:10, :])
+    df.to_csv("pick_gc", header=False, index=False, sep="\t")
+
+def repeatmasker(file, out):
+    """
+        Formatting repeatmasker file chr_name, start, stop, type
+    """
+    df = pd.read_csv(file, sep="\t", header=None, compression='infer')
+    df.columns = ["chr_name", "start", "stop", "type", "length", "strand"]
+    df["val"] = 0.5
+    df = df.loc[:, ["chr_name", "start", "stop", "val",]]
+    df.to_csv(out, sep="\t", header=True, index=False)
+
