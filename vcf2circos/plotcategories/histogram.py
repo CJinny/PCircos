@@ -492,10 +492,14 @@ class Histogram_(Plotconfig):
         # infer type of var could be done before
         for i, info_dict in enumerate(info_field):
             if variant_type[i] not in ["OTHER", "SNV", "INDEL"]:
+                for values in ["SV_start", "SV_end", "SVLEN", "END"]:
+                    if values in record[i].INFO:
+                        if "|" in str(record[i].INFO[values]):
+                            record[i].INFO[values] = int(str(record[i].INFO[values]).split("|")[0])
                 if "SV_start" in record[i].INFO and "SV_end" in record[i].INFO:
                     yield (
-                        int(info_dict.get("SV_start").split("|")[0]),
-                        int(info_dict.get("SV_end").split("|")[0]),
+                        info_dict.get("SV_start"),
+                        info_dict.get("SV_end"),
                         record[i].REF,
                         record[i].ALT,
                     )
@@ -509,7 +513,7 @@ class Histogram_(Plotconfig):
                 elif "SVLEN" in record[i].INFO:
                     yield (
                         int(record[i].POS),
-                        int(abs(record[i].INFO["SVLEN"][0])) + int(record[i].POS),
+                        int(abs(record[i].INFO["SVLEN"])) + int(record[i].POS),
                         record[i].REF,
                         record[i].ALT,
                     )
@@ -546,7 +550,13 @@ class Histogram_(Plotconfig):
             #    assert os.path.exists(f), (
             #        f + " file does not exists, add in Static folder"
             #    )
-            for gc_ in [gc_pos, gc_neg]:
+            gc_mod = osj(
+                self.options["Static"],
+                "Assembly",
+                self.options["Assembly"],
+                self.options["Assembly"] + ".gc5Base.5Mb.notnorm.txt",
+            )
+            for gc_ in [gc_mod]:
                 if os.path.exists(gc_):
                     gc_dict = {
                         "show": "True",
@@ -558,8 +568,8 @@ class Histogram_(Plotconfig):
                         },
                         "sortbycolor": "False",
                         "colorcolumn": "None",
-                        "radius": {"R0": 0.90, "R1": 0.94},
-                        "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}    <br>LogFC:{}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ',
+                        "radius": {"R0": 0.88, "R1": 0.92},
+                        "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}    <br>GC mean:{}".format(a[i,0], a[i,1], a[i,2], float(a[i,3])) ',
                         "trace": {
                             "hoverinfo": "text",
                             "mode": "markers",
@@ -636,7 +646,7 @@ class Histogram_(Plotconfig):
                         "line": {"color": "black", "width": 0},
                     },
                 }
-                print(data)
+                #print(data)
                 extras.append(mappa_dict)
             # print(mappa_dict)
             # exit()
@@ -699,22 +709,21 @@ class Histogram_(Plotconfig):
                     :,
                     ["chr_name", "start", "end", "val", "ref", "alt", "type", "color"],
                 ]
-                print(data)
                 # exit()
                 # extras.append(mappa_dict)
 
-        if "repeatmasker" in self.options["Extra"]:
+        if "repeatmasker_old" in self.options["Extra"]:
             assert os.path.exists(
                 osj(
                     self.options["Static"],
                     "Assembly",
                     self.options["Assembly"],
-                    self.options["Assembly"] + ".repeatmasker.csv",
+                    self.options["Assembly"] + ".repeatmasker.tsv",
                 )
             ), (
                 "Repeat Masker file "
                 + self.options["Assembly"]
-                + ".repeatmasker.csv"
+                + ".repeatmasker.tsv"
                 + " not in Static folder"
             )
             dat = pd.read_csv(
@@ -722,10 +731,10 @@ class Histogram_(Plotconfig):
                     self.options["Static"],
                     "Assembly",
                     self.options["Assembly"],
-                    self.options["Assembly"] + ".repeatmasker.csv",
+                    self.options["Assembly"] + ".repeatmasker.tsv",
                 ),
                 header=0,
-                sep="\t",
+                sep="\t", compression='infer'
             )
             data = dat.loc[dat["chr_name"].isin(chr_valid())]
             data["val"] = 2
@@ -754,6 +763,50 @@ class Histogram_(Plotconfig):
                 "colorcolumn": 7,
                 "radius": {"R0": 0.75, "R1": 0.79},
                 "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Type:{}".format(a[i,0], a[i,1], a[i,2], a[i,6]) ',
+                "trace": {
+                    "hoverinfo": "text",
+                    "mode": "markers",
+                    "marker": {"size": 0, "opacity": 0},
+                    "uid": "extra_repeatmasker",
+                },
+                "layout": {
+                    "type": "path",
+                    "opacity": 1,
+                    "fillcolor": "black",
+                    "line": {"color": "black", "width": 0},
+                },
+            }
+            extras.append(repeat_dict)
+        if "repeatmasker" in self.options["Extra"]:
+            assert os.path.exists(
+                osj(
+                    self.options["Static"],
+                    "Assembly",
+                    self.options["Assembly"],
+                    self.options["Assembly"] + ".repeatmasker.histo.tsv",
+                )
+            ), (
+                "Repeat Masker file "
+                + self.options["Assembly"]
+                + ".repeatmasker.histo.tsv"
+                + " not in Static folder"
+            )
+            repeat_dict = {"show": "True",
+                "customfillcolor": "False",
+                "file": {
+                    "path": osj(
+                    self.options["Static"],
+                    "Assembly",
+                    self.options["Assembly"],
+                    self.options["Assembly"] + ".repeatmasker.histo.tsv",
+                ),
+                    "header": "infer",
+                    "sep": "\t",
+                },
+                "sortbycolor": "False",
+                "colorcolumn": "",
+                "radius": {"R0": 0.75, "R1": 0.79},
+                "hovertextformat": ' "Chromosome: {}<br>Start: {}<br>End: {}<br>Type:{}".format(a[i,0], a[i,1], a[i,2])',
                 "trace": {
                     "hoverinfo": "text",
                     "mode": "markers",
