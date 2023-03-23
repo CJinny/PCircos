@@ -107,9 +107,9 @@ class Datafactory:
             for item in remove:
                 del js["Category"][item]
                 # mean only transloc or no variants
-            if "scatter" in remove and not "link" in remove:
-                del js["Category"]["ring"]
-                js["Category"]["link"]["radius"] = {"R0": 0, "R1": 0.98}
+            #if "scatter" in remove and not "link" in remove:
+            #    del js["Category"]["ring"]
+            #    js["Category"]["link"]["radius"] = {"R0": 0, "R1": 0.98}
 
         # DEBUG dico values
         # test_ = []
