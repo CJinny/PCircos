@@ -68,10 +68,11 @@ def main():
     print(f"[INFO] Output file: {output_file} (format '{output_format}')")
 
     # Export
-    export_file = args.export
-    if export_file:
-        print(f"[INFO] Export file: {export_file} (format 'json')")
-
+    export_format = args.export
+    if export_format:
+        print(f"[INFO] Export format: {export_format}")
+        output_export_file = ".".join(output_file.split(".")[:-1])+"."+export_format
+        print(f"[INFO] Export file: {output_export_file}")
     # Options
     options_input = args.options or {}
     if options_input:
@@ -117,12 +118,12 @@ def main():
         js = Datafactory(input_file, options).plot_dict()
         fig_instance = Figure(dash_dict=js, options=options)
         # Export in vcf2circos JSON
-        if export_file:
-            if not os.path.exists(os.path.dirname(os.path.abspath(export_file))):
-                os.mkdir(os.path.dirname(export_file))
-            with open(export_file, "w") as ef:
-                ef.write(json.dumps(copy.deepcopy(js), indent=4))
-                ef.close()
+        #if output_export_file:
+        #    if not os.path.exists(os.path.dirname(os.path.abspath(output_export_file))):
+        #        os.mkdir(os.path.dirname(output_export_file))
+        #    with open(output_export_file, "w") as ef:
+        #        ef.write(json.dumps(copy.deepcopy(js), indent=4))
+        #        ef.close()
 
     elif input_format in ["json"]:
         fig_instance = Figure(input_json_path=input_file, options=options)
@@ -157,7 +158,6 @@ def main():
         if scatter.showlegend is None and hasattr(scatter, "name"):
             if scatter.name is not None:
                 scatter.legendrank = dico[scatter.name]
-
     try:
         if not output_format:
             plot(fig)
@@ -165,7 +165,9 @@ def main():
             os.mkdir(os.path.dirname(output_file))
         elif output_format in ["html"]:
             plot(fig, filename=output_file)
-        elif output_format in [
+        else:
+            print("[ERROR] output format not supported")
+        if export_format in [
             "png",
             "jpg",
             "jpeg",
@@ -175,9 +177,8 @@ def main():
             "eps",
             "json",
         ]:
-            plotly.io.write_image(fig, output_file, format=output_format)
-        else:
-            print("[ERROR] output format not supported")
+            #plotly.io.write_image(fig, output_export_file, format="svg")
+            fig.write_image(output_export_file)
     except IndexError:
         plot(fig)
 
