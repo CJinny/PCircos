@@ -164,6 +164,11 @@ class Plotconfig:
                     data["Record"].append(record)
                     data["Variants"].append(record.INFO)
                     svtype, copynumber = self.get_copynumber_type(record)
+                    #if record.CHROM == "chr6" and record.POS == 1089464612 :
+                    #    print(record)
+                    #    print(record.INFO)
+                    #    print(self.get_copynumber_type(record))
+                    #    #exit()
                     # ensure svtype is in capslock
                     svtype = svtype.upper()
                     assert svtype in self.options["Color"], (
@@ -178,6 +183,7 @@ class Plotconfig:
                         )
                         + " check your vcf Exit"
                     )
+                    assert isinstance(copynumber, int), "ERROR wrong copy number"
                     data["Variants_type"].append(svtype)
                     try:
                         data["Color"].append(self.colors[svtype])
@@ -249,12 +255,12 @@ class Plotconfig:
             for key, val in rep.items():
                 svtype = svtype.replace(key, val)
             # in case of copy number in alt
-            if re.search(r"$[0-9]+", svtype).group():
+            if re.search(r"$[0-9]+", svtype) != None:
                 copynumber = re.search(r"$[0-9]+", svtype).group()
                 return (cast_svtype(svtype), copynumber)
             else:
                 svtype = svtype.split(":")[0]
-                if len(svtype) > 1:
+                if len(svtype) > 1 and isinstance(svtype, list):
                     copynumber = svtype[1]
                     return (cast_svtype(svtype), copynumber)
                 else:
@@ -280,7 +286,10 @@ class Plotconfig:
         REQUIRED monosample vcf
         """
         if record.INFO.get("CN") is not None:
-            return int(record.INFO.get("CN"))
+            if isinstance(record.INFO.get("CN"), list):
+                return int(record.INFO.get("CN")[0])
+            else:
+                return int(record.INFO.get("CN"))
         # list of sample TODO working only if vcf monosample
         else:
             # Need verificatons TODO
@@ -318,7 +327,6 @@ class Plotconfig:
         refgene_chr = self.df_genes.loc[self.df_genes["chr_name"] == coord[0]]
         # 1Mb up and downstream
         if self.options["Genes"]["extend"]:
-            # print(coord)
             # print(*[type(f) for f in coord])
             coord[1] = coord[1] - 1000000
             coord[2] = coord[2] + 1000000
@@ -362,46 +370,56 @@ class Plotconfig:
             exit()
 
     def get_sv_length_annotations(self, record, field):
-
-        if field == "SV_end":
+        #if field == "SV_end":
+        #    gene_name = self.find_record_gene(
+        #        [
+        #            record.CHROM,
+        #            record.POS,
+        #            int(float(self.string_to_unique(record.INFO["SV_end"])[0])),
+        #        ]
+        #    )
+        #    return gene_name
+        #if isinstance(record.INFO[field], int):
+        #    gene_name = self.find_record_gene(
+        #        [record.CHROM, record.POS, int(record.POS) + record.INFO[field]]
+        #    )
+        if field in ["SV_length", "SVLEN"]:
             gene_name = self.find_record_gene(
-                [
-                    record.CHROM,
-                    record.POS,
-                    int(float(self.string_to_unique(record.INFO["SV_end"])[0])),
-                ]
+                [record.CHROM, record.POS, record.POS+abs(record.INFO[field])]
             )
-            return gene_name
-        if isinstance(record.INFO[field], int):
+        elif field in ["SV_end", "END"]:
             gene_name = self.find_record_gene(
-                [record.CHROM, record.POS, int(record.POS) + record.INFO[field]]
+                [record.CHROM, record.POS, record.INFO[field]]
             )
-        elif isinstance(record.INFO[field], list):
-            if isinstance(record.INFO[field][0], int):
-                gene_name = self.find_record_gene(
-                    [
-                        record.CHROM,
-                        record.POS,
-                        int(record.POS) + int(float(record.INFO[field][0])),
-                    ]
-                )
-            else:
-                gene_name = self.find_record_gene(
-                    [
-                        record.CHROM,
-                        record.POS,
-                        int(record.POS) + int(float(self.string_to_unique(record.INFO[field][0]))),
-                    ]
-                )
         else:
-            gene_name = self.find_record_gene(
-                [
-                    record.CHROM,
-                    record.POS,
-                    int(record.POS) + int(float(self.string_to_unique(record.INFO[field])[0])),
-                ]
-            )
+            gene_name = []
         return gene_name
+        #elif isinstance(record.INFO[field], list):
+        #    if isinstance(record.INFO[field][0], int):
+        #        gene_name = self.find_record_gene(
+        #            [
+        #                record.CHROM,
+        #                record.POS,
+        #                int(record.POS) + int(float(record.INFO[field][0])),
+        #            ]
+        #        )
+        #    else:
+        #        gene_name = self.find_record_gene(
+        #            [
+        #                record.CHROM,
+        #                record.POS,
+        #                int(record.POS) + int(float(self.string_to_unique(record.INFO[field][0]))),
+        #            ]
+        #        )
+        #else:
+        #    gene_name = self.find_record_gene(
+        #        [
+        #            record.CHROM,
+        #            record.POS,
+        #            int(record.POS) + int(float(self.string_to_unique(record.INFO[field])[0])),
+        #        ]
+        #    )
+        #return gene_name
 
     def get_genes_var(self, record: object) -> str:
         """
@@ -411,6 +429,7 @@ class Plotconfig:
         """
         bad_values = [None, "", "."]
         bad_svtype = ["BND", "TRA", None]
+        types_ = ["SVLEN", "SV_length","SV_end", "END"]
 
         gene_name = record.INFO.get("Gene_name")
         # Add chr if missing
@@ -423,10 +442,11 @@ class Plotconfig:
                 return self.from_gene_to_unique(gene_name)
             # No Gene_name annotation need to find overlapping gene in sv
             # if gene_name is None or (isinstance(gene_name, list) and gene_name[0] == None):
-        if (
-            record.INFO.get("SVTYPE") not in bad_svtype
-            or record.INFO.get("SV_type") not in bad_svtype
-        ):
+        #if (
+        #    record.INFO.get("SVTYPE") not in bad_svtype
+        #    or record.INFO.get("SV_type") not in bad_svtype
+        #):
+        if any([val for val in types_ if val in record.INFO]):
             try:
                 gene_name = self.get_sv_length_annotations(record, "SVLEN")
                 return ",".join(gene_name)
