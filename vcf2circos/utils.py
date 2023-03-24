@@ -149,10 +149,11 @@ def delete_multiple_element(list_object, indices):
 def map_annotations(field_annot):
     if field_annot is not None:
         uniq = list(set(str(field_annot).split("|")))
-        if len(uniq) == 1:
-            return uniq[0]
-        else:
-            return field_annot
+        #if len(uniq) == 1:
+        #    return uniq[0]
+        #else:
+        #    return field_annot
+        return uniq[0]
     else:
         return "."
 
