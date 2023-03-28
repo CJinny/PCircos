@@ -495,8 +495,16 @@ class Histogram_(Plotconfig):
                 for values in ["SV_start", "SV_end", "SVLEN", "END"]:
                     if values in record[i].INFO:
                         # record[i].INFO[values] is a LIST header VCF
-                        if "|" in str(record[i].INFO[values]):
-                            record[i].INFO[values] = int(str(record[i].INFO[values][0]).split("|")[0])
+                        if isinstance(record[i].INFO[values], list):
+                            if "|" in str(record[i].INFO[values][0]):
+                                record[i].INFO[values] = int(str(record[i].INFO[values][0].split("|")[0]))
+                            else:
+                                record[i].INFO[values] = int(str(record[i].INFO[values][0]))
+                        elif isinstance(record[i].INFO[values], str):
+                            if "|" in record[i].INFO[values]:
+                                record[i].INFO[values] = int(record[i].INFO[values].split("|")[0])
+                            else:
+                                record[i].INFO[values] = int(record[i].INFO[values])
                 if "SV_start" in record[i].INFO and "SV_end" in record[i].INFO:
                     yield (
                         info_dict.get("SV_start"),
