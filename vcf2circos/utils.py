@@ -573,10 +573,17 @@ def _gc_hg38(filedata, span, length, out):
     lim = span
     threshold = span
     chr_current = []
+    df_size = pd.read_csv("/home1/BAS/lamouchj/vcf2circos/Static/Assembly/hg38/GRCh38_chromFa.chromSizes", sep="\t", header=None)
+    df_size.columns = ["chrom", "size"]
+    df_size["chrom"] = "chr"+df_size["chrom"]
+    #chr_length = df_size.loc[df_size["chrom"] == chrom].loc[0].at["size"]
+    chr_size = {}
+    for j, k in df_size.iterrows():
+        chr_size[k["chrom"]] = k["size"]
     with open(out, "w+") as o:
         o.write("\t".join(["chr_name", "start", "end", "val", "color"]) + "\n")
         for i, lines in tqdm(
-            enumerate(filedata), total=int(length[0]),
+            enumerate(filedata), total=length,
             desc="INFO GC percent, bins length: " + str(span) + "",
         ):
             if not isinstance(lines, str):
@@ -585,9 +592,10 @@ def _gc_hg38(filedata, span, length, out):
                 lines = lines.strip()
 
             chrom = lines.split()[0]
+            
             if chrom not in dico:
                 dico[chrom] = {"start": [], "stop": [], "val": []}
-
+                lim = threshold
             if chrom not in chr_valid():
                 continue
 
@@ -595,15 +603,18 @@ def _gc_hg38(filedata, span, length, out):
             start = int(lines.split()[1])
             stop = int(lines.split()[2])
             dico[chrom]["start"].append(start)
-            dico[chrom]["stop"].append(start)
+            dico[chrom]["stop"].append(stop)
             #POS
             #tmp.append(start)
             #Cast to real value, 40 = 2  60 = 3 etc
             #val.append(float(lines.split()[3]) / 20)
             dico[chrom]["val"].append(float(lines.split()[3]) / 20)
             if start >= lim:
+                #print(dico[chrom]["stop"][-1])
+                #print(dico[chrom]["start"][0])
+                #print(sum(dico[chrom]["val"]))
                 gc_val = round(
-                    (sum(val) / (dico[chrom][stop][-1] - dico[chrom][start][0])), 2) #nombre de gc tout les stop-start diviser par le nombres de bases tot
+                    (sum(dico[chrom]["val"]) / (dico[chrom]["stop"][-1] - dico[chrom]["start"][0])), 2) #nombre de gc tout les stop-start diviser par le nombres de bases tot
                 
                 #dico[chr + ":" + str(tmp[0]) + "-" + str(tmp[-1])] = gc_val 
                 #if gc_val < 0:
@@ -611,22 +622,27 @@ def _gc_hg38(filedata, span, length, out):
                 #else:
                 #    color = "blue"
                 #If miss gc for example due to repeat regions
-                if len(tmp) > 1:
-                    o.write(
-                        "\t".join(
-                            [
-                                str(chrom),
-                                str(dico[chrom][start]),
-                                str(dico[chrom][stop]),
-                                str(gc_val),
-                                "blue",
-                            ]
-                        )
-                        + "\n"
+                o.write(
+                    "\t".join(
+                        [
+                            str(chrom),
+                            str(dico[chrom]["start"][0]),
+                            str(dico[chrom]["stop"][-1]),
+                            str(gc_val),
+                            "blue",
+                        ]
                     )
-                tmp.clear()
-                val.clear()
-                lim += threshold
+                    + "\n"
+                )
+                dico[chrom]["start"].clear()
+                dico[chrom]["stop"].clear()
+                dico[chrom]["val"].clear()
+                if lim >= chr_size[chrom]:
+                    lim = chr_size[chrom]
+                    print(lim)
+                    print("End chr")
+                else:
+                    lim += threshold
             #chr_current.append(chrom)
 
 
@@ -636,8 +652,8 @@ def process_gc_percent(filename: str, out: str) -> str:
     print(out)
     if filename.endswith(".gz"):
         with gzip.open(filename, "rb") as bf:
-            length = systemcall("zcat " + filename + " | wc -l")
-            _gc_hg38(bf, 5000000, length, out)
+            #length = systemcall("zcat " + filename + " | wc -l")
+            _gc_hg38(bf, 5000000, 439385652, out)
     else:
         f = open(filename, "r")
         length = systemcall("wc -l " + filename)
