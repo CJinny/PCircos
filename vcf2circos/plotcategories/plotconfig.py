@@ -154,8 +154,10 @@ class Plotconfig:
                 or not self.options["Chromosomes"]["list"]
             ):
                 # particular process for breakend
-                if self.get_copynumber_type(record)[0] in ["BND", "TRA"]:
+                if self.get_copynumber_type(record)[0] in ["BND"]:
                     self.breakend_record.append(record)
+                elif self.get_copynumber_type(record)[0] in ["TRA"]:
+                    continue
                 else:
                     data["Chromosomes"].append(self.chr_adapt(record))
                     data["Genes"].append(self.get_genes_var(record))
@@ -224,6 +226,8 @@ class Plotconfig:
             cn = cn.replace(">", "")
             return ("CNV", int(cn[-1]))
         # if both copy number and sv type in alt
+        if str(record.ALT[0]) == "<TRA>":
+            return ("TRA", 2)
         if str(record.ALT[0]).startswith("<"):
             alt_tmp = str(record.ALT[0]).split(":")
             if len(alt_tmp) > 1:
