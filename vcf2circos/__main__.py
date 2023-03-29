@@ -37,18 +37,6 @@ import copy
 import argparse
 
 
-__author__ = "Jin Cui, Antony Le Bechec, Jean-Baptiste Lamouche"
-__version__ = "2.1.0"
-__date__ = "November 14 2022"
-
-if sys.version_info[0] != 3:
-    raise Exception(
-        "vcf2circos requires Python 3, your current Python version is {}.{}.{}".format(
-            sys.version_info[0], sys.version_info[1], sys.version_info[2]
-        )
-    )
-
-
 def main():
     t = time()
     args = Parseargs().parseargs()
@@ -80,10 +68,11 @@ def main():
     print(f"[INFO] Output file: {output_file} (format '{output_format}')")
 
     # Export
-    export_file = args.export
-    if export_file:
-        print(f"[INFO] Export file: {export_file} (format 'json')")
-
+    export_format = args.export
+    if export_format:
+        print(f"[INFO] Export format: {export_format}")
+        output_export_file = ".".join(output_file.split(".")[:-1])+"."+export_format
+        print(f"[INFO] Export file: {output_export_file}")
     # Options
     options_input = args.options or {}
     if options_input:
@@ -118,34 +107,26 @@ def main():
         print(f"[INFO] Options not provided.")
 
     # Notebook mode
-    notebook_mode = args.notebook_mode
-    if notebook_mode:
-        init_notebook_mode(connected=True)
+    # notebook_mode = args.notebook_mode
+    # if notebook_mode:
+    #    init_notebook_mode(connected=True)
 
     # Input
 
     if input_format in ["vcf", "gz"]:
-
-        # js["Category"]["histogram"].append(histogram.merge_options())
-        # pprint(ideogram.merge_options())
-        # exit()
         print("\n")
-        # print(type(js["Category"]["cytoband"]))
         js = Datafactory(input_file, options).plot_dict()
         fig_instance = Figure(dash_dict=js, options=options)
-
         # Export in vcf2circos JSON
-        if export_file:
-            if not os.path.exists(os.path.dirname(export_file)):
-                os.mkdir(os.path.dirname(export_file))
-            f = open(export_file, "w")
-            f.write(json.dumps(copy.deepcopy(js)), indent=4)
-            f.close()
+        #if output_export_file:
+        #    if not os.path.exists(os.path.dirname(os.path.abspath(output_export_file))):
+        #        os.mkdir(os.path.dirname(output_export_file))
+        #    with open(output_export_file, "w") as ef:
+        #        ef.write(json.dumps(copy.deepcopy(js), indent=4))
+        #        ef.close()
 
     elif input_format in ["json"]:
-
-        fig_instance = Figure(dash_dict=js, options=options)
-
+        fig_instance = Figure(input_json_path=input_file, options=options)
     else:
 
         print("[ERROR] input format not supported")
@@ -177,23 +158,16 @@ def main():
         if scatter.showlegend is None and hasattr(scatter, "name"):
             if scatter.name is not None:
                 scatter.legendrank = dico[scatter.name]
-    # with open("15122022_config.json", "w+") as js:
-    #    data = plotly.io.to_json(fig, pretty=True)
-    #    js.write(data)
-    ## print(fig)
-    # exit()
-    # Fig
-    # legend = Legend(fig)
-
     try:
         if not output_format:
             plot(fig)
+        if not os.path.exists(os.path.dirname(os.path.abspath(output_file))):
+            os.mkdir(os.path.dirname(output_file))
         elif output_format in ["html"]:
-            if "/" in output_file:
-                if not os.path.exists(os.path.dirname(output_file)):
-                    os.mkdir(os.path.dirname(output_file))
             plot(fig, filename=output_file)
-        elif output_format in [
+        else:
+            print("[ERROR] output format not supported")
+        if export_format in [
             "png",
             "jpg",
             "jpeg",
@@ -203,14 +177,8 @@ def main():
             "eps",
             "json",
         ]:
-            if (
-                not os.path.exists(os.path.dirname(output_file))
-                and os.path.dirname(output_file) != ""
-            ):
-                os.mkdir(os.path.dirname(output_file))
-            plotly.io.write_image(fig, output_file, format=output_format)
-        else:
-            print("[ERROR] output format not supported")
+            #plotly.io.write_image(fig, output_export_file, format="svg")
+            fig.write_image(output_export_file)
     except IndexError:
         plot(fig)
 

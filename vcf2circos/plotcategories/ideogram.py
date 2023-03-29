@@ -1,37 +1,16 @@
 from vcf2circos.plotcategories.plotconfig import Plotconfig
-from vcf2circos.utils import Colorpal
+from vcf2circos.utils import Colorpal, chr_valid
 import pandas as pd
 from os.path import join as osj
-import os
 
 # space, space between ring in option.example.json
 # height hauteur du ring
 # positon position from center
 
-# just for test
-# data = {
-#    "chr_name": ["chr1", "chr2", "chr3"],
-#    "chr_size": [249250621, 243199373, 198022430],
-#    "chr_label": ["chr1", "chr2", "chr3"],
-#    "chr_color": ["pink", "rosybrown", "firebrick"],
-# }
-
-list_graph_type = ["majortick", "minortick", "ticklabel"]
-
 
 class Ideogram(Plotconfig):
-    """
-    "scatter":{
-        "pattern":{
-        ...
-    },  "data":{
-        ...
-    }}
-    """
-
     def __init__(self, plotconfig):
         self.plotconfig = plotconfig
-        # assert os.path.exists(osj(self.options["Static"], "chr_size.txt"))
         self.chr_conf = pd.read_csv(
             osj(
                 self.options["Static"],
@@ -102,7 +81,11 @@ class Ideogram(Plotconfig):
                 "xref": "x",
                 "yref": "y",
                 "showarrow": False,
-                "font": {"family": "Times New Roman", "size": 8, "color": "black",},
+                "font": {
+                    "family": "Times New Roman",
+                    "size": 8,
+                    "color": "black",
+                },
             },
         }
 
@@ -115,15 +98,16 @@ class Ideogram(Plotconfig):
         true_chr = self.data["Chromosomes"]
         true_chr.extend(chr_link)
         chromosomes = list(set(true_chr))
-        tmp = self.chr_conf.loc[self.chr_conf["chr_name"].isin(true_chr)]
+        if self.options["Chromosomes"]["all"] is True:
+            tmp = self.chr_conf.loc[self.chr_conf["chr_name"].isin(chr_valid())]
+        else:
+            tmp = self.chr_conf.loc[self.chr_conf["chr_name"].isin(chromosomes)]
         data = {
             "chr_name": tmp["chr_name"].to_list(),
             "chr_size": tmp["size"].to_list(),
             "chr_label": tmp["chr_name"].to_list(),
             "chr_color": list(Colorpal(len(tmp["chr_name"].to_list()))),
         }
-        # exit()
-        print(tmp)
         return data
 
     def merge_options(self, chr_link):
@@ -163,4 +147,3 @@ class Ideogram(Plotconfig):
         dico["minortick"] = self.minortick
         dico["ticklabel"] = self.ticklabel
         return dico
-        # Loopable as fuck

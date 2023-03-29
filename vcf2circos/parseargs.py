@@ -37,21 +37,21 @@ class Parseargs:
             "--options",
             type=str,
             required=False,
-            help="""Options file or string.\nFormat is 'json', either in a file or as a string.""",
+            help="""Options file in json format""",
         )
-        parser.add_argument(
-            "-n",
-            "--notebook_mode",
-            type=bool,
-            required=False,
-            help="""Notebook mode.\nDefault False""",
-        )
+        # parser.add_argument(
+        #    "-n",
+        #    "--notebook_mode",
+        #    type=bool,
+        #    required=False,
+        #    help="""Notebook mode.\nDefault False""",
+        # )
         parser.add_argument(
             "-a",
             "--assembly",
             type=str,
             required=False,
-            help="""Genome assembly to use for now values available (hg19, hg38)"""
+            help="""Genome assembly to use for now values available (hg19, hg38)""",
         )
         # Parse args
         return parser.parse_args()
