@@ -1,26 +1,19 @@
-#FROM alpine:latest
-### I tried python:3.7-alpine, but no success during installation
-FROM ubuntu:latest
-MAINTAINER Jin Cui <cuijinjincui4@gmail.com>
+FROM python:3.9.16
 
+LABEL maintainer="Jean-Baptiste Lamouche"
+LABEL name="jb.lamouche@unistra.fr"
 
-RUN apt-get update -y
-RUN apt-get install -y python3.6 python3-pip
+#Install vcf2circos
+RUN pip install git+https://github.com/JbaptisteLam/vcf2circos@manuscript
 
+#Download config
+RUN wget https://www.lbgi.fr/~lamouche/vcf2circos/config_vcf2circos_29032023.tar.gz
 
+#Untar config
+RUN tar -xzf config_vcf2circos_29032023.tar.gz
 
-RUN mkdir /app
-WORKDIR /app
-ADD requirements.txt /app/
+#Set configuration path
+RUN sed -i 's,\"Static\": \"/enadisk/maison/lamouche/dev_vcf2circos/Static\"\,,\"Static\": \"/Static\"\,,' /Static/options.json
 
-RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
-ADD . /app/
+ENTRYPOINT ["vcf2circos"]
 
-
-ENTRYPOINT ["python3"]
-CMD ["dashapp.py"]
-
-## docker build -t dashcircos-docker .
-## docker run -it --rm -p 8000:8050 dashcircos-docker
-## http://localhost:8000
