@@ -65,6 +65,7 @@ def main():
         "json",
     ]:
         print(f"[ERROR] Output file format '{output_file}' not supported")
+        exit()
     print(f"[INFO] Output file: {output_file} (format '{output_format}')")
 
     # Export
@@ -165,9 +166,7 @@ def main():
             os.mkdir(os.path.dirname(output_file))
         elif output_format in ["html"]:
             plot(fig, filename=output_file)
-        else:
-            print("[ERROR] output format not supported")
-        if export_format in [
+        elif output_format in [
             "png",
             "jpg",
             "jpeg",
@@ -178,7 +177,10 @@ def main():
             "json",
         ]:
             #plotly.io.write_image(fig, output_export_file, format="svg")
-            fig.write_image(output_export_file)
+            fig.write_image(output_file)
+        else:
+            print("[ERROR] output format not supported")
+            exit()
     except IndexError:
         plot(fig)
 
