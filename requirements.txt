@@ -3,6 +3,6 @@
 -i https://test.pypi.org/simple/ colorpicker-box==0.0.1
 colorlover
 dash_colorscales
-dash==0.39.0
+dash==2.15.0
 dash-daq==0.1.0
 plotly
